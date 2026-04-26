@@ -5,7 +5,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 
 const CustomButton = ({
   as: Component = "button",
-  action = () => {},
+  action = () => { },
   to = "",
   className = "",
   children,
