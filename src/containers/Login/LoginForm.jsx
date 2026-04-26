@@ -1,0 +1,73 @@
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+import CustomInput from "../../components/generic/CustomInput";
+import CustomButton from "../../components/generic/CustomButton";
+import CustomLink from "../../components/generic/CustomLink";
+
+import EmailIcon from '@mui/icons-material/Email';
+import LockIcon from '@mui/icons-material/Lock';
+
+import { loginSchema } from "../../validations/LoginSchema";
+
+const LoginForm = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data) => {
+    console.log(data);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="flex gap-12 flex-col">
+      {/* <h2 className="text-5xl mb-8 text-center">
+        Logi
+        <span className="text-5xl text-accent_color font-bold ">Vision</span>
+      </h2> */}
+
+      <h1 className="text-4xl font-extrabold text-center">
+        Iniciar Sesión
+      </h1>
+
+      <p className="text-lg z-10 text-center">
+        Ingresa tus credenciales para acceder a tu cuenta
+      </p>
+
+      {/* EMAIL */}
+      <CustomInput
+        name="email"
+        placeholder="Email Address"
+        icon={<EmailIcon />}
+        errors={errors.email}
+        innerRef={register("email")}
+      />
+
+      {/* PASSWORD */}
+      <CustomInput
+        name="password"
+        type="password"
+        placeholder="Password"
+        icon={<LockIcon />}
+        errors={errors.password}
+        innerRef={register("password")}
+      />
+
+      {/* BUTTON */}
+      <CustomButton
+        className="mt-6"
+        type="submit"
+        loading={isSubmitting}
+      >
+        Iniciar Sesión
+      </CustomButton>
+    </form>
+  );
+};
+
+export default LoginForm;

@@ -1,7 +1,10 @@
+import LoginForm from "../containers/Login/LoginForm";
+import LoginLayout from "../containers/Login/LoginLayout";
+
 export default function Login() {
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Login</h1>
-    </div>
+    <LoginLayout>
+      <LoginForm />
+    </LoginLayout>
   );
 }
