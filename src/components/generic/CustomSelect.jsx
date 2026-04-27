@@ -8,6 +8,7 @@ import {
   InputAdornment,
   OutlinedInput,
   FormHelperText,
+  FormLabel,
 } from "@mui/material";
 import { AnimatePresence } from "framer-motion";
 import { PresenceAnimation } from "./FadeIn";
@@ -49,13 +50,13 @@ const CustomSelect = forwardRef(
             borderColor: hasError
               ? "#FF6B6B"
               : isFocused
-              ? "#284485"
-              : "#202124",
+                ? "#284485"
+                : "#202124",
             boxShadow: hasError
               ? "5px 5px 0px #FF6B6B"
               : isFocused
-              ? "6px 6px 0px #284485"
-              : "5px 5px 0px #000",
+                ? "6px 6px 0px #284485"
+                : "5px 5px 0px #000",
             "&:hover fieldset": { borderColor: hasError ? "#FF6B6B" : "#000" },
             "& .MuiOutlinedInput-notchedOutline": {
               borderRadius: "0.3rem",
@@ -63,15 +64,26 @@ const CustomSelect = forwardRef(
               borderColor: hasError
                 ? "#FF6B6B !important"
                 : isFocused
-                ? "#284485 !important"
-                : "#202124 !important",
+                  ? "#284485 !important"
+                  : "#202124 !important",
             },
           },
         }}
       >
-        <InputLabel id={`${name}-label`} className="!text-xl">
-          {labelText || ariaLabel}
-        </InputLabel>
+        {labelText && (
+          <FormLabel
+            htmlFor={name}
+            sx={{
+              color: "#202124",
+              fontWeight: "800",
+              lineHeight: "45px",
+              mb: 1.,
+            }}
+            className="!text-xl"
+          >
+            {labelText || ariaLabel}
+          </FormLabel>
+        )}
         <Select
           labelId={`${name}-label`}
           id={name}
@@ -98,8 +110,8 @@ const CustomSelect = forwardRef(
                         color: hasError
                           ? "#FF6B6B"
                           : isFocused
-                          ? "#284485"
-                          : "#202124",
+                            ? "#284485"
+                            : "#202124",
                       },
                     })}
                   </InputAdornment>
@@ -113,8 +125,8 @@ const CustomSelect = forwardRef(
                         color: hasError
                           ? "#FF6B6B"
                           : isFocused
-                          ? "#284485"
-                          : "#202124",
+                            ? "#284485"
+                            : "#202124",
                         cursor: "pointer",
                       },
                     })}

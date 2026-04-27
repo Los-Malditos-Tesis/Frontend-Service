@@ -1,4 +1,11 @@
 import axios from "axios";
+import {
+  createUserMock,
+  deleteUserMock,
+  getUsersMock,
+  resetPasswordMock,
+  updateUserMock,
+} from "../mocks/usersMock";
 
 export const api = axios.create({
   baseURL: "http://localhost:3000/api",
@@ -14,3 +21,10 @@ api.interceptors.request.use((config) => {
 
   return config;
 });
+
+// CRUD mockeado para desarrollo sin backend.
+export const getUsers = () => getUsersMock();
+export const createUser = (data) => createUserMock(data);
+export const updateUser = (id, data) => updateUserMock(id, data);
+export const deleteUser = (id) => deleteUserMock(id);
+export const resetPassword = (id) => resetPasswordMock(id);
