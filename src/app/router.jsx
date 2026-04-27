@@ -7,6 +7,8 @@ import NotFound from "../pages/NotFound";
 import UsersPage from "../pages/UsersPage";
 import ProductsPage from "../pages/ProductsPage";
 import WarehousesPage from "../pages/WarehousesPage";
+import LocationsPage from "../pages/LocationsPage";
+import SuppliersPage from "../pages/SuppliersPage";
 
 export const router = createBrowserRouter([
   {
@@ -49,6 +51,22 @@ export const router = createBrowserRouter([
     element: (
       <PublicRoute>
         <WarehousesPage />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: "/locations",
+    element: (
+      <PublicRoute>
+        <LocationsPage />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: "/suppliers",
+    element: (
+      <PublicRoute>
+        <SuppliersPage />
       </PublicRoute>
     ),
   },

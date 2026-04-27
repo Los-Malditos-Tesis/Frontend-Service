@@ -64,10 +64,10 @@ export const updateWarehouseMock = (id, payload) => {
   warehousesMockData = warehousesMockData.map((warehouse) =>
     Number(warehouse.id) === targetId
       ? {
-          ...warehouse,
-          ...payload,
-          id: warehouse.id,
-        }
+        ...warehouse,
+        ...payload,
+        id: warehouse.id,
+      }
       : warehouse
   );
 
