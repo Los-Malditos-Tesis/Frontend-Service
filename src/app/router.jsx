@@ -5,6 +5,8 @@ import Dashboard from "../pages/Dashobard";
 import ProtectedRoute from "../components/routes/ProtectedRoute";
 import NotFound from "../pages/NotFound";
 import UsersPage from "../pages/UsersPage";
+import ProductsPage from "../pages/ProductsPage";
+import WarehousesPage from "../pages/WarehousesPage";
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +33,22 @@ export const router = createBrowserRouter([
     element: (
       <PublicRoute>
         <UsersPage />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: "/products",
+    element: (
+      <PublicRoute>
+        <ProductsPage />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: "/warehouses",
+    element: (
+      <PublicRoute>
+        <WarehousesPage />
       </PublicRoute>
     ),
   },
