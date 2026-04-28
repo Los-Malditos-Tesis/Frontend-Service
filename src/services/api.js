@@ -26,6 +26,12 @@ import {
   updateLocationMock,
 } from "../mocks/locationsMock";
 import {
+  createCameraMock,
+  deleteCameraMock,
+  getCamerasMock,
+  updateCameraMock,
+} from "../mocks/camerasMock";
+import {
   createSupplierMock,
   deleteSupplierMock,
   getSuppliersMock as getSuppliersDirectoryMock,
@@ -72,6 +78,12 @@ export const getLocations = () => getLocationsMock();
 export const createLocation = (data) => createLocationMock(data);
 export const updateLocation = (id, data) => updateLocationMock(id, data);
 export const deleteLocation = (id) => deleteLocationMock(id);
+
+// Cameras
+export const getCameras = () => getCamerasMock();
+export const createCamera = (data) => createCameraMock(data);
+export const updateCamera = (id, data) => updateCameraMock(id, data);
+export const deleteCamera = (id) => deleteCameraMock(id);
 
 // Suppliers
 export const getSuppliersDirectory = () => getSuppliersDirectoryMock();

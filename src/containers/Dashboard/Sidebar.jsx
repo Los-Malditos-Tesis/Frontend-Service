@@ -7,13 +7,19 @@ import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import InventoryIcon from "@mui/icons-material/Inventory";
 import LogoutIcon from "@mui/icons-material/Logout";
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
-
+import BusinessIcon from "@mui/icons-material/Business";
+import VideocamIcon from "@mui/icons-material/Videocam";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 const menu = [
   { name: "Dashboard", path: "/", icon: <DashboardOutlinedIcon /> },
   { name: "Usuarios", path: "/users", icon: <PeopleAltOutlinedIcon /> },
   { name: "Productos", path: "/products", icon: <Inventory2OutlinedIcon /> },
   // Proveedores 
-  { name: "Proveedores", path: "/suppliers", icon: <PeopleIcon /> },
+  { name: "Proveedores", path: "/suppliers", icon: <BusinessIcon /> },
+  // camera
+  { name: "Cámaras", path: "/cameras", icon: <VideocamIcon  /> },
+  // ubicaciones
+  { name: "Ubicaciones", path: "/locations", icon: <LocationOnIcon  /> },
 ];
 
 export default function Sidebar({ isBlack = false }) {

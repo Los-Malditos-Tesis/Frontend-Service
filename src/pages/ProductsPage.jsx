@@ -10,6 +10,7 @@ import { SectionIntro } from "../components/generic/SectionIntro";
 import DashboardLayout from "../containers/Dashboard/DashboardLayout";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
 import AddIcon from "@mui/icons-material/Add";
+import AdminIntroLayout from "../components/generic/AdminIntroLayout";
 
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -50,47 +51,35 @@ const ProductsPage = () => {
   }, []);
 
   return (
-    <DashboardLayout>
-      <CustomContainer>
-        <div className="space-y-6">
+    <AdminIntroLayout
+      title="Gestión de Productos"
+      subtitle="Administra el catálogo maestro de productos, crea nuevos accesos y controla su relación con proveedores."
+      eyebrow={<Breadcrumbs />}
+      buttonLabel="Crear productos"
+      onCreate={handleCreateProduct}
+    >
+      <CustomDrawer
+        isOpen={isDrawerOpen}
+        onClose={handleCloseDrawer}
+        title={selectedProduct ? "Editar Producto" : "Crear Producto"}
+      >
+        <ProductForm
+          selectedProduct={selectedProduct}
+          onSuccess={() => {
+            fetchProducts();
+            handleCloseDrawer();
+          }}
+        />
+      </CustomDrawer>
 
-          <SectionIntro
-            title="Gestión de Productos"
-            subtitle="Administra el catálogo maestro de productos, crea nuevos accesos y controla su relación con proveedores."
-            eyebrow={<Breadcrumbs />}
-            smaller
-            className="pb-8 md:pb-10 mb-6 md:mb-8 pt-6"
-          >
-            <CustomButton
-              startIcon={<AddIcon />}
-              className="max-w-[13rem] ml-auto" action={handleCreateProduct}>
-              Crear producto
-            </CustomButton>
-          </SectionIntro>
+      <ProductsTable
+        products={products}
+        loading={loading}
+        onEdit={handleEditProduct}
+        onRefresh={fetchProducts}
+      />
+    </AdminIntroLayout >
 
-          <CustomDrawer
-            isOpen={isDrawerOpen}
-            onClose={handleCloseDrawer}
-            title={selectedProduct ? "Editar Producto" : "Crear Producto"}
-          >
-            <ProductForm
-              selectedProduct={selectedProduct}
-              onSuccess={() => {
-                fetchProducts();
-                handleCloseDrawer();
-              }}
-            />
-          </CustomDrawer>
-
-          <ProductsTable
-            products={products}
-            loading={loading}
-            onEdit={handleEditProduct}
-            onRefresh={fetchProducts}
-          />
-        </div>
-      </CustomContainer>
-    </DashboardLayout>
   );
 };
 

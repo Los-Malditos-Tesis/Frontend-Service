@@ -10,6 +10,7 @@ import { SectionIntro } from "../components/generic/SectionIntro";
 import DashboardLayout from "../containers/Dashboard/DashboardLayout";
 import AddIcon from "@mui/icons-material/Add";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
+import AdminIntroLayout from "../components/generic/AdminIntroLayout";
 
 const UsersPage = () => {
   const [users, setUsers] = useState([]);
@@ -50,48 +51,34 @@ const UsersPage = () => {
   }, []);
 
   return (
-    <DashboardLayout>
-      <CustomContainer>
-        <div className=" space-y-6">
+    <AdminIntroLayout
+      title="Gestión de Usuarios"
+      subtitle="Administra los accesos y permisos de los usuarios en el sistema."
+      eyebrow={<Breadcrumbs />}
+      buttonLabel="Crear usuarios"
+      onCreate={handleCreateUser}
+    >
+      <CustomDrawer
+        isOpen={isDrawerOpen}
+        onClose={handleCloseDrawer}
+        title={selectedUser ? "Editar Usuario" : "Crear Usuario"}
+      >
+        <UserForm
+          selectedUser={selectedUser}
+          onSuccess={() => {
+            fetchUsers();
+            handleCloseDrawer();
+          }}
+        />
+      </CustomDrawer>
 
-          <SectionIntro
-            title="Gestión de Usuarios"
-            subtitle="Administra los accesos y permisos de los usuarios en el sistema."
-            eyebrow={<Breadcrumbs />}
-            smaller
-            className="pb-8 md:pb-10 mb-6 md:mb-8 pt-6"
-          >
-            <CustomButton
-              startIcon={<AddIcon />}
-              className="max-w-[13rem] ml-auto" action={handleCreateUser}>
-              Crear usuarios
-            </CustomButton>
-          </SectionIntro>
-
-          <CustomDrawer
-            isOpen={isDrawerOpen}
-            onClose={handleCloseDrawer}
-            title={selectedUser ? "Editar Usuario" : "Crear Usuario"}
-          >
-            <UserForm
-              selectedUser={selectedUser}
-              onSuccess={() => {
-                fetchUsers();
-                handleCloseDrawer();
-              }}
-            />
-          </CustomDrawer>
-
-          <UsersTable
-            users={users}
-            loading={loading}
-            onEdit={handleEditUser}
-            onRefresh={fetchUsers}
-          />
-        </div>
-      </CustomContainer>
-    </DashboardLayout>
-
+      <UsersTable
+        users={users}
+        loading={loading}
+        onEdit={handleEditUser}
+        onRefresh={fetchUsers}
+      />
+    </AdminIntroLayout>
   );
 };
 

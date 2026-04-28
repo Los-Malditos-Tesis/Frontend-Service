@@ -9,6 +9,7 @@ import ProductsPage from "../pages/ProductsPage";
 import WarehousesPage from "../pages/WarehousesPage";
 import LocationsPage from "../pages/LocationsPage";
 import SuppliersPage from "../pages/SuppliersPage";
+import CamerasPage from "../pages/CamerasPage";
 
 export const router = createBrowserRouter([
   {
@@ -67,6 +68,14 @@ export const router = createBrowserRouter([
     element: (
       <PublicRoute>
         <SuppliersPage />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: "/cameras",
+    element: (
+      <PublicRoute>
+        <CamerasPage />
       </PublicRoute>
     ),
   },

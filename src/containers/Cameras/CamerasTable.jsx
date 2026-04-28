@@ -3,53 +3,56 @@ import { createColumnHelper } from "@tanstack/react-table";
 
 import { Edit, Delete } from "@mui/icons-material";
 
-import { deleteLocation } from "../../services/api";
+import { deleteCamera } from "../../services/api";
 import CustomTable from "../../components/generic/CustomTable";
 
 const columnHelper = createColumnHelper();
 
-const LocationsTable = ({ locations = [], loading, onEdit, onRefresh }) => {
+const CamerasTable = ({ cameras = [], loading, onEdit, onRefresh }) => {
   const handleDelete = async (id) => {
-    if (!confirm("¿Eliminar ubicación?")) return;
+    if (!confirm("¿Eliminar cámara?")) return;
 
     try {
-      await deleteLocation(id);
-      toast.success("Ubicación eliminada");
+      await deleteCamera(id);
+      toast.success("Cámara eliminada");
       onRefresh();
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Error al eliminar");
+    } catch {
+      toast.error("Error al eliminar");
     }
   };
 
   const columns = [
-    columnHelper.accessor("zone", {
-      header: "Zone",
+    columnHelper.accessor("code", {
+      header: "Code",
     }),
-    columnHelper.accessor("warehouse_name", {
-      header: "Warehouse",
+    columnHelper.accessor("location_name", {
+      header: "Location",
     }),
-    columnHelper.accessor("pallets_count", {
-      header: "Pallets",
-      cell: ({ getValue }) => getValue() ?? 0,
+    columnHelper.accessor("api_key", {
+      header: "API Key",
+      cell: ({ getValue }) => {
+        const value = getValue();
+        return value ? `${String(value).slice(0, 4)}••••••` : "-";
+      },
     }),
     columnHelper.display({
       id: "actions",
       header: "Actions",
       enableColumnFilter: false,
       cell: ({ row }) => {
-        const loc = row.original;
+        const camera = row.original;
 
         return (
           <div className="flex items-center justify-center gap-2">
             <button
-              onClick={() => onEdit(loc)}
+              onClick={() => onEdit(camera)}
               className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
             >
               <Edit fontSize="small" />
             </button>
 
             <button
-              onClick={() => handleDelete(loc.id)}
+              onClick={() => handleDelete(camera.id)}
               className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
             >
               <Delete fontSize="small" />
@@ -62,18 +65,18 @@ const LocationsTable = ({ locations = [], loading, onEdit, onRefresh }) => {
 
   return (
     <CustomTable
-      title="Ubicaciones"
-      data={locations}
+      title="Cámaras"
+      data={cameras}
       columns={columns}
       loading={loading}
       loadingText="Cargando..."
-      emptyTitle="Sin ubicaciones"
-      emptyDescription="Aún no hay zonas registradas en el sistema."
-      searchPlaceholder="Buscar ubicación..."
+      emptyTitle="Sin cámaras"
+      emptyDescription="No hay datos aún."
+      searchPlaceholder="Buscar cámara..."
       showColumnFilters={false}
       showPagination={true}
     />
   );
 };
 
-export default LocationsTable;
+export default CamerasTable;

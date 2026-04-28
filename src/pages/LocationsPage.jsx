@@ -7,6 +7,8 @@ import CustomButton from "../components/generic/CustomButton";
 import CustomDrawer from "../components/generic/CustomDrawer";
 import { CustomContainer } from "../components/generic/CustomContainer";
 import { SectionIntro } from "../components/generic/SectionIntro";
+import AdminIntroLayout from "../components/generic/AdminIntroLayout";
+import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
 
 const LocationsPage = () => {
   const [locations, setLocations] = useState([]);
@@ -47,45 +49,34 @@ const LocationsPage = () => {
   }, []);
 
   return (
-    <CustomContainer>
-      <div className="space-y-6">
-        <SectionIntro
-          title="Mapa Lógico"
-          eyebrow="Gestión de Ubicaciones"
-          divider
-          vertical
-        >
-          <p>
-            Administra las zonas y estantes del almacén. Registra ubicaciones, asigna cámaras y organiza el inventario.
-          </p>
-
-          <CustomButton className="max-w-xs" action={handleCreateLocation}>
-            Crear ubicación
-          </CustomButton>
-        </SectionIntro>
-
-        <CustomDrawer
-          isOpen={isDrawerOpen}
-          onClose={handleCloseDrawer}
-          title={selectedLocation ? "Editar Ubicación" : "Crear Ubicación"}
-        >
-          <LocationForm
-            selectedLocation={selectedLocation}
-            onSuccess={() => {
-              fetchLocations();
-              handleCloseDrawer();
-            }}
-          />
-        </CustomDrawer>
-
-        <LocationsTable
-          locations={locations}
-          loading={loading}
-          onEdit={handleEditLocation}
-          onRefresh={fetchLocations}
+    <AdminIntroLayout
+      title="Gestión de Ubicaciones"
+      subtitle="Administra las zonas y estantes del almacén. Registra ubicaciones, asigna cámaras y organiza el inventario."
+      eyebrow={<Breadcrumbs />}
+      buttonLabel="Crear ubicaciones"
+      onCreate={handleCreateLocation}
+    >
+      <CustomDrawer
+        isOpen={isDrawerOpen}
+        onClose={handleCloseDrawer}
+        title={selectedLocation ? "Editar Ubicación" : "Crear Ubicación"}
+      >
+        <LocationForm
+          selectedLocation={selectedLocation}
+          onSuccess={() => {
+            fetchLocations();
+            handleCloseDrawer();
+          }}
         />
-      </div>
-    </CustomContainer>
+      </CustomDrawer>
+
+      <LocationsTable
+        locations={locations}
+        loading={loading}
+        onEdit={handleEditLocation}
+        onRefresh={fetchLocations}
+      />
+    </AdminIntroLayout>
   );
 };
 

@@ -10,6 +10,7 @@ import { SectionIntro } from "../components/generic/SectionIntro";
 import DashboardLayout from "../containers/Dashboard/DashboardLayout";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
 import AddIcon from "@mui/icons-material/Add";
+import AdminIntroLayout from "../components/generic/AdminIntroLayout";
 
 const SuppliersPage = () => {
   const [suppliers, setSuppliers] = useState([]);
@@ -50,47 +51,34 @@ const SuppliersPage = () => {
   }, []);
 
   return (
-    <DashboardLayout>
-      <CustomContainer>
-        <div className="space-y-6">
-          <SectionIntro
-            title="Gestión de Proveedores"
-            subtitle="Administra el catálogo maestro de proveedores, crea nuevos accesos y controla su relación con productos."
-            eyebrow={<Breadcrumbs />}
-            smaller
-            className="pb-8 md:pb-10 mb-6 md:mb-8 pt-6"
-          >
-            <CustomButton
-              startIcon={<AddIcon />}
-              className="max-w-[13rem] ml-auto" action={handleCreateSupplier}>
-              Crear proveedor
-            </CustomButton>
-          </SectionIntro>
+    <AdminIntroLayout
+      title="Gestión de Proveedores"
+      subtitle="Administra el catálogo maestro de proveedores, crea nuevos accesos y controla su relación con productos."
+      eyebrow={<Breadcrumbs />}
+      buttonLabel="Crear proveedores"
+      onCreate={handleCreateSupplier}
+    >
+      <CustomDrawer
+        isOpen={isDrawerOpen}
+        onClose={handleCloseDrawer}
+        title={selectedSupplier ? "Editar Proveedor" : "Crear Proveedor"}
+      >
+        <SupplierForm
+          selectedSupplier={selectedSupplier}
+          onSuccess={() => {
+            fetchSuppliers();
+            handleCloseDrawer();
+          }}
+        />
+      </CustomDrawer>
 
-          <CustomDrawer
-            isOpen={isDrawerOpen}
-            onClose={handleCloseDrawer}
-            title={selectedSupplier ? "Editar Proveedor" : "Crear Proveedor"}
-          >
-            <SupplierForm
-              selectedSupplier={selectedSupplier}
-              onSuccess={() => {
-                fetchSuppliers();
-                handleCloseDrawer();
-              }}
-            />
-          </CustomDrawer>
-
-          <SuppliersTable
-            suppliers={suppliers}
-            loading={loading}
-            onEdit={handleEditSupplier}
-            onRefresh={fetchSuppliers}
-          />
-        </div>
-      </CustomContainer>
-    </DashboardLayout>
-
+      <SuppliersTable
+        suppliers={suppliers}
+        loading={loading}
+        onEdit={handleEditSupplier}
+        onRefresh={fetchSuppliers}
+      />
+    </AdminIntroLayout>
   );
 };
 
