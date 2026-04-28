@@ -1,10 +1,14 @@
-import React from "react";
 import { toast } from "sonner";
-import { deleteWarehouse } from "../../services/api";
-import CustomButton from "../../components/generic/CustomButton";
-import EmptyState from "../../components/generic/EmptyState";
+import { createColumnHelper } from "@tanstack/react-table";
 
-const WarehousesTable = ({ warehouses, loading, onEdit, onRefresh }) => {
+import { Edit, Delete } from "@mui/icons-material";
+
+import { deleteWarehouse } from "../../services/api";
+import CustomTable from "../../components/generic/CustomTable";
+
+const columnHelper = createColumnHelper();
+
+const WarehousesTable = ({ warehouses = [], loading, onEdit, onRefresh }) => {
   const handleDelete = async (id) => {
     if (!confirm("¿Eliminar bodega?")) return;
 
@@ -12,61 +16,63 @@ const WarehousesTable = ({ warehouses, loading, onEdit, onRefresh }) => {
       await deleteWarehouse(id);
       toast.success("Bodega eliminada");
       onRefresh();
-    } catch {
-      toast.error("Error al eliminar");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Error al eliminar");
     }
   };
 
-  if (loading) return <p>Cargando bodegas...</p>;
+  const columns = [
+    columnHelper.accessor("name", {
+      header: "Name",
+    }),
+    columnHelper.accessor("address", {
+      header: "Address",
+    }),
+    columnHelper.accessor("locations_count", {
+      header: "Locations",
+      cell: ({ getValue }) => getValue() ?? 0,
+    }),
+    columnHelper.display({
+      id: "actions",
+      header: "Actions",
+      enableColumnFilter: false,
+      cell: ({ row }) => {
+        const warehouse = row.original;
 
-  if (!warehouses.length)
-    return (
-      <EmptyState
-        title="Sin bodegas"
-        description="Aún no hay bodegas registradas en el sistema."
-        type="search"
-      />
-    );
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => onEdit(warehouse)}
+              className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
+            >
+              <Edit fontSize="small" />
+            </button>
+
+            <button
+              onClick={() => handleDelete(warehouse.id)}
+              className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
+            >
+              <Delete fontSize="small" />
+            </button>
+          </div>
+        );
+      },
+    }),
+  ];
 
   return (
-    <div className="overflow-auto border rounded-lg">
-      <table className="w-full text-left">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="p-3">Nombre</th>
-            <th>Dirección</th>
-            <th className="text-center">Zonas</th>
-            <th className="text-center">Acciones</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {warehouses.map((w) => (
-            <tr key={w.id} className="border-t">
-              <td className="p-3">{w.name}</td>
-              <td>{w.address}</td>
-              <td className="text-center">{w.locations_count}</td>
-
-              <td className="flex gap-2 justify-center p-2">
-                <CustomButton
-                  className="!w-auto px-3"
-                  action={() => onEdit(w)}
-                >
-                  Editar
-                </CustomButton>
-
-                <CustomButton
-                  className="!w-auto px-3 bg-red-500"
-                  action={() => handleDelete(w.id)}
-                >
-                  Eliminar
-                </CustomButton>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <CustomTable
+      title="Bodegas"
+      data={warehouses}
+      columns={columns}
+      loading={loading}
+      loadingText="Cargando..."
+      emptyTitle="Sin bodegas"
+      emptyDescription="No hay datos aún."
+      searchPlaceholder="Buscar bodega..."
+      showColumnFilters={false}
+      showPagination={true}
+    />
   );
 };
 

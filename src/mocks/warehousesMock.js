@@ -79,6 +79,18 @@ export const updateWarehouseMock = (id, payload) => {
 
 export const deleteWarehouseMock = (id) => {
   const targetId = Number(id);
+  const warehouse = warehousesMockData.find((w) => Number(w.id) === targetId);
+
+  if (warehouse && warehouse.locations_count > 0) {
+    return Promise.reject({
+      response: {
+        data: {
+          message: "No se puede eliminar una bodega con ubicaciones activas",
+        },
+      },
+    });
+  }
+
   warehousesMockData = warehousesMockData.filter(
     (warehouse) => Number(warehouse.id) !== targetId
   );

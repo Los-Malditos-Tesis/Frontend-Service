@@ -10,6 +10,7 @@ import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import BusinessIcon from "@mui/icons-material/Business";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
+import StorageOutlinedIcon from '@mui/icons-material/StorageOutlined';
 const menu = [
   { name: "Dashboard", path: "/", icon: <DashboardOutlinedIcon /> },
   { name: "Usuarios", path: "/users", icon: <PeopleAltOutlinedIcon /> },
@@ -20,6 +21,8 @@ const menu = [
   { name: "Cámaras", path: "/cameras", icon: <VideocamIcon  /> },
   // ubicaciones
   { name: "Ubicaciones", path: "/locations", icon: <LocationOnIcon  /> },
+   { name: "Warehouse", path: "/warehouses", icon: <StorageOutlinedIcon /> },
+
 ];
 
 export default function Sidebar({ isBlack = false }) {

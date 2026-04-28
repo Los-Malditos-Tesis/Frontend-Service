@@ -3,10 +3,9 @@ import { toast } from "sonner";
 import { getWarehouses } from "../services/api";
 import WarehousesTable from "../containers/Warehouses/WarehousesTable";
 import WarehouseForm from "../containers/Warehouses/WarehouseForm";
-import CustomButton from "../components/generic/CustomButton";
 import CustomDrawer from "../components/generic/CustomDrawer";
-import { CustomContainer } from "../components/generic/CustomContainer";
-import { SectionIntro } from "../components/generic/SectionIntro";
+import AdminIntroLayout from "../components/generic/AdminIntroLayout";
+import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
 
 const WarehousesPage = () => {
   const [warehouses, setWarehouses] = useState([]);
@@ -47,45 +46,34 @@ const WarehousesPage = () => {
   }, []);
 
   return (
-    <CustomContainer>
-      <div className="space-y-6">
-        <SectionIntro
-          title="Red de Distribución"
-          eyebrow="Gestión de Bodegas"
-          divider
-          vertical
-        >
-          <p>
-            Administra las bodegas y centros de distribución, consulta ubicaciones y existencias globales.
-          </p>
-
-          <CustomButton className="max-w-xs" action={handleCreateWarehouse}>
-            Crear bodega
-          </CustomButton>
-        </SectionIntro>
-
-        <CustomDrawer
-          isOpen={isDrawerOpen}
-          onClose={handleCloseDrawer}
-          title={selectedWarehouse ? "Editar Bodega" : "Crear Bodega"}
-        >
-          <WarehouseForm
-            selectedWarehouse={selectedWarehouse}
-            onSuccess={() => {
-              fetchWarehouses();
-              handleCloseDrawer();
-            }}
-          />
-        </CustomDrawer>
-
-        <WarehousesTable
-          warehouses={warehouses}
-          loading={loading}
-          onEdit={handleEditWarehouse}
-          onRefresh={fetchWarehouses}
+    <AdminIntroLayout
+      title="Gestión de Bodegas"
+      subtitle="Administra los centros de distribución y consulta su estado general."
+      eyebrow={<Breadcrumbs />}
+      buttonLabel="Crear bodega"
+      onCreate={handleCreateWarehouse}
+    >
+      <CustomDrawer
+        isOpen={isDrawerOpen}
+        onClose={handleCloseDrawer}
+        title={selectedWarehouse ? "Editar Bodega" : "Crear Bodega"}
+      >
+        <WarehouseForm
+          selectedWarehouse={selectedWarehouse}
+          onSuccess={() => {
+            fetchWarehouses();
+            handleCloseDrawer();
+          }}
         />
-      </div>
-    </CustomContainer>
+      </CustomDrawer>
+
+      <WarehousesTable
+        warehouses={warehouses}
+        loading={loading}
+        onEdit={handleEditWarehouse}
+        onRefresh={fetchWarehouses}
+      />
+    </AdminIntroLayout>
   );
 };
 
