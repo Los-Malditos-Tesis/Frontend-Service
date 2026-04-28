@@ -1,16 +1,13 @@
 import { NavLink } from "react-router-dom";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import PeopleIcon from "@mui/icons-material/People";
-import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
-import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
-
-import InventoryIcon from "@mui/icons-material/Inventory";
 import LogoutIcon from "@mui/icons-material/Logout";
-import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import BusinessIcon from "@mui/icons-material/Business";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-import StorageOutlinedIcon from '@mui/icons-material/StorageOutlined';
+import StorageOutlinedIcon from "@mui/icons-material/StorageOutlined";
+import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 const menu = [
   { name: "Dashboard", path: "/", icon: <DashboardOutlinedIcon /> },
   { name: "Usuarios", path: "/users", icon: <PeopleAltOutlinedIcon /> },
@@ -21,7 +18,8 @@ const menu = [
   { name: "Cámaras", path: "/cameras", icon: <VideocamIcon  /> },
   // ubicaciones
   { name: "Ubicaciones", path: "/locations", icon: <LocationOnIcon  /> },
-   { name: "Warehouse", path: "/warehouses", icon: <StorageOutlinedIcon /> },
+  { name: "Warehouse", path: "/warehouses", icon: <StorageOutlinedIcon /> },
+  { name: "Tiendas", path: "/stores", icon: <StorefrontOutlinedIcon /> },
 
 ];
 
@@ -37,7 +35,7 @@ export default function Sidebar({ isBlack = false }) {
       ${isBlack ? "bg-black text-white border-gray-800" : "bg-background text-black"}`}
     >
       <div className="px-8 py-8 flex gap-3 items-center mb-6">
-        <div className="bg-black p-2  w-10 h-10 flex items-center justify-center">
+        <div className="bg-black p-2 w-10 h-10 flex items-center justify-center">
           <Inventory2OutlinedIcon className="text-white" fontSize="medium" />
         </div>
 
@@ -48,8 +46,6 @@ export default function Sidebar({ isBlack = false }) {
           </span>
         </h1>
       </div>
-
-
       <nav className="px-4 flex flex-col gap-2 flex-1">
         {menu.map((item) => (
           <NavLink

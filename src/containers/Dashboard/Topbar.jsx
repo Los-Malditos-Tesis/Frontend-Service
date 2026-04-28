@@ -8,6 +8,7 @@ const pages = [
   { name: "dashboard", path: "/" },
   { name: "usuarios", path: "/usuarios" },
   { name: "productos", path: "/productos" },
+  { name: "tiendas", path: "/stores" },
 ];
 
 export default function Topbar() {
@@ -19,7 +20,7 @@ export default function Topbar() {
   );
 
   return (
-    <CustomContainer className="!py-0">
+    <CustomContainer className="py-0!">
       <div className="w-full flex items-center justify-between relative">
         {/* Search */}
         <div className="relative w-72">
@@ -33,8 +34,6 @@ export default function Topbar() {
               className="bg-transparent outline-none ml-3 w-full text-sm text-gray-700 placeholder-gray-400"
             />
           </label>
-
-
 
           {/* Dropdown */}
           {query && (
@@ -68,6 +67,5 @@ export default function Topbar() {
         </div>
       </div>
     </CustomContainer>
-
   );
 }

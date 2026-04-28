@@ -7,6 +7,7 @@ import NotFound from "../pages/NotFound";
 import UsersPage from "../pages/UsersPage";
 import ProductsPage from "../pages/ProductsPage";
 import WarehousesPage from "../pages/WarehousesPage";
+import StoresPage from "../pages/StoresPage";
 import LocationsPage from "../pages/LocationsPage";
 import SuppliersPage from "../pages/SuppliersPage";
 import CamerasPage from "../pages/CamerasPage";
@@ -52,6 +53,14 @@ export const router = createBrowserRouter([
     element: (
       <PublicRoute>
         <WarehousesPage />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: "/stores",
+    element: (
+      <PublicRoute>
+        <StoresPage />
       </PublicRoute>
     ),
   },

@@ -37,6 +37,12 @@ import {
   getSuppliersMock as getSuppliersDirectoryMock,
   updateSupplierMock,
 } from "../mocks/suppliersMock";
+import {
+  createStoreMock,
+  deleteStoreMock,
+  getStoresMock,
+  updateStoreMock,
+} from "../mocks/storesMock";
 
 export const api = axios.create({
   baseURL: "http://localhost:3000/api",
@@ -90,3 +96,9 @@ export const getSuppliersDirectory = () => getSuppliersDirectoryMock();
 export const createSupplier = (data) => createSupplierMock(data);
 export const updateSupplier = (id, data) => updateSupplierMock(id, data);
 export const deleteSupplier = (id) => deleteSupplierMock(id);
+
+// Stores
+export const getStores = () => getStoresMock();
+export const createStore = (data) => createStoreMock(data);
+export const updateStore = (id, data) => updateStoreMock(id, data);
+export const deleteStore = (id) => deleteStoreMock(id);
