@@ -1,10 +1,16 @@
-import React from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { deleteUser, resetPassword } from "../../services/api";
-import CustomButton from "../../components/generic/CustomButton";
-import EmptyState from "../../components/generic/EmptyState";
+import { createColumnHelper } from "@tanstack/react-table";
 
-const UsersTable = ({ users, loading, onEdit, onRefresh }) => {
+import { Edit, Delete, LockReset } from "@mui/icons-material";
+
+import { deleteUser, resetPassword } from "../../services/api";
+import CustomTable from "../../components/generic/CustomTable";
+
+const columnHelper = createColumnHelper();
+
+const UsersTable = ({ users = [], loading, onEdit, onRefresh }) => {
+  // HANDLERS
   const handleDelete = async (id) => {
     if (!confirm("¿Eliminar usuario?")) return;
 
@@ -26,63 +32,91 @@ const UsersTable = ({ users, loading, onEdit, onRefresh }) => {
     }
   };
 
-  if (loading) return <p>Cargando usuarios...</p>;
+  // COLUMNAS
+  const columns = [
+    columnHelper.accessor("name", {
+      header: "Name",
+    }),
+    columnHelper.accessor("email", {
+      header: "Email Address",
+    }),
+    columnHelper.accessor("role", {
+      header: "Assigned Role",
+    }),
+    columnHelper.display({
+      id: "actions",
+      header: "Actions",
+      enableColumnFilter: false,
+      cell: ({ row }) => {
+        const u = row.original;
 
-  if (!users.length)
-    return (
-      <EmptyState
-        title="Sin usuarios"
-        description="Aún no hay usuarios registrados en el sistema."
-        type="search"
-      />
-    );
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => onEdit(u)}
+              className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
+            >
+              <Edit fontSize="small" />
+            </button>
+
+            <button
+              onClick={() => handleDelete(u.id)}
+              className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
+            >
+              <Delete fontSize="small" />
+            </button>
+
+            <button
+              onClick={() => handleReset(u.id)}
+              className="rounded-lg p-2 transition hover:bg-yellow-50 active:scale-95"
+            >
+              <LockReset fontSize="small" />
+            </button>
+          </div>
+        );
+      },
+    }),
+  ];
 
   return (
-    <div className="overflow-auto border rounded-lg">
-      <table className="w-full text-left">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="p-3">Nombre</th>
-            <th>Email</th>
-            <th>Rol</th>
-            <th className="text-center">Acciones</th>
-          </tr>
-        </thead>
+    <CustomTable
+      title="Usuarios"
+      data={users}
+      columns={columns}
+      loading={loading}
+      loadingText="Cargando..."
+      emptyTitle="Sin usuarios"
+      emptyDescription="No hay datos aún."
 
-        <tbody>
-          {users.map((u) => (
-            <tr key={u.id} className="border-t">
-              <td className="p-3">{u.name}</td>
-              <td>{u.email}</td>
-              <td>{u.role}</td>
+      // SEARCH
+      searchPlaceholder="Buscar usuario..."
 
-              <td className="flex gap-2 justify-center p-2">
-                <CustomButton
-                  className="!w-auto px-3"
-                  action={() => onEdit(u)}
-                >
-                  Editar
-                </CustomButton>
+      // FILTROS VISUALES
+      // filters={[
+      //   { label: "Todos los roles", value: "all" },
+      //   {
+      //     label: "Admin",
+      //     value: "Admin",
+      //     filterFn: (user) => user.role === "manager",
+      //   },
+      //   {
+      //     label: "Editor",
+      //     value: "Editor",
+      //     filterFn: (user) => user.role === "editor",
+      //   },
+      //   {
+      //     label: "Viewer",
+      //     value: "Viewer",
+      //     filterFn: (user) => user.role === "viewer",
+      //   },
+      // ]}
+      // activeFilter={filter}
+      // onFilterChange={setFilter}
 
-                <CustomButton
-                  className="!w-auto px-3 bg-red-500"
-                  action={() => handleDelete(u.id)}
-                >
-                  Eliminar
-                </CustomButton>
-
-                <CustomButton
-                  className="!w-auto px-3 bg-yellow-500"
-                  action={() => handleReset(u.id)}
-                >
-                  Reset Pass
-                </CustomButton>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+      // opcional
+      showColumnFilters={false}
+      showPagination={true}
+    />
   );
 };
 

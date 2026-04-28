@@ -5,6 +5,7 @@ import { Divider } from "@mui/material";
 
 export function SectionIntro({
   title,
+  subtitle,
   id,
   eyebrow,
   children,
@@ -15,7 +16,6 @@ export function SectionIntro({
   divider = false,
   ...props
 }) {
-  const theme = useTheme();
   if (!color) {
     color = "#000000"; // Default color if not provided
   }
@@ -28,7 +28,7 @@ export function SectionIntro({
         viewport={{ once: true, amount: 0.4 }}
       >
         {eyebrow && (
-          <span className="mb-6 block font-d isplay text-base font-semibold">
+          <span className="mb-6 block text-[#7b7b7b] text-base font-semibold">
             {eyebrow}
           </span>
         )}
@@ -43,6 +43,7 @@ export function SectionIntro({
             >
               {title}
             </h2>
+            {subtitle && <p className="mt-1 text-lg text-[#4B5563]">{subtitle}</p>}
             {divider && (
               <Divider
                 sx={{
@@ -57,14 +58,17 @@ export function SectionIntro({
           </>
         ) : children ? (
           <div className="grid md:grid-cols-2 w-full gap-8">
-            <h2
-              id={id}
-              style={{ color }}
-              className={`scroll-top  font-poly font-bold title ${smaller ? "text-5xl" : "text-7xl"
+            <div>
+              <h2
+                id={id}
+                style={{ color }}
+                className={`scroll-top  font-poly font-bold title ${smaller ? "text-5xl" : "text-7xl"
                 }`}
-            >
-              {title}
-            </h2>
+                >
+                {title}
+              </h2>
+              {subtitle && <p className="mt-1 text-lg text-[#4B5563]">{subtitle}</p>}
+            </div>
             {divider && (
               <Divider
                 sx={{
@@ -87,6 +91,7 @@ export function SectionIntro({
             >
               {title}
             </h2>
+            {subtitle && <p className="mt-1 text-lg text-[#4B5563]">{subtitle}</p>}
             {divider && (
               <Divider
                 sx={{

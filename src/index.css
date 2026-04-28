@@ -3,6 +3,10 @@
 @theme {
   --color-*: initial;
   --color-white: #fff;
+  --color-black: #000;
+  --color-gray: #888;
+  --color-background: #f8f9fa;
+  --color-bordercolor: #ededee;
   --color-purple: #3f3cbb;
   --color-midnight: #121063;
   --color-tahiti: #3ab7bf;
@@ -53,13 +57,14 @@
 }
 body {
   font-family: 'Nunito', Arial, sans-serif;
+  background: #f8f9fa ; /*f3f4f6 --color-background: #eaeaeb; */
 }
 
 
 /* custom */
 .login-bg {
   position: relative;
-  background: #f3f4f6; /* mismo color base (gray-100) */
+  background: #f3f4f6;
   overflow: hidden;
 }
 

@@ -11,6 +11,7 @@ const CustomButton = ({
   children,
   type = "button",
   loading = false,
+  startIcon,
   ...props
 }) => {
   const CustomButtonProps =
@@ -41,7 +42,10 @@ const CustomButton = ({
           Cargando
         </>
       ) : (
-        children
+        <>
+          {startIcon && <span className="mr-2 flex items-center">{startIcon}</span>}
+          {children}
+        </>
       )}
     </Component>
   );
