@@ -57,13 +57,13 @@ const UsersPage = () => {
           <SectionIntro
             title="Gestión de Usuarios"
             subtitle="Administra los accesos y permisos de los usuarios en el sistema."
-            eyebrow={<Breadcrumbs /> }
+            eyebrow={<Breadcrumbs />}
             smaller
             className="pb-8 md:pb-10 mb-6 md:mb-8 pt-6"
           >
-            <CustomButton 
-            startIcon={<AddIcon />}
-            className="max-w-[13rem] ml-auto" action={handleCreateUser}>
+            <CustomButton
+              startIcon={<AddIcon />}
+              className="max-w-[13rem] ml-auto" action={handleCreateUser}>
               Crear usuarios
             </CustomButton>
           </SectionIntro>

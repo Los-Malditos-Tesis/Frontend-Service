@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { toast } from "sonner";
 import { createColumnHelper } from "@tanstack/react-table";
 
@@ -87,33 +86,7 @@ const UsersTable = ({ users = [], loading, onEdit, onRefresh }) => {
       loadingText="Cargando..."
       emptyTitle="Sin usuarios"
       emptyDescription="No hay datos aún."
-
-      // SEARCH
       searchPlaceholder="Buscar usuario..."
-
-      // FILTROS VISUALES
-      // filters={[
-      //   { label: "Todos los roles", value: "all" },
-      //   {
-      //     label: "Admin",
-      //     value: "Admin",
-      //     filterFn: (user) => user.role === "manager",
-      //   },
-      //   {
-      //     label: "Editor",
-      //     value: "Editor",
-      //     filterFn: (user) => user.role === "editor",
-      //   },
-      //   {
-      //     label: "Viewer",
-      //     value: "Viewer",
-      //     filterFn: (user) => user.role === "viewer",
-      //   },
-      // ]}
-      // activeFilter={filter}
-      // onFilterChange={setFilter}
-
-      // opcional
       showColumnFilters={false}
       showPagination={true}
     />

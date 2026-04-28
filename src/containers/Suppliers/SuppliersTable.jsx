@@ -1,10 +1,13 @@
-import React from "react";
 import { toast } from "sonner";
-import { deleteSupplier } from "../../services/api";
-import CustomButton from "../../components/generic/CustomButton";
-import EmptyState from "../../components/generic/EmptyState";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Edit, Delete } from "@mui/icons-material";
 
-const SuppliersTable = ({ suppliers, loading, onEdit, onRefresh }) => {
+import { deleteSupplier } from "../../services/api";
+import CustomTable from "../../components/generic/CustomTable";
+
+const columnHelper = createColumnHelper();
+
+const SuppliersTable = ({ suppliers = [], loading, onEdit, onRefresh }) => {
   const handleDelete = async (id) => {
     if (!confirm("¿Eliminar proveedor?")) return;
 
@@ -17,76 +20,91 @@ const SuppliersTable = ({ suppliers, loading, onEdit, onRefresh }) => {
     }
   };
 
-  if (loading) return <p>Cargando proveedores...</p>;
+  const columns = [
+    columnHelper.accessor("name", {
+      header: "Nombre",
+    }),
+    columnHelper.accessor("code", {
+      header: "Código",
+    }),
+    columnHelper.accessor("contactName", {
+      header: "Contacto",
+    }),
+    columnHelper.accessor("phone", {
+      header: "Teléfono",
+    }),
+    columnHelper.accessor("email", {
+      header: "Email",
+    }),
+    columnHelper.accessor("location", {
+      header: "Ubicación",
+    }),
+    columnHelper.display({
+      id: "products",
+      header: "Productos",
+      enableColumnFilter: false,
+      cell: ({ row }) => {
+        const supplier = row.original;
 
-  if (!suppliers.length)
-    return (
-      <EmptyState
-        title="Sin proveedores"
-        description="Aún no hay proveedores registrados en el sistema."
-        type="search"
-      />
-    );
+        return (
+          <div className="flex flex-wrap gap-1 max-w-sm py-2">
+            {(supplier.products || []).length ? (
+              supplier.products.map((product) => (
+                <span
+                  key={product}
+                  className="inline-flex items-center rounded-full bg-gray-200 px-2 py-1 text-xs font-semibold text-gray-700"
+                >
+                  {product}
+                </span>
+              ))
+            ) : (
+              <span className="text-sm text-gray-500">Sin productos</span>
+            )}
+          </div>
+        );
+      },
+    }),
+    columnHelper.display({
+      id: "actions",
+      header: "Actions",
+      enableColumnFilter: false,
+      cell: ({ row }) => {
+        const supplier = row.original;
+
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => onEdit(supplier)}
+              className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
+            >
+              <Edit fontSize="small" />
+            </button>
+
+            <button
+              onClick={() => handleDelete(supplier.id)}
+              className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
+            >
+              <Delete fontSize="small" />
+            </button>
+          </div>
+        );
+      },
+    }),
+  ];
 
   return (
-    <div className="overflow-auto border rounded-lg">
-      <table className="w-full text-left">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="p-3">Nombre</th>
-            <th>Código</th>
-            <th>Contacto</th>
-            <th>Teléfono</th>
-            <th>Email</th>
-            <th>Ubicación</th>
-            <th>Productos</th>
-            <th className="text-center">Acciones</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {suppliers.map((supplier) => (
-            <tr key={supplier.id} className="border-t align-top">
-              <td className="p-3">{supplier.name}</td>
-              <td>{supplier.code}</td>
-              <td>{supplier.contactName}</td>
-              <td>{supplier.phone}</td>
-              <td>{supplier.email}</td>
-              <td>{supplier.location}</td>
-              <td>
-                <div className="flex flex-wrap gap-1 max-w-sm py-2">
-                  {(supplier.products || []).length ? (
-                    supplier.products.map((product) => (
-                      <span
-                        key={product}
-                        className="inline-flex items-center rounded-full bg-gray-200 px-2 py-1 text-xs font-semibold text-gray-700"
-                      >
-                        {product}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-sm text-gray-500">Sin productos</span>
-                  )}
-                </div>
-              </td>
-
-              <td className="flex gap-2 justify-center p-2">
-                <CustomButton className="w-auto! px-3" action={() => onEdit(supplier)}>
-                  Editar
-                </CustomButton>
-
-                <CustomButton
-                  className="w-auto! px-3 bg-red-500"
-                  action={() => handleDelete(supplier.id)}
-                >
-                  Eliminar
-                </CustomButton>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <CustomTable
+      title="Proveedores"
+      data={suppliers}
+      columns={columns}
+      loading={loading}
+      loadingText="Cargando..."
+      emptyTitle="Sin proveedores"
+      emptyDescription="No hay datos aún."
+      searchPlaceholder="Buscar proveedor..."
+      showColumnFilters={false}
+      showPagination={true}
+    />
   );
 };
 

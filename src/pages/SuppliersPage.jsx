@@ -3,8 +3,13 @@ import { toast } from "sonner";
 import { getSuppliersDirectory } from "../services/api";
 import SuppliersTable from "../containers/Suppliers/SuppliersTable";
 import SupplierForm from "../containers/Suppliers/SupplierForm";
+import CustomButton from "../components/generic/CustomButton";
 import CustomDrawer from "../components/generic/CustomDrawer";
-import SupplierLayout from "../components/generic/SupplierLayout";
+import { CustomContainer } from "../components/generic/CustomContainer";
+import { SectionIntro } from "../components/generic/SectionIntro";
+import DashboardLayout from "../containers/Dashboard/DashboardLayout";
+import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
+import AddIcon from "@mui/icons-material/Add";
 
 const SuppliersPage = () => {
   const [suppliers, setSuppliers] = useState([]);
@@ -45,34 +50,47 @@ const SuppliersPage = () => {
   }, []);
 
   return (
-    <SupplierLayout
-      title="Directorio de Proveedores"
-      eyebrow="Administración"
-      description="Administra proveedores, consulta sus productos asociados y mantiene la información de contacto actualizada."
-      buttonLabel="Crear proveedor"
-      onCreate={handleCreateSupplier}
-    >
-      <CustomDrawer
-        isOpen={isDrawerOpen}
-        onClose={handleCloseDrawer}
-        title={selectedSupplier ? "Editar Proveedor" : "Crear Proveedor"}
-      >
-        <SupplierForm
-          selectedSupplier={selectedSupplier}
-          onSuccess={() => {
-            fetchSuppliers();
-            handleCloseDrawer();
-          }}
-        />
-      </CustomDrawer>
+    <DashboardLayout>
+      <CustomContainer>
+        <div className="space-y-6">
+          <SectionIntro
+            title="Gestión de Proveedores"
+            subtitle="Administra el catálogo maestro de proveedores, crea nuevos accesos y controla su relación con productos."
+            eyebrow={<Breadcrumbs />}
+            smaller
+            className="pb-8 md:pb-10 mb-6 md:mb-8 pt-6"
+          >
+            <CustomButton
+              startIcon={<AddIcon />}
+              className="max-w-[13rem] ml-auto" action={handleCreateSupplier}>
+              Crear proveedor
+            </CustomButton>
+          </SectionIntro>
 
-      <SuppliersTable
-        suppliers={suppliers}
-        loading={loading}
-        onEdit={handleEditSupplier}
-        onRefresh={fetchSuppliers}
-      />
-    </SupplierLayout>
+          <CustomDrawer
+            isOpen={isDrawerOpen}
+            onClose={handleCloseDrawer}
+            title={selectedSupplier ? "Editar Proveedor" : "Crear Proveedor"}
+          >
+            <SupplierForm
+              selectedSupplier={selectedSupplier}
+              onSuccess={() => {
+                fetchSuppliers();
+                handleCloseDrawer();
+              }}
+            />
+          </CustomDrawer>
+
+          <SuppliersTable
+            suppliers={suppliers}
+            loading={loading}
+            onEdit={handleEditSupplier}
+            onRefresh={fetchSuppliers}
+          />
+        </div>
+      </CustomContainer>
+    </DashboardLayout>
+
   );
 };
 

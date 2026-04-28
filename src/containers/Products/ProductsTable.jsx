@@ -1,10 +1,13 @@
-import React from "react";
 import { toast } from "sonner";
-import { deleteProduct } from "../../services/api";
-import CustomButton from "../../components/generic/CustomButton";
-import EmptyState from "../../components/generic/EmptyState";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Edit, Delete } from "@mui/icons-material";
 
-const ProductsTable = ({ products, loading, onEdit, onRefresh }) => {
+import { deleteProduct } from "../../services/api";
+import CustomTable from "../../components/generic/CustomTable";
+
+const columnHelper = createColumnHelper();
+
+const ProductsTable = ({ products = [], loading, onEdit, onRefresh }) => {
   const handleDelete = async (id) => {
     if (!confirm("¿Eliminar producto?")) return;
 
@@ -17,60 +20,63 @@ const ProductsTable = ({ products, loading, onEdit, onRefresh }) => {
     }
   };
 
-  if (loading) return <p>Cargando productos...</p>;
+  const columns = [
+    columnHelper.accessor("name", {
+      header: "Nombre",
+    }),
+    columnHelper.accessor("code", {
+      header: "Código",
+    }),
+    columnHelper.accessor("sku", {
+      header: "SKU",
+    }),
+    columnHelper.accessor("category", {
+      header: "Categoría",
+    }),
+    columnHelper.accessor("supplier_name", {
+      header: "Proveedor",
+    }),
+    columnHelper.display({
+      id: "actions",
+      header: "Actions",
+      enableColumnFilter: false,
+      cell: ({ row }) => {
+        const product = row.original;
 
-  if (!products.length)
-    return (
-      <EmptyState
-        title="Sin productos"
-        description="Aún no hay productos registrados en el catálogo."
-        type="search"
-      />
-    );
+        return (
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => onEdit(product)}
+              className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
+            >
+              <Edit fontSize="small" />
+            </button>
+
+            <button
+              onClick={() => handleDelete(product.id)}
+              className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
+            >
+              <Delete fontSize="small" />
+            </button>
+          </div>
+        );
+      },
+    }),
+  ];
 
   return (
-    <div className="overflow-auto border rounded-lg">
-      <table className="w-full text-left">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="p-3">Nombre</th>
-            <th>Código</th>
-            <th>SKU</th>
-            <th>Categoría</th>
-            <th>Proveedor</th>
-            <th className="text-center">Acciones</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {products.map((p) => (
-            <tr key={p.id} className="border-t">
-              <td className="p-3">{p.name}</td>
-              <td>{p.code}</td>
-              <td>{p.sku}</td>
-              <td>{p.category}</td>
-              <td>{p.supplier_name}</td>
-
-              <td className="flex gap-2 justify-center p-2">
-                <CustomButton
-                  className="!w-auto px-3"
-                  action={() => onEdit(p)}
-                >
-                  Editar
-                </CustomButton>
-
-                <CustomButton
-                  className="!w-auto px-3 bg-red-500"
-                  action={() => handleDelete(p.id)}
-                >
-                  Eliminar
-                </CustomButton>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <CustomTable
+      title="Productos"
+      data={products}
+      columns={columns}
+      loading={loading}
+      loadingText="Cargando..."
+      emptyTitle="Sin productos"
+      emptyDescription="No hay datos aún."
+      searchPlaceholder="Buscar producto..."
+      showColumnFilters={false}
+      showPagination={true}
+    />
   );
 };
 

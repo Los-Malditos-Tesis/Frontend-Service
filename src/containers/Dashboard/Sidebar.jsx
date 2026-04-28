@@ -11,7 +11,9 @@ import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 const menu = [
   { name: "Dashboard", path: "/", icon: <DashboardOutlinedIcon /> },
   { name: "Usuarios", path: "/users", icon: <PeopleAltOutlinedIcon /> },
-  { name: "Productos", path: "/productos", icon: <Inventory2OutlinedIcon /> },
+  { name: "Productos", path: "/products", icon: <Inventory2OutlinedIcon /> },
+  // Proveedores 
+  { name: "Proveedores", path: "/suppliers", icon: <PeopleIcon /> },
 ];
 
 export default function Sidebar({ isBlack = false }) {
