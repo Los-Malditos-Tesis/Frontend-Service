@@ -46,11 +46,12 @@ const CustomInput = ({
           htmlFor={name}
           sx={{
             color: "#202124",
-            fontWeight: "800",
+            fontWeight: "600",
+            // fontWeight: "800",
             lineHeight: "45px",
             mb: 1.,
           }}
-          className="!text-xl"
+          className="!text-lg"
         >
           {labelText}
         </FormLabel>
@@ -111,15 +112,15 @@ const CustomInput = ({
             backgroundColor: backgroundColor,
             borderRadius: "0.3rem",
             borderColor: hasError
-              ? "#FF6B6B"
+              ? "#FF6B6B50"
               : isFocused
-                ? "#284485"
-                : "#202124",
-            boxShadow: hasError
-              ? "5px 5px 0px 0px #FF6B6B"
-              : isFocused
-                ? "6px 6px 0px 0px #284485"
-                : "5px 5px 0px 0px #000",
+                ? "#28448550"
+                : "#20212450",
+            // boxShadow: hasError
+            //   ? "5px 5px 0px 0px #FF6B6B"
+            //   : isFocused
+            //     ? "6px 6px 0px 0px #284485"
+            //     : "5px 5px 0px 0px #000",
             transition: "box-shadow 0.3s ease, border-color 0.3s ease",
             "&:hover": {
               borderColor: hasError ? "#FF6B6B" : "#000",
@@ -129,10 +130,10 @@ const CustomInput = ({
             borderRadius: "0.3rem",
             borderWidth: "2px",
             borderColor: hasError
-              ? "#FF6B6B !important"
+              ? "#FF6B6B50 !important"
               : isFocused
-                ? "#284485 !important"
-                : "#202124 !important",
+                ? "#28448550 !important"
+                : "#20212450 !important",
           },
         }}
         onFocus={() => setIsFocused(true)}

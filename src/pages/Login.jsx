@@ -3,8 +3,10 @@ import LoginLayout from "../containers/Login/LoginLayout";
 
 export default function Login() {
   return (
-    <LoginLayout>
-      <LoginForm />
-    </LoginLayout>
+    <div className="p-2">
+      <LoginLayout>
+        <LoginForm />
+      </LoginLayout>
+    </div>
   );
 }

@@ -11,7 +11,7 @@ export default function Breadcrumbs() {
       <Link to="/" className="flex items-center gap-1 opacity-80 hover:text-black">
         {/* <FolderIcon fontSize="small" /> */}
         Inicio
-      </Link>
+      </Link>pcusz
 
       {pathnames.map((value, index) => {
         const to = "/" + pathnames.slice(0, index + 1).join("/");
@@ -24,7 +24,7 @@ export default function Breadcrumbs() {
               to={to}
               className={`capitalize px-2 py-1 rounded-md transition
                 ${index === pathnames.length - 1
-                  ? "bg-gray-200 text-black font-medium"
+                  ? "bg-gray-200 text-accent_color font-bold"
                   : "hover:bg-gray-100"
                 }`}
             >

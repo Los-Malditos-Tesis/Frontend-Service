@@ -4,11 +4,13 @@ import DashboardLayout from "../../containers/Dashboard/DashboardLayout";
 import { CustomContainer } from "./CustomContainer";
 import { SectionIntro } from "./SectionIntro";
 import CustomButton from "./CustomButton";
+import Breadcrumbs from "../../containers/Dashboard/Breadcrumbs";
+import AddIcon from "@mui/icons-material/Add";
 
 const AdminIntroLayout = ({
   title,
   subtitle,
-  eyebrow,
+  eyebrow=<Breadcrumbs />,
   buttonLabel,
   onCreate,
   children,
@@ -25,8 +27,9 @@ const AdminIntroLayout = ({
             className="pb-8 md:pb-10 mb-6 md:mb-8 pt-6"
           >
             <CustomButton
-              className="max-w-[13rem] ml-auto"
+              className="max-w-[13.5rem] ml-auto"
               action={onCreate}
+              startIcon={<AddIcon />}
             >
               {buttonLabel}
             </CustomButton>

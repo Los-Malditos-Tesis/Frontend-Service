@@ -52,20 +52,20 @@ const CustomSelect = forwardRef(
               : isFocused
                 ? "#284485"
                 : "#202124",
-            boxShadow: hasError
-              ? "5px 5px 0px #FF6B6B"
-              : isFocused
-                ? "6px 6px 0px #284485"
-                : "5px 5px 0px #000",
+            // boxShadow: hasError
+            //   ? "5px 5px 0px #FF6B6B"
+            //   : isFocused
+            //     ? "6px 6px 0px #284485"
+            //     : "5px 5px 0px #000",
             "&:hover fieldset": { borderColor: hasError ? "#FF6B6B" : "#000" },
             "& .MuiOutlinedInput-notchedOutline": {
               borderRadius: "0.3rem",
               borderWidth: "2px",
               borderColor: hasError
-                ? "#FF6B6B !important"
+                ? "#FF6B6B50 !important"
                 : isFocused
-                  ? "#284485 !important"
-                  : "#202124 !important",
+                  ? "#28448550 !important"
+                  : "#20212450 !important",
             },
           },
         }}
@@ -75,11 +75,11 @@ const CustomSelect = forwardRef(
             htmlFor={name}
             sx={{
               color: "#202124",
-              fontWeight: "800",
+              fontWeight: "500",
               lineHeight: "45px",
               mb: 1.,
             }}
-            className="!text-xl"
+            className="!text-lg"
           >
             {labelText || ariaLabel}
           </FormLabel>

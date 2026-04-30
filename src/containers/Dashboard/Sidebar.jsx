@@ -1,27 +1,7 @@
 import { NavLink } from "react-router-dom";
+import { MENU } from "../../utils/conts.jsx";
 import LogoutIcon from "@mui/icons-material/Logout";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
-import BusinessIcon from "@mui/icons-material/Business";
-import VideocamIcon from "@mui/icons-material/Videocam";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import StorageOutlinedIcon from "@mui/icons-material/StorageOutlined";
-import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
-import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
-const menu = [
-  { name: "Dashboard", path: "/", icon: <DashboardOutlinedIcon /> },
-  { name: "Usuarios", path: "/users", icon: <PeopleAltOutlinedIcon /> },
-  { name: "Productos", path: "/products", icon: <Inventory2OutlinedIcon /> },
-  // Proveedores 
-  { name: "Proveedores", path: "/suppliers", icon: <BusinessIcon /> },
-  // camera
-  { name: "Cámaras", path: "/cameras", icon: <VideocamIcon  /> },
-  // ubicaciones
-  { name: "Ubicaciones", path: "/locations", icon: <LocationOnIcon  /> },
-  { name: "Warehouse", path: "/warehouses", icon: <StorageOutlinedIcon /> },
-  { name: "Tiendas", path: "/stores", icon: <StorefrontOutlinedIcon /> },
-
-];
 
 export default function Sidebar({ isBlack = false }) {
   const handleLogout = () => {
@@ -40,14 +20,14 @@ export default function Sidebar({ isBlack = false }) {
         </div>
 
         <h1 className="text-2xl text-center font-bold">
-          Logi
+          Logistics{" "}
           <span className={isBlack ? "text-white" : "text-accent_color"}>
             Vision
           </span>
         </h1>
       </div>
       <nav className="px-4 flex flex-col gap-2 flex-1">
-        {menu.map((item) => (
+        {MENU.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
@@ -58,8 +38,10 @@ export default function Sidebar({ isBlack = false }) {
                   ? "bg-background text-black"
                   : "text-gray-300 hover:bg-background hover:text-black"
                 : isActive
-                  ? "bg-black text-white"
+                  ? "bg-accent_color text-white"
                   : "text-gray-600 hover:bg-black hover:text-white"
+              // ? "bg-black text-white"
+              // : "text-gray-600 hover:bg-black hover:text-white"
               }`
             }
           >

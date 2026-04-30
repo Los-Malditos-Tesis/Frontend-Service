@@ -12,6 +12,9 @@ import {
 import { Search } from "@mui/icons-material";
 import CustomInput from "./CustomInput";
 import EmptyState from "./EmptyState";
+import TableSkeleton from "./TableSkeleton";
+import SearchIcon from "@mui/icons-material/Search";
+
 
 const CustomTable = ({
   title,
@@ -68,7 +71,7 @@ const CustomTable = ({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  if (loading) return <p className="p-4">{loadingText}</p>;
+  if (loading) return (<TableSkeleton />);
 
   if (!data.length)
     return (
@@ -86,7 +89,7 @@ const CustomTable = ({
 
         {/* SEARCH */}
         <div className="w-full md:w-[300px]">
-          <CustomInput
+          {/* <CustomInput
             {...searchInputProps}
             name="search"
             placeholder={searchPlaceholder}
@@ -101,7 +104,19 @@ const CustomTable = ({
                 borderRadius: "10px",
               },
             }}
-          />
+          /> */}
+
+          <label className="border-2 border-bordercolor bg-background flex items-center bg-gray-100 px-4 py-2.5 rounded-xl w-full max-w-xl cursor-text focus-within:ring-2 focus-within:ring-blue-500">
+            <SearchIcon className="text-gray-400" />
+
+            <input
+              {...searchInputProps}
+              placeholder={searchPlaceholder}
+              value={globalFilter ?? ""}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              className="bg-transparent outline-none ml-3 w-full text-sm text-gray-700 placeholder-gray-400"
+            />
+          </label>
         </div>
       </div>
 
@@ -116,7 +131,7 @@ const CustomTable = ({
                   <th
                     key={header.id}
                     onClick={header.column.getToggleSortingHandler()}
-                    className="px-6 py-4 text-left font-semibold text-gray-500 uppercase tracking-wider cursor-pointer select-none"
+                    className="bg-black text-white px-6 py-4 text-left font-semibold text-gray-500 uppercase tracking-wider cursor-pointer select-none"
                   >
                     <div className="flex items-center gap-2">
                       {flexRender(
@@ -125,11 +140,19 @@ const CustomTable = ({
                       )}
 
                       {/* SORT ICON */}
-                      {{
+                      {/* {{
                         asc: "↑",
                         desc: "↓",
                       }[header.column.getIsSorted()] ?? (
                           <span className="opacity-20">↑</span>
+                        )} */}
+
+
+                      {{
+                        asc: <span className="text-white">↑</span>,
+                        desc: <span className="text-white">↓</span>,
+                      }[header.column.getIsSorted()] ?? (
+                          <span className="text-gray font-bold">↑</span>
                         )}
                     </div>
                   </th>

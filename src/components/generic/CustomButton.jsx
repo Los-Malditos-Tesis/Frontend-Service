@@ -25,7 +25,7 @@ const CustomButton = ({
         "w-full cursor-pointer flex flex-shrink-0 text-xl justify-center items-center py-3.5 px-3 rounded-lg text-white text-center font-extrabold transition-all md:text-lg",
         {
           "bg-gray-400 cursor-not-allowed": loading,
-          "bg-[#202124] hover:bg-accent_color": !loading,
+          "hover:bg-[#202124] bg-accent_color": !loading,
         },
         className
       )}

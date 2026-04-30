@@ -24,7 +24,7 @@ export default function Topbar() {
       <div className="w-full flex items-center justify-between relative">
         {/* Search */}
         <div className="relative w-72">
-          <label className="bg-background flex items-center bg-gray-100 px-4 py-2.5 rounded-xl w-full max-w-xl cursor-text focus-within:ring-2 focus-within:ring-blue-500">
+          <label className="border-2 border-bordercolor bg-background flex items-center bg-gray-100 px-4 py-2.5 rounded-xl w-full max-w-xl cursor-text focus-within:ring-2 focus-within:ring-blue-500">
             <SearchIcon className="text-gray-400" />
 
             <input

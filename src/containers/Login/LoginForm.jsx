@@ -25,7 +25,7 @@ const LoginForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex gap-12 flex-col">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex gap-8 flex-col">
       {/* <h2 className="text-5xl mb-8 text-center">
         Logi
         <span className="text-5xl text-accent_color font-bold ">Vision</span>
@@ -41,8 +41,9 @@ const LoginForm = () => {
 
       {/* EMAIL */}
       <CustomInput
+      labelText="Correo Electrónico"
         name="email"
-        placeholder="Email Address"
+        placeholder="ejemplo@correo.com"
         icon={<EmailIcon />}
         errors={errors.email}
         innerRef={register("email")}
@@ -50,9 +51,10 @@ const LoginForm = () => {
 
       {/* PASSWORD */}
       <CustomInput
+        labelText="Contraseña"
         name="password"
         type="password"
-        placeholder="Password"
+        placeholder="********"
         icon={<LockIcon />}
         errors={errors.password}
         innerRef={register("password")}

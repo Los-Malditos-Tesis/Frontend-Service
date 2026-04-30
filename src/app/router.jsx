@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import PublicRoute from "../components/routes/PublicRoute";
 import Login from "../pages/Login";
-import Dashboard from "../pages/Dashobard";
+import Dashboard from "../pages/Dashboard";
 import ProtectedRoute from "../components/routes/ProtectedRoute";
 import NotFound from "../pages/NotFound";
 import UsersPage from "../pages/UsersPage";
@@ -30,6 +30,15 @@ export const router = createBrowserRouter([
     ),
   },
 
+
+  {
+    path: "/dashboard",
+    element: (
+      <PublicRoute>
+        <Dashboard />
+      </PublicRoute>
+    ),
+  },
 
 
   {
