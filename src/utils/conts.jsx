@@ -7,6 +7,12 @@ import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 
+export const ROLES = {
+  SUPERADMIN: "SUPERADMIN",
+  ADMIN: "ADMIN",
+  USER: "USER",
+};
+
 export const MENU = [
   { name: "Dashboard", path: "/dashboard", icon: <DashboardOutlinedIcon /> },
   { name: "Usuarios", path: "/users", icon: <PeopleAltOutlinedIcon /> },

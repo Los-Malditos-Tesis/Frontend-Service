@@ -11,7 +11,7 @@ export default function Breadcrumbs() {
       <Link to="/" className="flex items-center gap-1 opacity-80 hover:text-black">
         {/* <FolderIcon fontSize="small" /> */}
         Inicio
-      </Link>pcusz
+      </Link>
 
       {pathnames.map((value, index) => {
         const to = "/" + pathnames.slice(0, index + 1).join("/");

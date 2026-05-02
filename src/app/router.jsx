@@ -11,6 +11,7 @@ import StoresPage from "../pages/StoresPage";
 import LocationsPage from "../pages/LocationsPage";
 import SuppliersPage from "../pages/SuppliersPage";
 import CamerasPage from "../pages/CamerasPage";
+import { ROLES } from "../utils/conts";
 
 export const router = createBrowserRouter([
   {
@@ -24,19 +25,25 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
         <Dashboard />
       </ProtectedRoute>
     ),
   },
-
-
   {
     path: "/dashboard",
     element: (
-      <PublicRoute>
+      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
         <Dashboard />
-      </PublicRoute>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/products",
+    element: (
+      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+        <ProductsPage />
+      </ProtectedRoute>
     ),
   },
 
@@ -49,14 +56,7 @@ export const router = createBrowserRouter([
       </PublicRoute>
     ),
   },
-  {
-    path: "/products",
-    element: (
-      <PublicRoute>
-        <ProductsPage />
-      </PublicRoute>
-    ),
-  },
+
   {
     path: "/warehouses",
     element: (

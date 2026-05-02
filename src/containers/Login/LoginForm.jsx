@@ -1,17 +1,22 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 import CustomInput from "../../components/generic/CustomInput";
 import CustomButton from "../../components/generic/CustomButton";
-import CustomLink from "../../components/generic/CustomLink";
 
-import EmailIcon from '@mui/icons-material/Email';
-import LockIcon from '@mui/icons-material/Lock';
+import EmailIcon from "@mui/icons-material/Email";
+import LockIcon from "@mui/icons-material/Lock";
 
 import { loginSchema } from "../../validations/LoginSchema";
 
 const LoginForm = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -21,7 +26,16 @@ const LoginForm = () => {
   });
 
   const onSubmit = async (data) => {
-    console.log(data);
+    setSubmitting(true);
+
+    try {
+      await login(data);
+      navigate("/dashboard", { replace: true });
+    } catch {
+      // El toast ya lo maneja el contexto de auth.
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -64,7 +78,7 @@ const LoginForm = () => {
       <CustomButton
         className="mt-6"
         type="submit"
-        loading={isSubmitting}
+        loading={isSubmitting || submitting}
       >
         Iniciar Sesión
       </CustomButton>

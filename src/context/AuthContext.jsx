@@ -12,15 +12,15 @@ export function AuthProvider({ children }) {
     const init = async () => {
       const token = localStorage.getItem("token");
 
-      if (!token) {
+      if (!token || token === "undefined") {
         setLoading(false);
         return;
       }
 
       try {
-        const { data } = await api.get("/auth/me");
-        setUser(data);
-      } catch (error) {
+        const { data } = await api.get("/auth/get-me");
+        setUser(data?.data);
+      } catch {
         localStorage.removeItem("token");
         setUser(null);
       } finally {
@@ -34,15 +34,10 @@ export function AuthProvider({ children }) {
   // LOGIN
   const login = async (credentials) => {
     try {
-      setLoading(true);
-
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      console.log("Login simulado después de 5 segundos");
-
       const { data } = await api.post("/auth/login", credentials);
 
-      localStorage.setItem("token", data.token);
-      setUser(data.user);
+      localStorage.setItem("token", data?.data?.content);
+      setUser(data?.data);
 
       toast.success("Bienvenido");
     } catch (error) {
