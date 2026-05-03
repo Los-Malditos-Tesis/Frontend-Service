@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getWarehouses } from "../services/api";
+import { searchWarehouses } from "../services/warehouse.service";
 import WarehousesTable from "../containers/Warehouses/WarehousesTable";
 import WarehouseForm from "../containers/Warehouses/WarehouseForm";
 import CustomDrawer from "../components/generic/CustomDrawer";
@@ -31,10 +31,19 @@ const WarehousesPage = () => {
   const fetchWarehouses = async () => {
     try {
       setLoading(true);
-      const { data } = await getWarehouses();
-      setWarehouses(data || []);
-    } catch {
-      toast.error("Error al obtener bodegas");
+      const result = await searchWarehouses();
+
+      if (result.success) {
+        setWarehouses(result.data || []);
+        if (result.fromMock) {
+          toast.info("Usando datos locales (offline)");
+        }
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error("Error fetching warehouses:", error);
+      toast.error(error?.message || "Error al obtener bodegas");
       setWarehouses([]);
     } finally {
       setLoading(false);

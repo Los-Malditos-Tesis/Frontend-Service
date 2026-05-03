@@ -24,9 +24,9 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
 
     const hasAccess = userRoles.some((r) => allowedRoles.includes(r));
 
-    console.log("Roles del usuario:", userRoles);
-    console.log("Roles permitidos para esta ruta:", allowedRoles);
-    console.log("¿El usuario tiene acceso?", hasAccess);
+    // console.log("Roles del usuario:", userRoles);
+    // console.log("Roles permitidos para esta ruta:", allowedRoles);
+    // console.log("¿El usuario tiene acceso?", hasAccess);
 
     if (!hasAccess) return <Navigate to="/login" replace />;
   }

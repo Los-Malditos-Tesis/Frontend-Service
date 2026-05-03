@@ -1,23 +1,27 @@
 import { toast } from "sonner";
 import { createColumnHelper } from "@tanstack/react-table";
-
 import { Edit, Delete } from "@mui/icons-material";
-
-import { deleteWarehouse } from "../../services/api";
+import { deleteWarehouse } from "../../services/warehouse.service";
 import CustomTable from "../../components/generic/CustomTable";
 
 const columnHelper = createColumnHelper();
 
 const WarehousesTable = ({ warehouses = [], loading, onEdit, onRefresh }) => {
   const handleDelete = async (id) => {
-    if (!confirm("¿Eliminar bodega?")) return;
+    if (!confirm("¿Estás seguro de que deseas eliminar esta bodega?")) return;
 
     try {
-      await deleteWarehouse(id);
-      toast.success("Bodega eliminada");
-      onRefresh();
+      const result = await deleteWarehouse(id);
+      if (result.success) {
+        toast.success("Bodega eliminada correctamente");
+        onRefresh();
+      } else {
+        toast.error(result.error || "Error al eliminar la bodega");
+      }
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Error al eliminar");
+      const errorMsg = err?.message || "Error al eliminar";
+      toast.error(errorMsg);
+      console.error("Delete error:", err);
     }
   };
 
@@ -28,10 +32,10 @@ const WarehousesTable = ({ warehouses = [], loading, onEdit, onRefresh }) => {
     columnHelper.accessor("address", {
       header: "Address",
     }),
-    columnHelper.accessor("locations_count", {
-      header: "Locations",
-      cell: ({ getValue }) => getValue() ?? 0,
-    }),
+    // columnHelper.accessor("locations_count", {
+    //   header: "Locations",
+    //   cell: ({ getValue }) => getValue() ?? 0,
+    // }),
     columnHelper.display({
       id: "actions",
       header: "Actions",

@@ -39,6 +39,18 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    path: "/warehouses",
+    element: (
+      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+        <WarehousesPage />
+      </ProtectedRoute>
+    ),
+  },
+
+
+
+  
+  {
     path: "/products",
     element: (
       <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
@@ -57,14 +69,7 @@ export const router = createBrowserRouter([
     ),
   },
 
-  {
-    path: "/warehouses",
-    element: (
-      <PublicRoute>
-        <WarehousesPage />
-      </PublicRoute>
-    ),
-  },
+  
   {
     path: "/stores",
     element: (

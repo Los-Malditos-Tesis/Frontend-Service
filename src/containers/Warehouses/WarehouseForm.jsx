@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import CustomInput from "../../components/generic/CustomInput";
 import CustomButton from "../../components/generic/CustomButton";
-import { createWarehouse, updateWarehouse } from "../../services/api";
+import { createWarehouse, updateWarehouse } from "../../services/warehouse.service";
 import { warehouseSchema } from "../../validations/WarehouseSchema";
 
 const WarehouseForm = ({ selectedWarehouse, onSuccess }) => {
@@ -29,17 +29,30 @@ const WarehouseForm = ({ selectedWarehouse, onSuccess }) => {
 
   const onSubmit = async (data) => {
     try {
+      let result;
+
       if (selectedWarehouse) {
-        await updateWarehouse(selectedWarehouse.id, data);
-        toast.success("Bodega actualizada");
+        result = await updateWarehouse(selectedWarehouse.id, data);
+        if (result.success) {
+          toast.success("Bodega actualizada correctamente");
+        } else {
+          throw new Error(result.error);
+        }
       } else {
-        await createWarehouse(data);
-        toast.success("Bodega creada");
+        result = await createWarehouse(data);
+        if (result.success) {
+          toast.success("Bodega creada correctamente");
+        } else {
+          throw new Error(result.error);
+        }
       }
+
       onSuccess();
       reset();
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Error en la operación");
+      const errorMsg = err?.message || "Error en la operación";
+      toast.error(errorMsg);
+      console.error("Form submission error:", err);
     }
   };
 

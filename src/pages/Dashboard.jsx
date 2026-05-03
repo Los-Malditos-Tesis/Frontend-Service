@@ -18,8 +18,8 @@ import {
   getStores,
   getSuppliersDirectory,
   getUsers,
-  getWarehouses,
 } from "../services/api";
+import { searchWarehouses } from "../services/warehouse.service";
 
 const metricCards = [
   {
@@ -104,7 +104,7 @@ export default function Dashboard() {
         getUsers(),
         getProducts(),
         getSuppliersDirectory(),
-        getWarehouses(),
+        searchWarehouses(),
         getStores(),
         getLocations(),
         getCameras(),
@@ -127,7 +127,7 @@ export default function Dashboard() {
         suppliers:
           suppliersResult.status === "fulfilled" ? suppliersResult.value.data || [] : [],
         warehouses:
-          warehousesResult.status === "fulfilled"
+          warehousesResult.status === "fulfilled" && warehousesResult.value.data
             ? warehousesResult.value.data || []
             : [],
         stores: storesResult.status === "fulfilled" ? storesResult.value.data || [] : [],
