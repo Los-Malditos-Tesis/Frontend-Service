@@ -15,11 +15,11 @@ import {
   getCameras,
   getLocations,
   getProducts,
-  getStores,
-  getSuppliersDirectory,
   getUsers,
 } from "../services/api";
 import { searchWarehouses } from "../services/warehouse.service";
+import { searchStores } from "../services/store.service";
+import { searchSuppliers } from "../services/supplier.service";
 
 const metricCards = [
   {
@@ -103,9 +103,9 @@ export default function Dashboard() {
       const requests = await Promise.allSettled([
         getUsers(),
         getProducts(),
-        getSuppliersDirectory(),
+        searchSuppliers(),
         searchWarehouses(),
-        getStores(),
+        searchStores(),
         getLocations(),
         getCameras(),
       ]);
@@ -305,9 +305,9 @@ export default function Dashboard() {
                 <p className="mt-2 text-sm font-bold text-secondary_color">
                   {lastUpdated
                     ? lastUpdated.toLocaleTimeString("es-CO", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
                     : "--:--"}
                 </p>
               </div>

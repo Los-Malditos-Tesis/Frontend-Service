@@ -4,22 +4,22 @@ export const storeSchema = z.object({
   name: z
     .string()
     .min(3, "Nombre requerido (mínimo 3 caracteres)")
-    .max(80, "Máximo 80 caracteres")
+    .max(100, "Máximo 100 caracteres")
     .regex(
-      /^[a-zA-Z0-9._\s,\-#áéíóúÁÉÍÓÚñÑ]+$/,
-      "Solo alfanuméricos, espacios y caracteres especiales permitidos"
+      /^[a-zA-Z0-9._\-\s]+$/,
+      "Solo alfanuméricos, puntos, guiones y espacios permitidos"
     ),
   code: z
     .string()
-    .min(2, "Código requerido (mínimo 2 caracteres)")
-    .max(20, "Máximo 20 caracteres")
-    .regex(/^[a-zA-Z0-9_-]+$/, "Solo letras, números, guiones y guiones bajos"),
+    .min(3, "Código requerido (mínimo 3 caracteres)")
+    .max(30, "Máximo 30 caracteres")
+    .regex(/^[a-zA-Z0-9._-]+$/, "Solo alfanuméricos, puntos y guiones"),
   address: z
     .string()
     .min(3, "Dirección requerida (mínimo 3 caracteres)")
-    .max(250, "Máximo 250 caracteres")
+    .max(100, "Máximo 100 caracteres")
     .regex(
-      /^[a-zA-Z0-9._\s,\-#áéíóúÁÉÍÓÚñÑ]+$/,
-      "Solo alfanuméricos, espacios y caracteres especiales permitidos"
+      /^[a-zA-Z0-9.,#_\-\s]+$/,
+      "Solo alfanuméricos, comas, puntos, almohadillas, guiones y espacios"
     ),
 });

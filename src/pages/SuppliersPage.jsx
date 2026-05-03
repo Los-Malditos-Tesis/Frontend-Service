@@ -1,15 +1,10 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getSuppliersDirectory } from "../services/api";
+import { searchSuppliers } from "../services/supplier.service";
 import SuppliersTable from "../containers/Suppliers/SuppliersTable";
 import SupplierForm from "../containers/Suppliers/SupplierForm";
-import CustomButton from "../components/generic/CustomButton";
 import CustomDrawer from "../components/generic/CustomDrawer";
-import { CustomContainer } from "../components/generic/CustomContainer";
-import { SectionIntro } from "../components/generic/SectionIntro";
-import DashboardLayout from "../containers/Dashboard/DashboardLayout";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
-import AddIcon from "@mui/icons-material/Add";
 import AdminIntroLayout from "../components/generic/AdminIntroLayout";
 
 const SuppliersPage = () => {
@@ -36,10 +31,19 @@ const SuppliersPage = () => {
   const fetchSuppliers = async () => {
     try {
       setLoading(true);
-      const { data } = await getSuppliersDirectory();
-      setSuppliers(data || []);
-    } catch {
-      toast.error("Error al obtener proveedores");
+      const result = await searchSuppliers();
+
+      if (result.success) {
+        setSuppliers(result.data || []);
+        if (result.fromMock) {
+          toast.info("Usando datos locales (offline)");
+        }
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error("Error fetching suppliers:", error);
+      toast.error(error?.message || "Error al obtener proveedores");
       setSuppliers([]);
     } finally {
       setLoading(false);

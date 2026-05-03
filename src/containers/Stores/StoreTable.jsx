@@ -1,22 +1,27 @@
 import { toast } from "sonner";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Edit, Delete } from "@mui/icons-material";
-
-import { deleteStore } from "../../services/api";
+import { deleteStore } from "../../services/store.service";
 import CustomTable from "../../components/generic/CustomTable";
 
 const columnHelper = createColumnHelper();
 
 const StoreTable = ({ stores = [], loading, onEdit, onRefresh }) => {
   const handleDelete = async (id) => {
-    if (!confirm("¿Eliminar tienda?")) return;
+    if (!confirm("¿Estás seguro de que deseas eliminar esta tienda?")) return;
 
     try {
-      await deleteStore(id);
-      toast.success("Tienda eliminada");
-      onRefresh();
+      const result = await deleteStore(id);
+      if (result.success) {
+        toast.success("Tienda eliminada correctamente");
+        onRefresh();
+      } else {
+        toast.error(result.error || "Error al eliminar la tienda");
+      }
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Error al eliminar");
+      const errorMsg = err?.message || "Error al eliminar";
+      toast.error(errorMsg);
+      console.error("Delete error:", err);
     }
   };
 

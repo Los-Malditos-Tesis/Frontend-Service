@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import CustomInput from "../../components/generic/CustomInput";
 import CustomButton from "../../components/generic/CustomButton";
-import { createStore, updateStore } from "../../services/api";
+import { createStore, updateStore } from "../../services/store.service";
 import { storeSchema } from "../../validations/StoreSchema";
 
 const StoreForm = ({ selectedStore, onSuccess }) => {
@@ -30,17 +30,30 @@ const StoreForm = ({ selectedStore, onSuccess }) => {
 
   const onSubmit = async (data) => {
     try {
+      let result;
+
       if (selectedStore) {
-        await updateStore(selectedStore.id, data);
-        toast.success("Tienda actualizada");
+        result = await updateStore(selectedStore.id, data);
+        if (result.success) {
+          toast.success("Tienda actualizada correctamente");
+        } else {
+          throw new Error(result.error);
+        }
       } else {
-        await createStore(data);
-        toast.success("Tienda creada");
+        result = await createStore(data);
+        if (result.success) {
+          toast.success("Tienda creada correctamente");
+        } else {
+          throw new Error(result.error);
+        }
       }
+
       onSuccess();
       reset();
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Error en la operación");
+      const errorMsg = err?.message || "Error en la operación";
+      toast.error(errorMsg);
+      console.error("Form submission error:", err);
     }
   };
 

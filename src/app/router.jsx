@@ -49,7 +49,7 @@ export const router = createBrowserRouter([
 
 
 
-  
+
   {
     path: "/products",
     element: (
@@ -69,13 +69,14 @@ export const router = createBrowserRouter([
     ),
   },
 
-  
+
+
   {
     path: "/stores",
     element: (
-      <PublicRoute>
+      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN]}>
         <StoresPage />
-      </PublicRoute>
+      </ProtectedRoute>
     ),
   },
   {
@@ -89,9 +90,9 @@ export const router = createBrowserRouter([
   {
     path: "/suppliers",
     element: (
-      <PublicRoute>
+      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
         <SuppliersPage />
-      </PublicRoute>
+      </ProtectedRoute>
     ),
   },
   {

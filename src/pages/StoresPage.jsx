@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getStores } from "../services/api";
+import { searchStores } from "../services/store.service";
 import StoreTable from "../containers/Stores/StoreTable";
 import StoreForm from "../containers/Stores/StoreForm";
 import CustomDrawer from "../components/generic/CustomDrawer";
@@ -31,10 +31,19 @@ const StoresPage = () => {
   const fetchStores = async () => {
     try {
       setLoading(true);
-      const { data } = await getStores();
-      setStores(data || []);
-    } catch {
-      toast.error("Error al obtener tiendas");
+      const result = await searchStores();
+
+      if (result.success) {
+        setStores(result.data || []);
+        if (result.fromMock) {
+          toast.info("Usando datos locales (offline)");
+        }
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error("Error fetching stores:", error);
+      toast.error(error?.message || "Error al obtener tiendas");
       setStores([]);
     } finally {
       setLoading(false);

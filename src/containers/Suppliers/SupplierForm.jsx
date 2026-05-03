@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import CustomInput from "../../components/generic/CustomInput";
 import CustomButton from "../../components/generic/CustomButton";
-import { createSupplier, updateSupplier } from "../../services/api";
+import { createSupplier, updateSupplier } from "../../services/supplier.service";
 import { supplierSchema } from "../../validations/SupplierSchema";
 
 const SupplierForm = ({ selectedSupplier, onSuccess }) => {
@@ -33,17 +33,30 @@ const SupplierForm = ({ selectedSupplier, onSuccess }) => {
 
   const onSubmit = async (data) => {
     try {
+      let result;
+
       if (selectedSupplier) {
-        await updateSupplier(selectedSupplier.id, data);
-        toast.success("Proveedor actualizado");
+        result = await updateSupplier(selectedSupplier.id, data);
+        if (result.success) {
+          toast.success("Proveedor actualizado correctamente");
+        } else {
+          throw new Error(result.error);
+        }
       } else {
-        await createSupplier(data);
-        toast.success("Proveedor creado");
+        result = await createSupplier(data);
+        if (result.success) {
+          toast.success("Proveedor creado correctamente");
+        } else {
+          throw new Error(result.error);
+        }
       }
+
       onSuccess();
       reset();
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Error en la operación");
+      const errorMsg = err?.message || "Error en la operación";
+      toast.error(errorMsg);
+      console.error("Form submission error:", err);
     }
   };
 

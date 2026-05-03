@@ -1,22 +1,27 @@
 import { toast } from "sonner";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Edit, Delete } from "@mui/icons-material";
-
-import { deleteSupplier } from "../../services/api";
+import { deleteSupplier } from "../../services/supplier.service";
 import CustomTable from "../../components/generic/CustomTable";
 
 const columnHelper = createColumnHelper();
 
 const SuppliersTable = ({ suppliers = [], loading, onEdit, onRefresh }) => {
   const handleDelete = async (id) => {
-    if (!confirm("¿Eliminar proveedor?")) return;
+    if (!confirm("¿Estás seguro de que deseas eliminar este proveedor?")) return;
 
     try {
-      await deleteSupplier(id);
-      toast.success("Proveedor eliminado");
-      onRefresh();
+      const result = await deleteSupplier(id);
+      if (result.success) {
+        toast.success("Proveedor eliminado correctamente");
+        onRefresh();
+      } else {
+        toast.error(result.error || "Error al eliminar el proveedor");
+      }
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Error al eliminar");
+      const errorMsg = err?.message || "Error al eliminar";
+      toast.error(errorMsg);
+      console.error("Delete error:", err);
     }
   };
 
