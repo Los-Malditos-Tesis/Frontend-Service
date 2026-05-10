@@ -13,13 +13,13 @@ import AdminIntroLayout from "../components/generic/AdminIntroLayout";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
 import {
   getCameras,
-  getLocations,
   getProducts,
   getUsers,
 } from "../services/api";
 import { searchWarehouses } from "../services/warehouse.service";
 import { searchStores } from "../services/store.service";
 import { searchSuppliers } from "../services/supplier.service";
+import { searchLocations } from "../services/location.service";
 
 const metricCards = [
   {
@@ -106,7 +106,7 @@ export default function Dashboard() {
         searchSuppliers(),
         searchWarehouses(),
         searchStores(),
-        getLocations(),
+        searchLocations(),
         getCameras(),
       ]);
 

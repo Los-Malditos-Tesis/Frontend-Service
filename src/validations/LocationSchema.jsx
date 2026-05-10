@@ -9,5 +9,5 @@ export const locationSchema = z.object({
       /^[a-zA-Z0-9._-]+$/,
       "Solo alfanuméricos, puntos, guiones y guiones bajos permitidos"
     ),
-  warehouse_id: z.string().min(1, "Selecciona una bodega"),
+  warehouse_id: z.string().optional(),
 });

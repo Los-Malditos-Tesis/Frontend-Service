@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getLocations } from "../services/api";
+import { searchLocations } from "../services/location.service";
 import LocationsTable from "../containers/Locations/LocationsTable";
 import LocationForm from "../containers/Locations/LocationForm";
-import CustomButton from "../components/generic/CustomButton";
 import CustomDrawer from "../components/generic/CustomDrawer";
-import { CustomContainer } from "../components/generic/CustomContainer";
-import { SectionIntro } from "../components/generic/SectionIntro";
 import AdminIntroLayout from "../components/generic/AdminIntroLayout";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
 
@@ -34,10 +31,19 @@ const LocationsPage = () => {
   const fetchLocations = async () => {
     try {
       setLoading(true);
-      const { data } = await getLocations();
-      setLocations(data || []);
-    } catch {
-      toast.error("Error al obtener ubicaciones");
+      const result = await searchLocations();
+
+      if (result.success) {
+        setLocations(result.data || []);
+        if (result.fromMock) {
+          toast.info("Usando datos locales (offline)");
+        }
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error("Error fetching locations:", error);
+      toast.error(error?.message || "Error al obtener ubicaciones");
       setLocations([]);
     } finally {
       setLoading(false);

@@ -82,9 +82,9 @@ export const router = createBrowserRouter([
   {
     path: "/locations",
     element: (
-      <PublicRoute>
+      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
         <LocationsPage />
-      </PublicRoute>
+      </ProtectedRoute>
     ),
   },
   {

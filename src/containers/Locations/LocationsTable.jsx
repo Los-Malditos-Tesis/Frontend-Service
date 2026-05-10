@@ -1,23 +1,27 @@
 import { toast } from "sonner";
 import { createColumnHelper } from "@tanstack/react-table";
-
 import { Edit, Delete } from "@mui/icons-material";
-
-import { deleteLocation } from "../../services/api";
+import { deleteLocation } from "../../services/location.service";
 import CustomTable from "../../components/generic/CustomTable";
 
 const columnHelper = createColumnHelper();
 
 const LocationsTable = ({ locations = [], loading, onEdit, onRefresh }) => {
   const handleDelete = async (id) => {
-    if (!confirm("¿Eliminar ubicación?")) return;
+    if (!confirm("¿Estás seguro de que deseas eliminar esta ubicación?")) return;
 
     try {
-      await deleteLocation(id);
-      toast.success("Ubicación eliminada");
-      onRefresh();
+      const result = await deleteLocation(id);
+      if (result.success) {
+        toast.success("Ubicación eliminada correctamente");
+        onRefresh();
+      } else {
+        toast.error(result.error || "Error al eliminar la ubicación");
+      }
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Error al eliminar");
+      const errorMsg = err?.message || "Error al eliminar";
+      toast.error(errorMsg);
+      console.error("Delete error:", err);
     }
   };
 

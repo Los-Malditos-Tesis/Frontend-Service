@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import CustomInput from "../../components/generic/CustomInput";
 import CustomButton from "../../components/generic/CustomButton";
 import CustomSelect from "../../components/generic/CustomSelect";
-import { createLocation, updateLocation, getWarehouses } from "../../services/api";
+import { createLocation, updateLocation } from "../../services/location.service";
+import { searchWarehouses } from "../../services/warehouse.service";
 import { locationSchema } from "../../validations/LocationSchema";
 
 const LocationForm = ({ selectedLocation, onSuccess }) => {
@@ -23,13 +24,18 @@ const LocationForm = ({ selectedLocation, onSuccess }) => {
   useEffect(() => {
     const fetchWarehouses = async () => {
       try {
-        const { data } = await getWarehouses();
-        const options = data.map((warehouse) => ({
-          value: warehouse.id.toString(),
-          label: warehouse.name,
-        }));
-        setWarehouses(options);
-      } catch {
+        const result = await searchWarehouses();
+        if (result.success) {
+          const options = result.data.map((warehouse) => ({
+            value: warehouse.id.toString(),
+            label: warehouse.name,
+          }));
+          setWarehouses(options);
+        } else {
+          toast.error("Error al cargar bodegas");
+        }
+      } catch (error) {
+        console.error("Error fetching warehouses:", error);
         toast.error("Error al cargar bodegas");
       }
     };
@@ -48,17 +54,30 @@ const LocationForm = ({ selectedLocation, onSuccess }) => {
 
   const onSubmit = async (data) => {
     try {
+      let result;
+
       if (selectedLocation) {
-        await updateLocation(selectedLocation.id, data);
-        toast.success("Ubicación actualizada");
+        result = await updateLocation(selectedLocation.id, data);
+        if (result.success) {
+          toast.success("Ubicación actualizada correctamente");
+        } else {
+          throw new Error(result.error);
+        }
       } else {
-        await createLocation(data);
-        toast.success("Ubicación creada");
+        result = await createLocation(data);
+        if (result.success) {
+          toast.success("Ubicación creada correctamente");
+        } else {
+          throw new Error(result.error);
+        }
       }
+
       onSuccess();
       reset();
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Error en la operación");
+      const errorMsg = err?.message || "Error en la operación";
+      toast.error(errorMsg);
+      console.error("Form submission error:", err);
     }
   };
 
