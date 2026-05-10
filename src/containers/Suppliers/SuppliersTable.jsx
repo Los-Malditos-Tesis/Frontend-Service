@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Edit, Delete } from "@mui/icons-material";
+import { Edit, Delete, Inventory2Outlined } from "@mui/icons-material";
 import { deleteSupplier } from "../../services/supplier.service";
 import CustomTable from "../../components/generic/CustomTable";
 
@@ -45,25 +45,26 @@ const SuppliersTable = ({ suppliers = [], loading, onEdit, onRefresh }) => {
       header: "Ubicación",
     }),
     columnHelper.display({
-      id: "products",
+      id: "Products",
       header: "Productos",
       enableColumnFilter: false,
       cell: ({ row }) => {
         const supplier = row.original;
+        const products = supplier.products || supplier.Products || [];
+        const productCount = products.length;
 
         return (
-          <div className="flex flex-wrap gap-1 max-w-sm py-2">
-            {(supplier.products || []).length ? (
-              supplier.products.map((product) => (
-                <span
-                  key={product}
-                  className="inline-flex items-center rounded-full bg-gray-200 px-2 py-1 text-xs font-semibold text-gray-700"
-                >
-                  {product}
-                </span>
-              ))
+          <div className="py-2">
+            {productCount > 0 ? (
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm">
+                <Inventory2Outlined fontSize="small" className="text-emerald-600" />
+                <span>{productCount} prod.</span>
+              </div>
             ) : (
-              <span className="text-sm text-gray-500">Sin productos</span>
+              <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-500">
+                <Inventory2Outlined fontSize="small" className="text-gray-400" />
+                <span>Sin prod.</span>
+              </div>
             )}
           </div>
         );

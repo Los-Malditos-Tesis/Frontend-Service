@@ -29,13 +29,17 @@ const LocationsTable = ({ locations = [], loading, onEdit, onRefresh }) => {
     columnHelper.accessor("zone", {
       header: "Zone",
     }),
-    columnHelper.accessor("warehouse_name", {
+    columnHelper.accessor("Warehouse", {
       header: "Warehouse",
+       cell: ({ getValue }) => {
+        const value = getValue();
+        return value ? `${value?.name}` : "Sin almacén";
+      },
     }),
-    columnHelper.accessor("pallets_count", {
-      header: "Pallets",
-      cell: ({ getValue }) => getValue() ?? 0,
-    }),
+    // columnHelper.accessor("pallets_count", {
+    //   header: "Pallets",
+    //   cell: ({ getValue }) => getValue() ?? 0,
+    // }),
     columnHelper.display({
       id: "actions",
       header: "Actions",

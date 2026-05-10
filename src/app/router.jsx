@@ -98,9 +98,9 @@ export const router = createBrowserRouter([
   {
     path: "/cameras",
     element: (
-      <PublicRoute>
+     <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
         <CamerasPage />
-      </PublicRoute>
+      </ProtectedRoute>
     ),
   },
   {

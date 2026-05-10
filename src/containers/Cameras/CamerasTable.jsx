@@ -3,7 +3,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 
 import { Edit, Delete } from "@mui/icons-material";
 
-import { deleteCamera } from "../../services/api";
+import { deleteCamera } from "../../services/camera.service";
 import CustomTable from "../../components/generic/CustomTable";
 
 const columnHelper = createColumnHelper();
@@ -13,9 +13,13 @@ const CamerasTable = ({ cameras = [], loading, onEdit, onRefresh }) => {
     if (!confirm("¿Eliminar cámara?")) return;
 
     try {
-      await deleteCamera(id);
-      toast.success("Cámara eliminada");
-      onRefresh();
+      const result = await deleteCamera(id);
+      if (result.success) {
+        toast.success("Cámara eliminada correctamente");
+        onRefresh();
+      } else {
+        toast.error(result.error || "Error al eliminar la cámara");
+      }
     } catch {
       toast.error("Error al eliminar");
     }
@@ -25,14 +29,18 @@ const CamerasTable = ({ cameras = [], loading, onEdit, onRefresh }) => {
     columnHelper.accessor("code", {
       header: "Code",
     }),
-    columnHelper.accessor("location_name", {
+    columnHelper.accessor("location", {
       header: "Location",
+      cell: ({ getValue }) => {
+        const value = getValue();
+        return value ? `${value?.zone}` : "Sin ubicación";
+      },
     }),
     columnHelper.accessor("api_key", {
       header: "API Key",
       cell: ({ getValue }) => {
         const value = getValue();
-        return value ? `${String(value).slice(0, 4)}••••••` : "-";
+        return value ? `${value}` : "••••••••••••••••••••••••";
       },
     }),
     columnHelper.display({

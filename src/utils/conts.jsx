@@ -15,11 +15,12 @@ export const ROLES = {
 
 export const MENU = [
   { name: "Dashboard", path: "/dashboard", icon: <DashboardOutlinedIcon /> },
-  { name: "Usuarios", path: "/users", icon: <PeopleAltOutlinedIcon /> },
-  { name: "Productos", path: "/products", icon: <Inventory2OutlinedIcon /> },
   { name: "Proveedores", path: "/suppliers", icon: <BusinessIcon /> },
-  { name: "Cámaras", path: "/cameras", icon: <VideocamIcon  /> },
-  { name: "Ubicaciones", path: "/locations", icon: <LocationOnIcon  /> },
   { name: "Warehouse", path: "/warehouses", icon: <StorageOutlinedIcon /> },
   { name: "Tiendas", path: "/stores", icon: <StorefrontOutlinedIcon /> },
+
+  { name: "Productos", path: "/products", icon: <Inventory2OutlinedIcon /> },
+  { name: "Usuarios", path: "/users", icon: <PeopleAltOutlinedIcon /> },
+  { name: "Cámaras", path: "/cameras", icon: <VideocamIcon  /> },
+  { name: "Ubicaciones", path: "/locations", icon: <LocationOnIcon  /> },
 ];

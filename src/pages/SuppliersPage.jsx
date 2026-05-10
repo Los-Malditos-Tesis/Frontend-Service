@@ -34,6 +34,7 @@ const SuppliersPage = () => {
       const result = await searchSuppliers();
 
       if (result.success) {
+        console.log("Proveedores obtenidos:", result.data);
         setSuppliers(result.data || []);
         if (result.fromMock) {
           toast.info("Usando datos locales (offline)");

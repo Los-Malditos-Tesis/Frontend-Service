@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
+
 @theme {
-  --color-*: initial;
+  /* --color-*: initial; */
   --color-white: #fff;
   --color-black: #000;
   --color-gray: #888;
@@ -12,6 +13,7 @@
   --color-tahiti: #3ab7bf;
   --color-bermuda: #78dcca;
 }
+
 
 @theme {
   /* Text Sizes */

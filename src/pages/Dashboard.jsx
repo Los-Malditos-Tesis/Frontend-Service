@@ -12,10 +12,10 @@ import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
 import AdminIntroLayout from "../components/generic/AdminIntroLayout";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
 import {
-  getCameras,
-  getProducts,
   getUsers,
 } from "../services/api";
+import { searchCameras } from "../services/camera.service";
+import { searchProducts } from "../services/product.service";
 import { searchWarehouses } from "../services/warehouse.service";
 import { searchStores } from "../services/store.service";
 import { searchSuppliers } from "../services/supplier.service";
@@ -102,12 +102,12 @@ export default function Dashboard() {
 
       const requests = await Promise.allSettled([
         getUsers(),
-        getProducts(),
+        searchProducts(),
         searchSuppliers(),
         searchWarehouses(),
         searchStores(),
         searchLocations(),
-        getCameras(),
+        searchCameras(),
       ]);
 
       const [
@@ -123,7 +123,9 @@ export default function Dashboard() {
       const nextState = {
         users: usersResult.status === "fulfilled" ? usersResult.value.data || [] : [],
         products:
-          productsResult.status === "fulfilled" ? productsResult.value.data || [] : [],
+          productsResult.status === "fulfilled" && productsResult.value.success
+            ? productsResult.value.data || []
+            : [],
         suppliers:
           suppliersResult.status === "fulfilled" ? suppliersResult.value.data || [] : [],
         warehouses:
@@ -133,7 +135,10 @@ export default function Dashboard() {
         stores: storesResult.status === "fulfilled" ? storesResult.value.data || [] : [],
         locations:
           locationsResult.status === "fulfilled" ? locationsResult.value.data || [] : [],
-        cameras: camerasResult.status === "fulfilled" ? camerasResult.value.data || [] : [],
+        cameras:
+          camerasResult.status === "fulfilled" && camerasResult.value.success
+            ? camerasResult.value.data || []
+            : [],
       };
 
       const failedRequests = requests.filter((result) => result.status === "rejected").length;

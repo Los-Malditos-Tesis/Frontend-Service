@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import CustomInput from "../../components/generic/CustomInput";
 import CustomButton from "../../components/generic/CustomButton";
 import CustomSelect from "../../components/generic/CustomSelect";
-import { createProduct, updateProduct, getSuppliers } from "../../services/api";
+import { createProduct, updateProduct } from "../../services/product.service";
+import { searchSuppliers } from "../../services/supplier.service";
 import { productSchema } from "../../validations/ProductSchema";
 
 const categories = [
@@ -32,11 +33,16 @@ const ProductForm = ({ selectedProduct, onSuccess }) => {
     const fetchSuppliers = async () => {
       try {
         const { data } = await getSuppliers();
-        const options = data.map((supplier) => ({
-          value: supplier.id.toString(),
-          label: supplier.name,
-        }));
-        setSuppliers(options);
+        const result = await searchSuppliers();
+        if (result.success) {
+          const options = result.data.map((supplier) => ({
+            value: supplier.id.toString(),
+            label: supplier.name,
+          }));
+          setSuppliers(options);
+        } else {
+          toast.error("Error al cargar proveedores");
+        }
       } catch {
         toast.error("Error al cargar proveedores");
       }
@@ -59,17 +65,29 @@ const ProductForm = ({ selectedProduct, onSuccess }) => {
 
   const onSubmit = async (data) => {
     try {
+      let result;
+
       if (selectedProduct) {
-        await updateProduct(selectedProduct.id, data);
-        toast.success("Producto actualizado");
+        result = await updateProduct(selectedProduct.id, data);
+        if (result.success) {
+          toast.success("Producto actualizado correctamente");
+        } else {
+          throw new Error(result.error);
+        }
       } else {
-        await createProduct(data);
-        toast.success("Producto creado");
+        result = await createProduct(data);
+        if (result.success) {
+          toast.success("Producto creado correctamente");
+        } else {
+          throw new Error(result.error);
+        }
       }
       onSuccess();
       reset();
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Error en la operación");
+      const errorMsg = err?.message || "Error en la operación";
+      toast.error(errorMsg);
+      console.error("Form submission error:", err);
     }
   };
 

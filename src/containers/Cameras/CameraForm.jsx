@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import CustomInput from "../../components/generic/CustomInput";
 import CustomButton from "../../components/generic/CustomButton";
 import CustomSelect from "../../components/generic/CustomSelect";
-import { createCamera, updateCamera, getLocations } from "../../services/api";
+import { createCamera, updateCamera } from "../../services/camera.service";
+import { searchLocations } from "../../services/location.service";
 import { cameraSchema } from "../../validations/CameraSchema";
 
 const CameraForm = ({ selectedCamera, onSuccess }) => {
@@ -23,12 +24,19 @@ const CameraForm = ({ selectedCamera, onSuccess }) => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const { data } = await getLocations();
-        const options = (data || []).map((location) => ({
-          value: location.id.toString(),
-          label: location.zone,
-        }));
-        setLocations(options);
+        const result = await searchLocations();
+        if (result.success) {
+          const options = (result.data || []).map((location) => ({
+            value: location.id.toString(),
+            label: location.zone,
+          }));
+          setLocations(options);
+          if (result.fromMock) {
+            toast.info("Usando datos locales (offline)");
+          }
+        } else {
+          throw new Error(result.error);
+        }
       } catch {
         toast.error("Error al cargar ubicaciones");
       }
@@ -49,17 +57,30 @@ const CameraForm = ({ selectedCamera, onSuccess }) => {
 
   const onSubmit = async (data) => {
     try {
+      let result;
+
       if (selectedCamera) {
-        await updateCamera(selectedCamera.id, data);
-        toast.success("Cámara actualizada");
+        result = await updateCamera(selectedCamera.id, data);
+        if (result.success) {
+          toast.success("Cámara actualizada correctamente");
+        } else {
+          throw new Error(result.error);
+        }
       } else {
-        await createCamera(data);
-        toast.success("Cámara creada");
+        result = await createCamera(data);
+        if (result.success) {
+          toast.success("Cámara creada correctamente");
+        } else {
+          throw new Error(result.error);
+        }
       }
+
       onSuccess();
       reset();
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Error en la operación");
+      const errorMsg = err?.message || "Error en la operación";
+      toast.error(errorMsg);
+      console.error("Form submission error:", err);
     }
   };
 

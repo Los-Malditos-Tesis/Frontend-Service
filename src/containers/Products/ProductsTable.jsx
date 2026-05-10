@@ -2,7 +2,7 @@ import { toast } from "sonner";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Edit, Delete } from "@mui/icons-material";
 
-import { deleteProduct } from "../../services/api";
+import { deleteProduct } from "../../services/product.service";
 import CustomTable from "../../components/generic/CustomTable";
 
 const columnHelper = createColumnHelper();
@@ -12,11 +12,17 @@ const ProductsTable = ({ products = [], loading, onEdit, onRefresh }) => {
     if (!confirm("¿Eliminar producto?")) return;
 
     try {
-      await deleteProduct(id);
-      toast.success("Producto eliminado");
-      onRefresh();
-    } catch {
-      toast.error("Error al eliminar");
+      const result = await deleteProduct(id);
+      if (result.success) {
+        toast.success("Producto eliminado correctamente");
+        onRefresh();
+      } else {
+        toast.error(result.error || "Error al eliminar el producto");
+      }
+    } catch (err) {
+      const errorMsg = err?.message || "Error al eliminar";
+      toast.error(errorMsg);
+      console.error("Delete error:", err);
     }
   };
 

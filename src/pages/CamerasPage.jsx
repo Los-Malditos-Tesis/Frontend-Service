@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getCameras } from "../services/api";
+import { searchCameras } from "../services/camera.service";
 import CamerasTable from "../containers/Cameras/CamerasTable";
 import CameraForm from "../containers/Cameras/CameraForm";
 import CustomDrawer from "../components/generic/CustomDrawer";
@@ -31,8 +31,16 @@ const CamerasPage = () => {
   const fetchCameras = async () => {
     try {
       setLoading(true);
-      const { data } = await getCameras();
-      setCameras(data || []);
+      const result = await searchCameras();
+
+      if (result.success) {
+        setCameras(result.data || []);
+        if (result.fromMock) {
+          toast.info("Usando datos locales (offline)");
+        }
+      } else {
+        throw new Error(result.error);
+      }
     } catch {
       toast.error("Error al obtener cámaras");
       setCameras([]);

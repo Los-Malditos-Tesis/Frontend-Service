@@ -1,15 +1,10 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getProducts } from "../services/api";
+import { searchProducts } from "../services/product.service";
 import ProductsTable from "../containers/Products/ProductsTable";
 import ProductForm from "../containers/Products/ProductForm";
-import CustomButton from "../components/generic/CustomButton";
 import CustomDrawer from "../components/generic/CustomDrawer";
-import { CustomContainer } from "../components/generic/CustomContainer";
-import { SectionIntro } from "../components/generic/SectionIntro";
-import DashboardLayout from "../containers/Dashboard/DashboardLayout";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
-import AddIcon from "@mui/icons-material/Add";
 import AdminIntroLayout from "../components/generic/AdminIntroLayout";
 
 const ProductsPage = () => {
@@ -36,10 +31,19 @@ const ProductsPage = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const { data } = await getProducts();
-      setProducts(data || []);
-    } catch {
-      toast.error("Error al obtener productos");
+      const result = await searchProducts();
+
+      if (result.success) {
+        setProducts(result.data || []);
+        if (result.fromMock) {
+          toast.info("Usando datos locales (offline)");
+        }
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      toast.error(error?.message || "Error al obtener productos");
       setProducts([]);
     } finally {
       setLoading(false);

@@ -17,16 +17,16 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
     if (!user) return <Navigate to="/login" replace />;
 
     if (Array.isArray(user.roles)) {
-      userRoles.push(...user.roles.map((r) => r.name)); // r.id
+      userRoles.push(...user.roles.map((r) => r.id)); // r.name
     } else if (typeof user.role === "string") {
       userRoles.push(user.role);
     }
 
     const hasAccess = userRoles.some((r) => allowedRoles.includes(r));
 
-    // console.log("Roles del usuario:", userRoles);
-    // console.log("Roles permitidos para esta ruta:", allowedRoles);
-    // console.log("¿El usuario tiene acceso?", hasAccess);
+    console.log("Roles del usuario:", userRoles);
+    console.log("Roles permitidos para esta ruta:", allowedRoles);
+    console.log("¿El usuario tiene acceso?", hasAccess);
 
     if (!hasAccess) return <Navigate to="/login" replace />;
   }
