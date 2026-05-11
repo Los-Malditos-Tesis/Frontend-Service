@@ -1,0 +1,63 @@
+import clsx from "clsx";
+import React from "react";
+import PropTypes from "prop-types";
+import CircularProgress from "@mui/material/CircularProgress";
+
+const CustomButton = ({
+  as: Component = "button",
+  action = () => { },
+  to = "",
+  className = "",
+  children,
+  type = "button",
+  loading = false,
+  startIcon,
+  ...props
+}) => {
+  const CustomButtonProps =
+    Component === "button"
+      ? { onClick: action, disabled: loading, type: type }
+      : { to };
+
+  return (
+    <Component
+      className={clsx(
+        "w-full cursor-pointer flex flex-shrink-0 text-xl justify-center items-center py-3.5 px-3 rounded-lg text-white text-center font-extrabold transition-all md:text-lg",
+        {
+          "bg-gray-400 cursor-not-allowed": loading,
+          "hover:bg-[#202124] bg-accent_color": !loading,
+        },
+        className
+      )}
+      {...CustomButtonProps}
+      {...props}
+    >
+      {loading ? (
+        <>
+          <CircularProgress
+            size={24}
+            className="text-white mr-2"
+            color="#fff"
+          />
+          Cargando
+        </>
+      ) : (
+        <>
+          {startIcon && <span className="mr-2 flex items-center">{startIcon}</span>}
+          {children}
+        </>
+      )}
+    </Component>
+  );
+};
+
+CustomButton.propTypes = {
+  as: PropTypes.elementType,
+  action: PropTypes.func,
+  to: PropTypes.string,
+  className: PropTypes.string,
+  children: PropTypes.node.isRequired,
+  loading: PropTypes.bool,
+};
+
+export default CustomButton;
