@@ -1,12 +1,15 @@
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Edit, Delete } from "@mui/icons-material";
+import { Edit, Delete, Visibility } from "@mui/icons-material";
 import { deleteWarehouse } from "../../services/warehouse.service";
 import CustomTable from "../../components/generic/CustomTable";
 
 const columnHelper = createColumnHelper();
 
 const WarehousesTable = ({ warehouses = [], loading, onEdit, onRefresh }) => {
+  const navigate = useNavigate();
+
   const handleDelete = async (id) => {
     if (!confirm("¿Estás seguro de que deseas eliminar esta bodega?")) return;
 
@@ -27,18 +30,14 @@ const WarehousesTable = ({ warehouses = [], loading, onEdit, onRefresh }) => {
 
   const columns = [
     columnHelper.accessor("name", {
-      header: "Name",
+      header: "Nombre",
     }),
     columnHelper.accessor("address", {
-      header: "Address",
+      header: "Dirección",
     }),
-    // columnHelper.accessor("locations_count", {
-    //   header: "Locations",
-    //   cell: ({ getValue }) => getValue() ?? 0,
-    // }),
     columnHelper.display({
       id: "actions",
-      header: "Actions",
+      header: "Acciones",
       enableColumnFilter: false,
       cell: ({ row }) => {
         const warehouse = row.original;
@@ -46,8 +45,17 @@ const WarehousesTable = ({ warehouses = [], loading, onEdit, onRefresh }) => {
         return (
           <div className="flex items-center justify-center gap-2">
             <button
+              onClick={() => navigate(`/warehouses/${warehouse.id}`)}
+              className="rounded-lg p-2 transition hover:bg-blue-50 active:scale-95"
+              title="Ver detalles y estructura"
+            >
+              <Visibility fontSize="small" className="text-blue-600" />
+            </button>
+
+            <button
               onClick={() => onEdit(warehouse)}
               className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
+              title="Editar información"
             >
               <Edit fontSize="small" />
             </button>
@@ -55,8 +63,9 @@ const WarehousesTable = ({ warehouses = [], loading, onEdit, onRefresh }) => {
             <button
               onClick={() => handleDelete(warehouse.id)}
               className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
+              title="Eliminar"
             >
-              <Delete fontSize="small" />
+              <Delete fontSize="small" className="text-red-500" />
             </button>
           </div>
         );

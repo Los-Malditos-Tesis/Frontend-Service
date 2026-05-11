@@ -17,49 +17,51 @@
 
 @theme {
   /* Text Sizes */
-  --text-xs:   0.75rem;
-  --text-sm:   0.875rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
   --text-base: 1rem;
-  --text-lg:   clamp(1rem, 0.9643rem + 0.1786vw, 1.125rem);
-  --text-xl:   clamp(1.125rem, 1.0893rem + 0.1786vw, 1.25rem);
-  --text-2xl:  clamp(1.25rem, 1.1786rem + 0.3571vw, 1.5rem);
-  --text-3xl:  clamp(1.375rem, 1.2679rem + 0.5357vw, 1.75rem);
-  --text-4xl:  clamp(1.5rem, 1.3571rem + 0.7143vw, 2rem);
-  --text-5xl:  clamp(1.625rem, 1.375rem + 1.25vw, 2.5rem);
-  --text-6xl:  clamp(1.75rem, 1.3929rem + 1.7857vw, 3rem);
-  --text-7xl:  clamp(2.4rem, 1.0268rem + 3.3036vw, 4rem);
-  --text-8xl:  clamp(1.875rem, 0.9821rem + 4.4643vw, 5rem);
-  --text-9xl:  clamp(2rem, 0.8571rem + 5.7143vw, 6rem);
+  --text-lg: clamp(1rem, 0.9643rem + 0.1786vw, 1.125rem);
+  --text-xl: clamp(1.125rem, 1.0893rem + 0.1786vw, 1.25rem);
+  --text-2xl: clamp(1.25rem, 1.1786rem + 0.3571vw, 1.5rem);
+  --text-3xl: clamp(1.375rem, 1.2679rem + 0.5357vw, 1.75rem);
+  --text-4xl: clamp(1.5rem, 1.3571rem + 0.7143vw, 2rem);
+  --text-5xl: clamp(1.625rem, 1.375rem + 1.25vw, 2.5rem);
+  --text-6xl: clamp(1.75rem, 1.3929rem + 1.7857vw, 3rem);
+  --text-7xl: clamp(2.4rem, 1.0268rem + 3.3036vw, 4rem);
+  --text-8xl: clamp(1.875rem, 0.9821rem + 4.4643vw, 5rem);
+  --text-9xl: clamp(2rem, 0.8571rem + 5.7143vw, 6rem);
   --text-10xl: clamp(2.125rem, 0.4464rem + 8.3929vw, 8rem);
 
   /* Colores */
-  --color-dominant_color_light:    #FFFFFF;
-  --color-secondary_color:         #202124;
-  --color-accent_color:            #4880FF;
+  --color-dominant_color_light: #FFFFFF;
+  --color-secondary_color: #202124;
+  --color-accent_color: #4880FF;
   --color-secondary_color_variant: #E8EAED;
-  --color-tertiary_color:          #f4f4f4ec;
+  --color-tertiary_color: #f4f4f4ec;
 
-  --color-cherry_red_accent:       #E15A51;
-  --color-mint_accent:             #85E0A3;
+  --color-cherry_red_accent: #E15A51;
+  --color-mint_accent: #85E0A3;
   --color-azure_light_blue_accent: #8CC6E7;
-  --color-honey_yellow_accent:     #FFC700;
-  --color-lavender_accent:         #C7B9FF;
+  --color-honey_yellow_accent: #FFC700;
+  --color-lavender_accent: #C7B9FF;
 
-  --color-white_text_color:        #FFFFFF;
-  --color-black_text_color:        #000000;
-  --color-gray_text_color:         #7A7A7A;
+  --color-white_text_color: #FFFFFF;
+  --color-black_text_color: #000000;
+  --color-gray_text_color: #7A7A7A;
 }
 
 @theme {
-  --screen-sm:  40rem;
-  --screen-md:  48rem;
-  --screen-lg:  64rem;
-  --screen-xl:  80rem;
+  --screen-sm: 40rem;
+  --screen-md: 48rem;
+  --screen-lg: 64rem;
+  --screen-xl: 80rem;
   --screen-2xl: 96rem;
 }
+
 body {
   font-family: 'Nunito', Arial, sans-serif;
-  background: #f8f9fa ; /*f3f4f6 --color-background: #eaeaeb; */
+  background: #f8f9fa;
+  /*f3f4f6 --color-background: #eaeaeb; */
 }
 
 
@@ -77,23 +79,312 @@ body {
   inset: 0;
 
   background-image:
-    linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
 
   background-size: 20px 30px;
 
   /* fade arriba */
-  mask-image: radial-gradient(
-    ellipse 70% 60% at 50% 0%,
-    black 60%,
-    transparent 100%
-  );
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 0%,
+      black 60%,
+      transparent 100%);
 
-  -webkit-mask-image: radial-gradient(
-    ellipse 70% 60% at 50% 0%,
-    black 60%,
-    transparent 100%
-  );
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%,
+      black 60%,
+      transparent 100%);
 
   pointer-events: none;
 }
+
+/* Custom Animations for Warehouse Detail Page */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+/* 
+--------------------------------------------------------------
+--------------------------------------------------------------
+--------------------------------------------------------------
+cubes
+--------------------------------------------------------------
+--------------------------------------------------------------
+--------------------------------------------------------------
+*/
+.warehouse-cube-button {
+  position: absolute;
+  width: var(--w);
+  height: var(--d);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  overflow: visible;
+  z-index: 20;
+
+  /* flex: 0 0 auto; */
+}
+
+.warehouse-cube-button.is-selected {
+  z-index: 40;
+}
+
+.warehouse-cube-scene {
+  width: var(--w);
+  height: var(--d);
+  /* perspective: 1000px; */
+  overflow: visible;
+}
+
+.warehouse-cube-box {
+  position: relative;
+  width: var(--w);
+  height: var(--h);
+  transform-style: preserve-3d;
+
+  /*
+    Este es el mismo ángulo que tú mandaste.
+    Si quieres que todos los cubos tengan el mismo ángulo, NO lo cambies.
+  */
+  transform: rotateX(-40deg) rotateY(45deg);
+  transform-origin: center center;
+  /* transform: rotateX(-28deg) rotateY(58deg); */
+
+  transition:
+    transform 250ms ease,
+    filter 250ms ease;
+}
+
+
+
+/* sassssssssssssssss */
+
+.warehouse-cube-face {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  backface-visibility: hidden;
+}
+
+/* Frente */
+.warehouse-cube-front {
+  width: var(--w);
+  height: var(--h);
+  background: #d8e0ea;
+  transform: translateZ(calc(var(--d) / 2));
+}
+
+/* Atrás */
+.warehouse-cube-back {
+  width: var(--w);
+  height: var(--h);
+  background: #cbd5e1;
+  transform: rotateY(180deg) translateZ(calc(var(--d) / 2));
+}
+
+/* Derecha */
+.warehouse-cube-right {
+  width: var(--d);
+  height: var(--h);
+  left: calc((var(--w) - var(--d)) / 2);
+  background: #c3ccd8;
+  transform: rotateY(90deg) translateZ(calc(var(--w) / 2));
+}
+
+/* Izquierda */
+.warehouse-cube-left {
+  width: var(--d);
+  height: var(--h);
+  left: calc((var(--w) - var(--d)) / 2);
+  background: #e3e8ef;
+  transform: rotateY(-90deg) translateZ(calc(var(--w) / 2));
+}
+
+/* Arriba / techo */
+.warehouse-cube-top {
+  width: var(--w);
+  height: var(--d);
+  top: calc((var(--h) - var(--d)) / 2);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  transform: rotateX(90deg) translateZ(calc(var(--h) / 2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+/* Abajo */
+.warehouse-cube-bottom {
+  width: var(--w);
+  height: var(--d);
+  top: calc((var(--h) - var(--d)) / 2);
+  background: #dbe5f1;
+  transform: rotateX(-90deg) translateZ(calc(var(--h) / 2));
+}
+
+/* Sombra */
+.warehouse-cube-box::after {
+  content: "";
+  position: absolute;
+  width: calc(var(--w) + 2px);
+  height: calc(var(--d) + 2px);
+  left: -10px;
+  top: -90px;
+  background: rgba(15, 23, 42, 0.13);
+  filter: blur(18px);
+  transform: rotateX(90deg) translateZ(-22px);
+  pointer-events: none;
+}
+
+/* .warehouse-cube-box::after {
+  content: "";
+  position: absolute;
+  width: calc(var(--w) + 20px);
+  height: calc(var(--d) + 20px);
+  left: -10px;
+  top: -10px; 
+  background: rgba(15, 23, 42, 0.13);
+  filter: blur(18px);
+  transform: rotateX(90deg) translateZ(-22px);
+  pointer-events: none;
+} */
+
+/* Contenido del techo */
+.warehouse-cube-top-content {
+  width: 100%;
+  height: 100%;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  color: #1f2937;
+
+  /*
+    Esto hace que el texto se vea en el techo.
+    No lo sacamos de la perspectiva.
+  */
+  transform: rotateZ(0deg);
+}
+
+.warehouse-cube-title {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.1;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1f2937;
+  white-space: normal;
+}
+
+.warehouse-cube-camera-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748b;
+}
+
+.warehouse-cube-camera-row-info {
+  /* flex items-center gap-2 */
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.warehouse-cube-camera-row .camera-icon {
+  background: #1f293740;
+  transition: background 250ms ease;
+}
+
+.warehouse-cube-button.is-selected .camera-icon {
+  background: #4880FF;
+}
+
+/* .warehouse-cube-button.is-selected .warehouse-cube-top {
+  background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+  border-color: rgba(59, 130, 246, 0.55);
+} */
+
+.warehouse-cube-button.is-selected .warehouse-cube-front {
+  background: #bfdbfe;
+  z-index: -10;
+}
+
+.warehouse-cube-button.is-selected .warehouse-cube-left {
+  background: #4880FF50;
+  /* background: #93c5fd; */
+  z-index: -10;
+}
+
+/* Estos no se ven */
+
+.warehouse-cube-button.is-selected .warehouse-cube-right {
+  background: #93c5fd;
+  z-index: -10;
+}
+
+.warehouse-cube-button.is-selected .warehouse-cube-back {
+  background: #93c5fd;
+  z-index: -10;
+}
+
+
+/* .warehouse-cube-button:hover .warehouse-cube-box {
+  transform: rotateX(-28deg) rotateY(58deg) translateY(-4px);
+  filter: drop-shadow(0 18px 22px rgba(15, 23, 42, 0.16));
+} */
+
+/* .warehouse-cube-button.is-selected .warehouse-cube-box {
+  transform: rotateX(-28deg) rotateY(58deg) translateY(-6px);
+  filter: drop-shadow(0 22px 28px rgba(37, 99, 235, 0.22));
+} */

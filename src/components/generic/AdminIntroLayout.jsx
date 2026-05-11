@@ -14,6 +14,7 @@ const AdminIntroLayout = ({
   buttonLabel,
   onCreate,
   children,
+  showAddIcon = true,
 }) => {
   return (
     <DashboardLayout>
@@ -29,7 +30,7 @@ const AdminIntroLayout = ({
             <CustomButton
               className="max-w-[13.5rem] ml-auto"
               action={onCreate}
-              startIcon={<AddIcon />}
+              startIcon={showAddIcon ? <AddIcon /> : null}
             >
               {buttonLabel}
             </CustomButton>

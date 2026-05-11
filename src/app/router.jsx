@@ -7,6 +7,7 @@ import NotFound from "../pages/NotFound";
 import UsersPage from "../pages/UsersPage";
 import ProductsPage from "../pages/ProductsPage";
 import WarehousesPage from "../pages/WarehousesPage";
+import WarehouseDetailPage from "../pages/WarehouseDetailPage";
 import StoresPage from "../pages/StoresPage";
 import LocationsPage from "../pages/LocationsPage";
 import SuppliersPage from "../pages/SuppliersPage";
@@ -43,6 +44,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
         <WarehousesPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/warehouses/:id",
+    element: (
+      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+        <WarehouseDetailPage />
       </ProtectedRoute>
     ),
   },
@@ -98,7 +107,7 @@ export const router = createBrowserRouter([
   {
     path: "/cameras",
     element: (
-     <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
         <CamerasPage />
       </ProtectedRoute>
     ),
