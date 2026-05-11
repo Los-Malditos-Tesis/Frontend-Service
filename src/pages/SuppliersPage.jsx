@@ -59,7 +59,7 @@ const SuppliersPage = () => {
     <AdminIntroLayout
       title="Gestión de Proveedores"
       subtitle="Administra el catálogo maestro de proveedores, crea nuevos accesos y controla su relación con productos."
-      eyebrow={<Breadcrumbs />}
+      eyebrow={<Breadcrumbs />} 
       buttonLabel="Crear proveedores"
       onCreate={handleCreateSupplier}
     >

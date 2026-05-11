@@ -1,9 +1,10 @@
 import axios from "axios";
 import {
+  blockUserMock,
   createUserMock,
-  deleteUserMock,
+  findUserByIdMock,
   getUsersMock,
-  resetPasswordMock,
+  searchUsersMock,
   updateUserMock,
 } from "../mocks/usersMock";
 import {
@@ -45,7 +46,7 @@ import {
 } from "../mocks/storesMock";
 
 export const api = axios.create({
-   baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api",
 });
 
 // interceptor para JWT
@@ -61,10 +62,25 @@ api.interceptors.request.use((config) => {
 
 // CRUD mockeado para desarrollo sin backend.
 export const getUsers = () => getUsersMock();
+export const searchUsers = (filters) => searchUsersMock(filters);
+export const findUserById = (id) => findUserByIdMock(id);
 export const createUser = (data) => createUserMock(data);
 export const updateUser = (id, data) => updateUserMock(id, data);
-export const deleteUser = (id) => deleteUserMock(id);
-export const resetPassword = (id) => resetPasswordMock(id);
+export const blockUser = (id) => blockUserMock(id);
+export const registerUser = async (data) => {
+  try {
+    const { data: resp } = await api.post("/auth/register", data);
+    return { data: resp, success: true };
+  } catch (err) {
+    // fallback to mocked create when backend not available
+    try {
+      const { data: mock } = await createUserMock(data);
+      return { data: mock, success: true, fromMock: true };
+    } catch (e) {
+      return { data: null, success: false, error: err?.message || e?.message };
+    }
+  }
+};
 
 // Products
 export const getProducts = () => getProductsMock();

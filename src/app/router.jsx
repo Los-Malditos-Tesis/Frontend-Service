@@ -72,9 +72,9 @@ export const router = createBrowserRouter([
   {
     path: "/users",
     element: (
-      <PublicRoute>
+      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
         <UsersPage />
-      </PublicRoute>
+      </ProtectedRoute>
     ),
   },
 

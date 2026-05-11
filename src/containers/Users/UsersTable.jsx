@@ -1,33 +1,25 @@
 import { toast } from "sonner";
 import { createColumnHelper } from "@tanstack/react-table";
 
-import { Edit, Delete, LockReset } from "@mui/icons-material";
+import { Edit, Lock, Visibility } from "@mui/icons-material";
+import Chip from "@mui/material/Chip";
 
-import { deleteUser, resetPassword } from "../../services/api";
+import { blockUser, findUserById } from "../../services/api";
 import CustomTable from "../../components/generic/CustomTable";
 
 const columnHelper = createColumnHelper();
 
-const UsersTable = ({ users = [], loading, onEdit, onRefresh }) => {
+const UsersTable = ({ users = [], loading, onEdit, onRefresh, showPagination = true }) => {
   // HANDLERS
-  const handleDelete = async (id) => {
-    if (!confirm("¿Eliminar usuario?")) return;
+  const handleBlock = async (id) => {
+    if (!confirm("¿Bloquear usuario?")) return;
 
     try {
-      await deleteUser(id);
-      toast.success("Usuario eliminado");
+      await blockUser(id);
+      toast.success("Usuario bloqueado");
       onRefresh();
     } catch {
-      toast.error("Error al eliminar");
-    }
-  };
-
-  const handleReset = async (id) => {
-    try {
-      await resetPassword(id);
-      toast.success("Password reseteado");
-    } catch {
-      toast.error("Error al resetear");
+      toast.error("Error al bloquear");
     }
   };
 
@@ -39,8 +31,55 @@ const UsersTable = ({ users = [], loading, onEdit, onRefresh }) => {
     columnHelper.accessor("email", {
       header: "Email Address",
     }),
-    columnHelper.accessor("role", {
-      header: "Assigned Role",
+    columnHelper.accessor("roles", {
+      header: "Roles",
+      cell: ({ getValue }) => {
+        const roles = getValue() || [];
+        const colorFor = (id) => {
+          switch ((id || "").toUpperCase()) {
+            case "SUPERADMIN":
+              return "#7C3AED"; // purple
+            case "ADMIN":
+              return "#DC2626"; // red
+            case "EDITOR":
+              return "#F59E0B"; // amber
+            case "USER":
+            default:
+              return "#2563EB"; // blue
+          }
+        };
+
+        return (
+          <div className="flex flex-wrap gap-2">
+            {roles.map((r) => (
+              <Chip
+                key={r.id}
+                label={r.id}
+                variant="outlined"
+                size="small"
+                sx={{
+                  borderColor: colorFor(r.id),
+                  color: colorFor(r.id),
+                  fontWeight: 700,
+                }}
+              />
+            ))}
+          </div>
+        );
+      },
+    }),
+    columnHelper.accessor("status", {
+      header: "Status",
+      cell: ({ getValue }) => (
+        <span
+          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getValue()
+            ? "bg-green-100 text-green-700"
+            : "bg-red-100 text-red-700"
+            }`}
+        >
+          {getValue() ? "Activo" : "Bloqueado"}
+        </span>
+      ),
     }),
     columnHelper.display({
       id: "actions",
@@ -59,17 +98,10 @@ const UsersTable = ({ users = [], loading, onEdit, onRefresh }) => {
             </button>
 
             <button
-              onClick={() => handleDelete(u.id)}
-              className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
-            >
-              <Delete fontSize="small" />
-            </button>
-
-            <button
-              onClick={() => handleReset(u.id)}
+              onClick={() => handleBlock(u.id)}
               className="rounded-lg p-2 transition hover:bg-yellow-50 active:scale-95"
             >
-              <LockReset fontSize="small" />
+              <Lock fontSize="small" />
             </button>
           </div>
         );
@@ -88,7 +120,7 @@ const UsersTable = ({ users = [], loading, onEdit, onRefresh }) => {
       emptyDescription="No hay datos aún."
       searchPlaceholder="Buscar usuario..."
       showColumnFilters={false}
-      showPagination={true}
+      showPagination={showPagination}
     />
   );
 };

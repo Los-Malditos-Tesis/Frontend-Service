@@ -2,12 +2,10 @@ import React, { useState, forwardRef } from "react";
 import PropTypes from "prop-types";
 import {
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
   InputAdornment,
   OutlinedInput,
-  FormHelperText,
   FormLabel,
 } from "@mui/material";
 import { AnimatePresence } from "framer-motion";
@@ -19,6 +17,7 @@ const CustomSelect = forwardRef(
       name,
       labelText,
       ariaLabel = "",
+      placeholderLabel = "Seleccione tipo de archivo de salida",
       options = [],
       value,
       onChange,
@@ -35,7 +34,7 @@ const CustomSelect = forwardRef(
     const [isFocused, setIsFocused] = useState(false);
     const hasError = !!errors?.message;
     const mergedOptions = [
-      { value: "", label: "Seleccione tipo de archivo de salida" },
+      { value: "", label: placeholderLabel },
       ...options,
     ];
 
@@ -79,7 +78,6 @@ const CustomSelect = forwardRef(
               lineHeight: "45px",
               mb: 1.,
             }}
-            className="!text-lg"
           >
             {labelText || ariaLabel}
           </FormLabel>

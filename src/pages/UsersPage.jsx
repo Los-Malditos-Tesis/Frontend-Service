@@ -1,14 +1,9 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getUsers } from "../services/api";
+import { searchUsers } from "../services/user.service";
 import UsersTable from "../containers/Users/UsersTable";
 import UserForm from "../containers/Users/UserForm";
-import CustomButton from "../components/generic/CustomButton";
 import CustomDrawer from "../components/generic/CustomDrawer";
-import { CustomContainer } from "../components/generic/CustomContainer";
-import { SectionIntro } from "../components/generic/SectionIntro";
-import DashboardLayout from "../containers/Dashboard/DashboardLayout";
-import AddIcon from "@mui/icons-material/Add";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
 import AdminIntroLayout from "../components/generic/AdminIntroLayout";
 
@@ -23,23 +18,30 @@ const UsersPage = () => {
     setIsDrawerOpen(false);
   };
 
-  const handleCreateUser = () => {
-    setSelectedUser(null);
+  const handleEditUser = (user) => {
+    setSelectedUser(user);
     setIsDrawerOpen(true);
   };
 
-  const handleEditUser = (user) => {
-    setSelectedUser(user);
+  const handleCreateUser = () => {
+    setSelectedUser(null);
     setIsDrawerOpen(true);
   };
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const { data } = await getUsers();
-      setUsers(data || []);
-    } catch {
-      toast.error("Error al obtener usuarios");
+      const result = await searchUsers();
+
+      if (result.success) {
+        setUsers(result.data || []);
+        if (result.fromMock) toast.info("Usando datos locales (offline)");
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      toast.error(error?.message || "Error al obtener usuarios");
       setUsers([]);
     } finally {
       setLoading(false);

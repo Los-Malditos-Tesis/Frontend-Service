@@ -1,91 +1,147 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-// import CustomInput from "@/components/CustomInput";
-// import CustomButton from "@/components/CustomButton";
-// import CustomSelect from "@/components/CustomSelect";
 import { toast } from "sonner";
 import CustomInput from "../../components/generic/CustomInput";
 import CustomButton from "../../components/generic/CustomButton";
 import CustomSelect from "../../components/generic/CustomSelect";
-import { createUser, updateUser } from "../../services/api";
+import { updateUser, registerUser } from "../../services/api";
 import { userSchema } from "../../validations/UserSchema";
+import registerSchema from "../../validations/RegisterSchema";
+import { useAuth } from "../../context/AuthContext";
 
-const roles = [
-  { value: "SUPER_ADMIN", label: "Super Admin" },
-  { value: "ADMIN", label: "Admin" },
-  { value: "USER", label: "Operativo" },
+const statusOptions = [
+  { value: "true", label: "Activo" },
+  { value: "false", label: "Bloqueado" },
 ];
 
 const UserForm = ({ selectedUser, onSuccess }) => {
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm({
+  const { user: currentUser } = useAuth();
+
+  // Edit form
+  const editForm = useForm({
     resolver: zodResolver(userSchema),
   });
 
+  const {
+    register: registerEdit,
+    handleSubmit: handleSubmitEdit,
+    setValue: setValueEdit,
+    reset: resetEdit,
+    formState: { errors: editErrors, isSubmitting: isSubmittingEdit },
+  } = editForm;
+
+  // Register form
+  const registerForm = useForm({
+    resolver: zodResolver(registerSchema),
+  });
+
+  const {
+    register: registerCreate,
+    handleSubmit: handleSubmitCreate,
+    reset: resetCreate,
+    formState: { errors: createErrors, isSubmitting: isSubmittingCreate },
+  } = registerForm;
+
   useEffect(() => {
     if (selectedUser) {
-      setValue("name", selectedUser.name);
-      setValue("email", selectedUser.email);
-      setValue("role", selectedUser.role);
+      setValueEdit("id", selectedUser.id);
+      setValueEdit("name", selectedUser.name);
+      setValueEdit("email", selectedUser.email);
+      setValueEdit("status", String(Boolean(selectedUser.status)));
     } else {
-      reset();
+      resetEdit();
     }
   }, [selectedUser]);
 
-  const onSubmit = async (data) => {
+  const onUpdate = async (data) => {
     try {
-      if (selectedUser) {
-        await updateUser(selectedUser.id, data);
-        toast.success("Usuario actualizado");
-      } else {
-        await createUser(data);
-        toast.success("Usuario creado");
-      }
+      await updateUser(selectedUser.id, {
+        id: selectedUser.id,
+        name: data.name,
+        email: data.email,
+        status: data.status === "true",
+      });
+      toast.success("Usuario actualizado");
       onSuccess();
-      reset();
+      resetEdit();
     } catch (err) {
       toast.error(err?.response?.data?.message || "Error en la operación");
     }
   };
 
+  const onCreate = async (data) => {
+    try {
+      const payload = {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        roles: data.role ? [{ id: data.role, name: data.role }] : [{ id: "USER", name: "Operative" }],
+      };
+
+      const result = await registerUser(payload);
+
+      if (result.success) {
+        toast.success("Usuario creado");
+        onSuccess();
+        resetCreate();
+      } else {
+        throw new Error(result.error || "Error creando usuario");
+      }
+    } catch (err) {
+      toast.error(err?.message || "Error en la operación");
+    }
+  };
+
+  // If selectedUser is null -> render registration form
+  if (!selectedUser)
+    return (
+      <form onSubmit={handleSubmitCreate(onCreate)} className="w-full flex flex-col gap-4">
+        <CustomInput labelText="Nombre" {...registerCreate("name")} errors={createErrors.name} />
+
+        <CustomInput labelText="Email" {...registerCreate("email")} errors={createErrors.email} />
+
+        <CustomInput labelText="Password" type="password" {...registerCreate("password")} errors={createErrors.password} />
+
+        <CustomInput labelText="Confirmar Password" type="password" {...registerCreate("confirmPassword")} errors={createErrors.confirmPassword} />
+
+        <CustomSelect labelText="Rol" placeholderLabel="Selecciona rol" options={[{ value: "USER", label: "Operative" }, { value: "ADMIN", label: "Admin" }]} {...registerCreate("role")} />
+
+        <div className="md:col-span-2 mt-6">
+          <CustomButton type="submit" loading={isSubmittingCreate}>
+            Crear Usuario
+          </CustomButton>
+        </div>
+      </form>
+    );
+
+  // Edit form UI
+  const isEditingSelf = currentUser && selectedUser && String(currentUser.id) === String(selectedUser.id);
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col gap-4">
-      <CustomInput
-        labelText="Nombre"
-        {...register("name")}
-        errors={errors.name}
-      />
+    <form onSubmit={handleSubmitEdit(onUpdate)} className="w-full flex flex-col gap-4">
+      <input type="hidden" {...registerEdit("id")} />
 
-      <CustomInput
-        labelText="Email"
-        {...register("email")}
-        errors={errors.email}
-      />
+      {isEditingSelf && (
+        <p className="text-sm text-yellow-700">Estás editando tu propio usuario; no puedes cambiar tu estado desde aquí.</p>
+      )}
 
-      <CustomInput
-        labelText="Password"
-        type="password"
-        {...register("password")}
-        errors={errors.password}
-      />
+      <CustomInput labelText="Nombre" {...registerEdit("name")} errors={editErrors.name} />
+
+      <CustomInput labelText="Email" {...registerEdit("email")} errors={editErrors.email} />
 
       <CustomSelect
-        labelText="Rol"
-        options={roles}
-        {...register("role")}
-        errors={errors.role}
+        labelText="Estado"
+        {...registerEdit("status", { setValueAs: (value) => value === "true" })}
+        options={statusOptions}
+        placeholderLabel="Selecciona estado"
+        errors={editErrors.status}
+        disabled={isEditingSelf}
       />
 
-      <div className="md:col-span-2 mt-30">
-        <CustomButton type="submit" loading={isSubmitting}>
-          {selectedUser ? "Actualizar" : "Crear Usuario"}
+      <div className="md:col-span-2 mt-6">
+        <CustomButton type="submit" loading={isSubmittingEdit}>
+          Actualizar Usuario
         </CustomButton>
       </div>
     </form>
