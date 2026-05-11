@@ -17,10 +17,10 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
     if (!user) return <Navigate to="/login" replace />;
 
     if (Array.isArray(user.roles)) {
-      userRoles.push(...user.roles.map((r) => r.id)); // r.name
+      userRoles.push(...user.roles.map((r) => (typeof r === "string" ? r : r.id)));
     } else if (typeof user.role === "string") {
       userRoles.push(user.role);
-    }
+    } 
 
     const hasAccess = userRoles.some((r) => allowedRoles.includes(r));
 

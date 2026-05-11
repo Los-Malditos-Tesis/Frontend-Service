@@ -33,11 +33,20 @@ export function AuthProvider({ children }) {
 
   // LOGIN
   const login = async (credentials) => {
+    // setLoading(true);
     try {
       const { data } = await api.post("/auth/login", credentials);
 
       localStorage.setItem("token", data?.data?.content);
-      setUser(data?.data);
+
+      // Obtener los datos completos del usuario incluyendo roles
+      try {
+        const { data: userData } = await api.get("/auth/get-me");
+        setUser(userData?.data);
+      } catch {
+        // Si falla get-me, usar los datos del login (fallback)
+        setUser(data?.data);
+      }
 
       toast.success("Bienvenido");
     } catch (error) {

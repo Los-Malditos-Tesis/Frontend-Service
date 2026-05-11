@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import { Chip } from "@mui/material";
 import { CustomContainer } from "../../components/generic/CustomContainer";
+import { useAuth } from "../../context/AuthContext";
 
 const pages = [
   { name: "dashboard", path: "/" },
@@ -14,6 +16,21 @@ const pages = [
 export default function Topbar() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Extraer roles del usuario
+  const getUserRoles = () => {
+    if (!user) return [];
+    
+    if (Array.isArray(user.roles)) {
+      return user.roles.map((r) => (typeof r === "string" ? r : r.name || r.id));
+    } else if (user.role) {
+      return [typeof user.role === "string" ? user.role : user.role.name || user.role.id];
+    }
+    return [];
+  };
+
+  const userRoles = getUserRoles();
 
   const filtered = pages.filter((p) =>
     p.name.toLowerCase().includes(query.toLowerCase())
@@ -62,7 +79,19 @@ export default function Topbar() {
 
         {/* Right */}
         <div className="flex items-center gap-4">
-          <NotificationsNoneIcon className="text-gray-600 cursor-pointer" />
+          {/* Roles */}
+          <div className="flex gap-2">
+            {userRoles.map((role) => (
+              <Chip
+                key={role}
+                label={role}
+                size="small"
+                variant="outlined"
+                color="primary"
+              />
+            ))}
+          </div>
+          {/* <NotificationsNoneIcon className="text-gray-600 cursor-pointer" /> */}
           <div className="w-9 h-9 rounded-full bg-gray-300" />
         </div>
       </div>
