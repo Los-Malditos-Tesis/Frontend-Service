@@ -72,13 +72,12 @@ export const getCameraById = async (id) => {
  */
 export const createCamera = async (data) => {
   try {
-    if (!data.code || !data.location_id || !data.api_key) {
+    if (!data.code || !data.location_id) {
       throw new Error("Todos los campos son requeridos");
     }
 
     const payload = {
       code: String(data.code).trim(),
-      api_key: String(data.api_key).trim(),
       location_id: data.location_id,
     };
 
@@ -113,7 +112,6 @@ export const updateCamera = async (id, data) => {
 
     const payload = {
       ...(data.code && { code: String(data.code).trim() }),
-      ...(data.api_key && { api_key: String(data.api_key).trim() }),
       ...(data.location_id && { location_id: data.location_id }),
     };
 

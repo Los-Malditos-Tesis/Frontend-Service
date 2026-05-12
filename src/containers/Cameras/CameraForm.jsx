@@ -48,7 +48,6 @@ const CameraForm = ({ selectedCamera, onSuccess }) => {
   useEffect(() => {
     if (selectedCamera) {
       setValue("code", selectedCamera.code);
-      setValue("api_key", selectedCamera.api_key);
       setValue("location_id", selectedCamera.location_id.toString());
     } else {
       reset();
@@ -75,7 +74,7 @@ const CameraForm = ({ selectedCamera, onSuccess }) => {
         }
       }
 
-      onSuccess();
+      onSuccess(result.data);
       reset();
     } catch (err) {
       const errorMsg = err?.message || "Error en la operación";
@@ -87,8 +86,6 @@ const CameraForm = ({ selectedCamera, onSuccess }) => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col gap-4">
       <CustomInput labelText="Código" {...register("code")} errors={errors.code} />
-
-      <CustomInput labelText="API Key" {...register("api_key")} errors={errors.api_key} />
 
       <CustomSelect
         labelText="Ubicación"
