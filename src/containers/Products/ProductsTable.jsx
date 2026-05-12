@@ -39,8 +39,12 @@ const ProductsTable = ({ products = [], loading, onEdit, onRefresh }) => {
     columnHelper.accessor("category", {
       header: "Categoría",
     }),
-    columnHelper.accessor("supplier_name", {
+    columnHelper.accessor("Supplier", {
       header: "Proveedor",
+       cell: ({ getValue }) => {
+        const value = getValue();
+        return value ? `${value?.name}` : "Sin proveedor";
+      },
     }),
     columnHelper.display({
       id: "actions",

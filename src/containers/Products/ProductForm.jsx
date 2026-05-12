@@ -8,6 +8,7 @@ import CustomSelect from "../../components/generic/CustomSelect";
 import { createProduct, updateProduct } from "../../services/product.service";
 import { searchSuppliers } from "../../services/supplier.service";
 import { productSchema } from "../../validations/ProductSchema";
+import { getSuppliers } from "../../services/api";
 
 const categories = [
   { value: "Electrónica", label: "Electrónica" },
@@ -32,7 +33,7 @@ const ProductForm = ({ selectedProduct, onSuccess }) => {
   useEffect(() => {
     const fetchSuppliers = async () => {
       try {
-        const { data } = await getSuppliers();
+        // const { data } = await getSuppliers();
         const result = await searchSuppliers();
         if (result.success) {
           const options = result.data.map((supplier) => ({
