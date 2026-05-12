@@ -1,25 +1,31 @@
 import { toast } from "sonner";
 import { createColumnHelper } from "@tanstack/react-table";
 
-import { Edit, Lock, Visibility } from "@mui/icons-material";
+import { Edit, Lock } from "@mui/icons-material";
+import LockOpen from "@mui/icons-material/LockOpen";
 import Chip from "@mui/material/Chip";
 
-import { blockUser, findUserById } from "../../services/api";
+import { toggleUserStatus } from "../../services/user.service";
 import CustomTable from "../../components/generic/CustomTable";
 
 const columnHelper = createColumnHelper();
 
 const UsersTable = ({ users = [], loading, onEdit, onRefresh, showPagination = true }) => {
   // HANDLERS
-  const handleBlock = async (id) => {
-    if (!confirm("¿Bloquear usuario?")) return;
+  const handleToggleStatus = async (id, currentlyActive) => {
+    const action = currentlyActive ? "bloquear" : "desbloquear";
+    if (!confirm(`¿${action.charAt(0).toUpperCase() + action.slice(1)} usuario?`)) return;
 
     try {
-      await blockUser(id);
-      toast.success("Usuario bloqueado");
-      onRefresh();
-    } catch {
-      toast.error("Error al bloquear");
+      const result = await toggleUserStatus(id);
+      if (result.success) {
+        toast.success(`Usuario ${currentlyActive ? "bloqueado" : "desbloqueado"}`);
+        onRefresh();
+      } else {
+        throw new Error(result.error || "Error en la operación");
+      }
+    } catch (err) {
+      toast.error(err?.message || `Error al ${action}`);
     }
   };
 
@@ -38,14 +44,14 @@ const UsersTable = ({ users = [], loading, onEdit, onRefresh, showPagination = t
         const colorFor = (id) => {
           switch ((id || "").toUpperCase()) {
             case "SUPERADMIN":
-              return "#7C3AED"; // purple
+              return "#7C3AED80"; // purple
             case "ADMIN":
-              return "#DC2626"; // red
+              return "#DC262680"; // red
             case "EDITOR":
-              return "#F59E0B"; // amber
+              return "#F59E0B80"; // amber
             case "USER":
             default:
-              return "#2563EB"; // blue
+              return "#2563EB80"; // blue
           }
         };
 
@@ -68,7 +74,7 @@ const UsersTable = ({ users = [], loading, onEdit, onRefresh, showPagination = t
         );
       },
     }),
-    columnHelper.accessor("status", {
+    columnHelper.accessor("active", {
       header: "Status",
       cell: ({ getValue }) => (
         <span
@@ -98,10 +104,11 @@ const UsersTable = ({ users = [], loading, onEdit, onRefresh, showPagination = t
             </button>
 
             <button
-              onClick={() => handleBlock(u.id)}
+              onClick={() => handleToggleStatus(u.id, u.active)}
               className="rounded-lg p-2 transition hover:bg-yellow-50 active:scale-95"
+              title={u.active ? "Bloquear usuario" : "Desbloquear usuario"}
             >
-              <Lock fontSize="small" />
+              {u.active ? <Lock fontSize="small" /> : <LockOpen fontSize="small" />}
             </button>
           </div>
         );

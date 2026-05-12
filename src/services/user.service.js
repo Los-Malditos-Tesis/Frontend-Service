@@ -1,13 +1,12 @@
 import { api } from "./api";
-import { normalizeResponse, buildErrorResponse } from "../utils/apiHelper";
+import { buildErrorResponse } from "../utils/apiHelper";
 
-const USER_BASE_URL = "/users";
+const USER_BASE_URL = "/user";
 
 export const searchUsers = async (filters = {}) => {
   try {
-    // Use POST /users/search according to backend routes
-    const response = await api.post(`${USER_BASE_URL}/search`, filters);
-    return normalizeResponse(response);
+    const { data } = await api.get(`${USER_BASE_URL}/search`, filters);
+    return { data: data?.data, success: true };
   } catch (error) {
     console.warn("Failed to fetch users from API", error.message);
     return buildErrorResponse(error, "No se pudieron cargar los usuarios");
@@ -46,4 +45,15 @@ export const blockUserService = async (id) => {
     return { data: null, success: false, error: error?.response?.data?.message || error.message };
   }
 
+};
+
+export const toggleUserStatus = async (id) => {
+  try {
+    if (!id) throw new Error("ID de usuario requerido");
+    const { data } = await api.patch(`${USER_BASE_URL}/status/${id}`);
+    return { data, success: true };
+  } catch (error) {
+    console.error("Error toggling user status:", error.message);
+    return { data: null, success: false, error: error?.response?.data?.message || error.message };
+  }
 };

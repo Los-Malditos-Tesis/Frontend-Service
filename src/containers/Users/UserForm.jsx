@@ -1,19 +1,13 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import CustomInput from "../../components/generic/CustomInput";
 import CustomButton from "../../components/generic/CustomButton";
-import CustomSelect from "../../components/generic/CustomSelect";
 import { updateUser, registerUser } from "../../services/api";
 import { userSchema } from "../../validations/UserSchema";
 import registerSchema from "../../validations/RegisterSchema";
 import { useAuth } from "../../context/AuthContext";
-
-const statusOptions = [
-  { value: "true", label: "Activo" },
-  { value: "false", label: "Bloqueado" },
-];
 
 const UserForm = ({ selectedUser, onSuccess }) => {
   const { user: currentUser } = useAuth();
@@ -52,7 +46,7 @@ const UserForm = ({ selectedUser, onSuccess }) => {
     } else {
       resetEdit();
     }
-  }, [selectedUser]);
+  }, [selectedUser, setValueEdit, resetEdit]);
 
   const onUpdate = async (data) => {
     try {
@@ -97,15 +91,26 @@ const UserForm = ({ selectedUser, onSuccess }) => {
   if (!selectedUser)
     return (
       <form onSubmit={handleSubmitCreate(onCreate)} className="w-full flex flex-col gap-4">
-        <CustomInput labelText="Nombre" {...registerCreate("name")} errors={createErrors.name} />
+        <CustomInput labelText="Nombre"
+          {...registerCreate("name")}
+          errors={createErrors.name} />
 
-        <CustomInput labelText="Email" {...registerCreate("email")} errors={createErrors.email} />
+        <CustomInput labelText="Email"
+          {...registerCreate("email")}
+          errors={createErrors.email} />
 
-        <CustomInput labelText="Password" type="password" {...registerCreate("password")} errors={createErrors.password} />
+        <CustomInput
+          labelText="Password"
+          type="password" {...registerCreate("password")}
+          errors={createErrors.password} />
 
-        <CustomInput labelText="Confirmar Password" type="password" {...registerCreate("confirmPassword")} errors={createErrors.confirmPassword} />
+        <CustomInput
+          labelText="Confirmar Password"
+          type="password"
+          {...registerCreate("confirmPassword")}
+          errors={createErrors.confirmPassword} />
 
-        <CustomSelect labelText="Rol" placeholderLabel="Selecciona rol" options={[{ value: "USER", label: "Operative" }, { value: "ADMIN", label: "Admin" }]} {...registerCreate("role")} />
+        {/* Rol se asigna por defecto en backend; no pedir al usuario en creación */}
 
         <div className="md:col-span-2 mt-6">
           <CustomButton type="submit" loading={isSubmittingCreate}>
@@ -130,14 +135,7 @@ const UserForm = ({ selectedUser, onSuccess }) => {
 
       <CustomInput labelText="Email" {...registerEdit("email")} errors={editErrors.email} />
 
-      <CustomSelect
-        labelText="Estado"
-        {...registerEdit("status", { setValueAs: (value) => value === "true" })}
-        options={statusOptions}
-        placeholderLabel="Selecciona estado"
-        errors={editErrors.status}
-        disabled={isEditingSelf}
-      />
+      {/* El estado se maneja desde la tabla (/status/:id). No exponer aquí. */}
 
       <div className="md:col-span-2 mt-6">
         <CustomButton type="submit" loading={isSubmittingEdit}>
