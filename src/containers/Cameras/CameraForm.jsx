@@ -14,12 +14,18 @@ const CameraForm = ({ selectedCamera, onSuccess }) => {
   const {
     register,
     handleSubmit,
-    setValue,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(cameraSchema),
+    defaultValues: {
+      code: "",
+      location_id: "",
+    },
   });
+
+  const locationValue = watch("location_id");
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -47,12 +53,17 @@ const CameraForm = ({ selectedCamera, onSuccess }) => {
 
   useEffect(() => {
     if (selectedCamera) {
-      setValue("code", selectedCamera.code);
-      setValue("location_id", selectedCamera.location_id.toString());
+      reset({
+        code: selectedCamera.code ?? "",
+        location_id: selectedCamera.location_id?.toString() ?? selectedCamera.location?.id?.toString() ?? "",
+      });
     } else {
-      reset();
+      reset({
+        code: "",
+        location_id: "",
+      });
     }
-  }, [selectedCamera, setValue, reset]);
+  }, [selectedCamera, reset]);
 
   const onSubmit = async (data) => {
     try {
@@ -89,7 +100,9 @@ const CameraForm = ({ selectedCamera, onSuccess }) => {
 
       <CustomSelect
         labelText="Ubicación"
+        placeholderLabel="Debe seleccionar una ubicación"
         options={locations}
+        value={locationValue}
         {...register("location_id")}
         errors={errors.location_id}
       />

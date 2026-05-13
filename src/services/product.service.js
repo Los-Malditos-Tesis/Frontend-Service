@@ -123,6 +123,8 @@ export const updateProduct = async (id, data) => {
 
     // Prepare payload with only provided fields
     const payload = {
+      // id en el body
+      id,
       ...(data.name && { name: String(data.name).trim() }),
       ...(data.code && { code: String(data.code).trim() }),
       ...(data.category && { category: String(data.category).trim() }),
@@ -148,7 +150,7 @@ export const updateProduct = async (id, data) => {
     }
 
     // Send to API
-    const { data: responseData } = await api.put(`${PRODUCT_BASE_URL}/${id}`, payload);
+    const { data: responseData } = await api.put(`${PRODUCT_BASE_URL}/update`, payload);
     return { data: responseData, success: true };
   } catch (error) {
     console.error("Error updating product:", error);
