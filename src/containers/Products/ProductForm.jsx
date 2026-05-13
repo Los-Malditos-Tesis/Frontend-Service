@@ -23,12 +23,22 @@ const ProductForm = ({ selectedProduct, onSuccess }) => {
   const {
     register,
     handleSubmit,
-    setValue,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: "",
+      code: "",
+      sku: "",
+      category: "",
+      supplier_id: "",
+    },
   });
+
+  const categoryValue = watch("category");
+  const supplierValue = watch("supplier_id");
 
   useEffect(() => {
     const fetchSuppliers = async () => {
@@ -54,15 +64,23 @@ const ProductForm = ({ selectedProduct, onSuccess }) => {
 
   useEffect(() => {
     if (selectedProduct) {
-      setValue("name", selectedProduct.name);
-      setValue("code", selectedProduct.code);
-      setValue("sku", selectedProduct.sku);
-      setValue("category", selectedProduct.category);
-      setValue("supplier_id", selectedProduct.supplier_id.toString());
+      reset({
+        name: selectedProduct.name ?? "",
+        code: selectedProduct.code ?? "",
+        sku: selectedProduct.sku ?? "",
+        category: selectedProduct.category ?? "",
+        supplier_id: selectedProduct.supplier_id?.toString() ?? selectedProduct.Supplier?.id?.toString() ?? "",
+      });
     } else {
-      reset();
+      reset({
+        name: "",
+        code: "",
+        sku: "",
+        category: "",
+        supplier_id: "",
+      });
     }
-  }, [selectedProduct, setValue, reset]);
+  }, [selectedProduct, reset]);
 
   const onSubmit = async (data) => {
     try {
@@ -114,14 +132,18 @@ const ProductForm = ({ selectedProduct, onSuccess }) => {
 
       <CustomSelect
         labelText="Categoría"
+        placeholderLabel="Debes seleccionar una categoría"
         options={categories}
+        value={categoryValue}
         {...register("category")}
         errors={errors.category}
       />
 
       <CustomSelect
         labelText="Proveedor"
+        placeholderLabel="Debes seleccionar un proveedor"
         options={suppliers}
+        value={supplierValue}
         {...register("supplier_id")}
         errors={errors.supplier_id}
       />

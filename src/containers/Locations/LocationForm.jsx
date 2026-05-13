@@ -14,12 +14,18 @@ const LocationForm = ({ selectedLocation, onSuccess }) => {
   const {
     register,
     handleSubmit,
-    setValue,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(locationSchema),
+    defaultValues: {
+      zone: "",
+      warehouse_id: "",
+    },
   });
+
+  const warehouseValue = watch("warehouse_id");
 
   useEffect(() => {
     const fetchWarehouses = async () => {
@@ -45,12 +51,17 @@ const LocationForm = ({ selectedLocation, onSuccess }) => {
 
   useEffect(() => {
     if (selectedLocation) {
-      setValue("zone", selectedLocation.zone);
-      setValue("warehouse_id", selectedLocation.warehouse_id.toString());
+      reset({
+        zone: selectedLocation.zone ?? "",
+        warehouse_id: selectedLocation.warehouse_id?.toString() ?? selectedLocation.Warehouse?.id?.toString() ?? "",
+      });
     } else {
-      reset();
+      reset({
+        zone: "",
+        warehouse_id: "",
+      });
     }
-  }, [selectedLocation, setValue, reset]);
+  }, [selectedLocation, reset]);
 
   const onSubmit = async (data) => {
     try {
@@ -85,7 +96,9 @@ const LocationForm = ({ selectedLocation, onSuccess }) => {
     <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col gap-4">
       <CustomSelect
         labelText="Bodega"
+        placeholderLabel="Debes seleccionar una bodega"
         options={warehouses}
+        value={warehouseValue}
         {...register("warehouse_id")}
         errors={errors.warehouse_id}
       />
