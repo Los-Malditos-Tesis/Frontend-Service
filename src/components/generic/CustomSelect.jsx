@@ -75,10 +75,11 @@ const CustomSelect = forwardRef(
             htmlFor={name}
             sx={{
               color: "#202124",
-              fontWeight: "500",
+              fontWeight: "600",
               lineHeight: "45px",
               mb: 1.,
             }}
+            className="!text-lg"
           >
             {labelText || ariaLabel}
           </FormLabel>
@@ -100,7 +101,7 @@ const CustomSelect = forwardRef(
           }}
           input={
             <OutlinedInput
-              label={labelText || ariaLabel}
+              notched={false}
               startAdornment={
                 icon && iconPosition === "start" ? (
                   <InputAdornment position="start">
