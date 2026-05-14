@@ -178,7 +178,7 @@ export const deleteProduct = async (id) => {
       throw new Error("ID del producto requerido");
     }
 
-    const { data } = await api.delete(`${PRODUCT_BASE_URL}/${id}`);
+    const { data } = await api.delete(`${PRODUCT_BASE_URL}/delete/${id}`);
     return { data, success: true };
   } catch (error) {
     console.error("Error deleting product:", error);
