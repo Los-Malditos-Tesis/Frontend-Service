@@ -6,6 +6,7 @@ import StorageOutlinedIcon from "@mui/icons-material/StorageOutlined";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
+import ScienceOutlinedIcon from "@mui/icons-material/ScienceOutlined";
 
 export const ROLES = {
   SUPERADMIN: "SUPERADMIN",
@@ -23,4 +24,5 @@ export const MENU = [
   { name: "Usuarios", path: "/users", icon: <PeopleAltOutlinedIcon /> },
   { name: "Cámaras", path: "/cameras", icon: <VideocamIcon  /> },
   { name: "Ubicaciones", path: "/locations", icon: <LocationOnIcon  /> },
+  { name: "API Test", path: "/api-test", icon: <ScienceOutlinedIcon /> },
 ];

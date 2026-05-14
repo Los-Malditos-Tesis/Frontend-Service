@@ -12,6 +12,7 @@ import StoresPage from "../pages/StoresPage";
 import LocationsPage from "../pages/LocationsPage";
 import SuppliersPage from "../pages/SuppliersPage";
 import CamerasPage from "../pages/CamerasPage";
+import ApiTestPage from "../pages/ApiTestPage";
 import { ROLES } from "../utils/conts";
 
 export const router = createBrowserRouter([
@@ -109,6 +110,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
         <CamerasPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/api-test",
+    element: (
+      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+        <ApiTestPage />
       </ProtectedRoute>
     ),
   },

@@ -11,6 +11,7 @@ const pages = [
   { name: "usuarios", path: "/usuarios" },
   { name: "productos", path: "/productos" },
   { name: "tiendas", path: "/stores" },
+  { name: "api test", path: "/api-test" },
 ];
 
 export default function Topbar() {
