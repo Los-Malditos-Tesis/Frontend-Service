@@ -7,6 +7,7 @@ import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import ScienceOutlinedIcon from "@mui/icons-material/ScienceOutlined";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 
 export const ROLES = {
   SUPERADMIN: "SUPERADMIN",
@@ -14,10 +15,29 @@ export const ROLES = {
   USER: "USER",
 };
 
+export const ORDER_TYPES = {
+  SALE: "SALE",
+  TRANSFER: "TRANSFER",
+};
+
+export const ORDER_UNIT_TYPES = {
+  PALLET: "PAL",
+  BOX: "BOX",
+};
+
+export const ORDER_STATUS = {
+  PENDING: "PENDING",
+  // SHIPPED: "SHIPPED",
+  DISPATCHED: "DISPATCHED",
+  DELIVERED: "DELIVERED",
+  CANCELLED: "CANCELLED",
+};
+
 export const MENU = [
   { name: "Dashboard", path: "/dashboard", icon: <DashboardOutlinedIcon /> },
   { name: "Proveedores", path: "/suppliers", icon: <BusinessIcon /> },
   { name: "Warehouse", path: "/warehouses", icon: <StorageOutlinedIcon /> },
+  { name: "Órdenes", path: "/orders", icon: <ReceiptLongOutlinedIcon /> },
   { name: "Tiendas", path: "/stores", icon: <StorefrontOutlinedIcon /> },
 
   { name: "Productos", path: "/products", icon: <Inventory2OutlinedIcon /> },

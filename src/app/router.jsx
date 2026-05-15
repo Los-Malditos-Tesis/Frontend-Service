@@ -12,6 +12,7 @@ import StoresPage from "../pages/StoresPage";
 import LocationsPage from "../pages/LocationsPage";
 import SuppliersPage from "../pages/SuppliersPage";
 import CamerasPage from "../pages/CamerasPage";
+import OrdersPage from "../pages/OrdersPage";
 import ApiTestPage from "../pages/ApiTestPage";
 import { ROLES } from "../utils/conts";
 
@@ -102,6 +103,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
         <SuppliersPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/orders",
+    element: (
+      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+        <OrdersPage />
       </ProtectedRoute>
     ),
   },
