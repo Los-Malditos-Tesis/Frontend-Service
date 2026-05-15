@@ -8,6 +8,7 @@ import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import ScienceOutlinedIcon from "@mui/icons-material/ScienceOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import QrCodeScannerOutlinedIcon from "@mui/icons-material/QrCodeScannerOutlined";
 
 export const ROLES = {
   SUPERADMIN: "SUPERADMIN",
@@ -38,11 +39,12 @@ export const MENU = [
   { name: "Proveedores", path: "/suppliers", icon: <BusinessIcon /> },
   { name: "Warehouse", path: "/warehouses", icon: <StorageOutlinedIcon /> },
   { name: "Órdenes", path: "/orders", icon: <ReceiptLongOutlinedIcon /> },
+  { name: "Escaneos", path: "/scans", icon: <QrCodeScannerOutlinedIcon /> },
   { name: "Tiendas", path: "/stores", icon: <StorefrontOutlinedIcon /> },
 
   { name: "Productos", path: "/products", icon: <Inventory2OutlinedIcon /> },
   { name: "Usuarios", path: "/users", icon: <PeopleAltOutlinedIcon /> },
-  { name: "Cámaras", path: "/cameras", icon: <VideocamIcon  /> },
-  { name: "Ubicaciones", path: "/locations", icon: <LocationOnIcon  /> },
+  { name: "Cámaras", path: "/cameras", icon: <VideocamIcon /> },
+  { name: "Ubicaciones", path: "/locations", icon: <LocationOnIcon /> },
   { name: "API Test", path: "/api-test", icon: <ScienceOutlinedIcon /> },
 ];

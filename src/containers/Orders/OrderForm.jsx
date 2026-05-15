@@ -127,7 +127,7 @@ const OrderForm = ({ warehouses = [], stores = [], products = [], onSuccess }) =
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-col gap-4">
-      {/* <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
         <div className="flex items-start gap-3">
           <div className="rounded-2xl bg-white p-3 shadow-sm">
             <SwapHorizOutlinedIcon className="text-accent_color" />
@@ -141,7 +141,7 @@ const OrderForm = ({ warehouses = [], stores = [], products = [], onSuccess }) =
             </p>
           </div>
         </div>
-      </div> */}
+      </div>
 
       <CustomSelect
         name="type"
@@ -227,7 +227,7 @@ const OrderForm = ({ warehouses = [], stores = [], products = [], onSuccess }) =
         />
       )}
 
-      {/* <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+      <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
         <div className="flex items-start gap-3">
           <div className="rounded-xl bg-white p-2 shadow-sm">
             <LocalShippingOutlinedIcon className="text-amber-600" />
@@ -242,7 +242,7 @@ const OrderForm = ({ warehouses = [], stores = [], products = [], onSuccess }) =
             </p>
           </div>
         </div>
-      </div> */}
+      </div>
 
       <div className="mt-4">
         <CustomButton type="submit" loading={isSubmitting}>
