@@ -29,6 +29,10 @@ const LocationsTable = ({ locations = [], loading, onEdit, onRefresh }) => {
     columnHelper.accessor("zone", {
       header: "Zone",
     }),
+    columnHelper.accessor("category", {
+      header: "Categoría",
+      cell: ({ getValue }) => getValue() || "Sin categoría",
+    }),
     columnHelper.accessor("Warehouse", {
       header: "Warehouse",
        cell: ({ getValue }) => {

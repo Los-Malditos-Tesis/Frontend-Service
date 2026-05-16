@@ -9,14 +9,7 @@ import { createProduct, updateProduct } from "../../services/product.service";
 import { searchSuppliers } from "../../services/supplier.service";
 import { productSchema } from "../../validations/ProductSchema";
 import { getSuppliers } from "../../services/api";
-
-const categories = [
-  { value: "Electrónica", label: "Electrónica" },
-  { value: "Periféricos", label: "Periféricos" },
-  { value: "Monitores", label: "Monitores" },
-  { value: "Accesorios", label: "Accesorios" },
-  { value: "Software", label: "Software" },
-];
+import { CATEGORIES } from "../../utils/conts";
 
 const ProductForm = ({ selectedProduct, onSuccess }) => {
   const [suppliers, setSuppliers] = useState([]);
@@ -133,7 +126,7 @@ const ProductForm = ({ selectedProduct, onSuccess }) => {
       <CustomSelect
         labelText="Categoría"
         placeholderLabel="Debes seleccionar una categoría"
-        options={categories}
+        options={CATEGORIES}
         value={categoryValue}
         {...register("category")}
         errors={errors.category}

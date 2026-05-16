@@ -14,6 +14,9 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 
+import boxIcon from "../../assets/images/box_icon.png";
+import palletIcon from "../../assets/images/pallet_icon.png";
+
 const STATUS_META = {
   PENDING: {
     label: "Pendiente",
@@ -109,8 +112,16 @@ const UnitIllustration = ({ unitType, type }) => {
   const isSale = type === "SALE";
 
   return (
-    <div className="pointer-events-none absolute -right-4 bottom-0 hidden h-36 w-40 opacity-90 sm:block">
+    // <div className="pointer-events-none absolute -right-4 bottom-0 hidden h-36 w-40 opacity-90 sm:block">
+    <div className={`pointer-events-none absolute  hidden opacity-90 sm:block ${
+      isPallet ? "h-36 w-40 -right-4 -bottom-0" : "h-34 w-34 -right-4 -bottom-2"
+    }`}>
       {isPallet ? (
+        <img src={palletIcon} alt="Pallet icon" />
+      ) : (
+        <img src={boxIcon} alt="Box icon" />
+      )}
+      {/* {isPallet ? (
         <svg viewBox="0 0 220 180" className="h-full w-full">
           <defs>
             <linearGradient id="palletBox" x1="0" x2="1">
@@ -158,7 +169,7 @@ const UnitIllustration = ({ unitType, type }) => {
             <rect x="32" y="92" width="34" height="10" rx="3" fill="white" opacity="0.38" />
           </g>
         </svg>
-      )}
+      )} */}
     </div>
   );
 };

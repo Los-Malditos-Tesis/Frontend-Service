@@ -10,6 +10,13 @@ import ScienceOutlinedIcon from "@mui/icons-material/ScienceOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import QrCodeScannerOutlinedIcon from "@mui/icons-material/QrCodeScannerOutlined";
 
+export const CATEGORIES = [
+  { value: "Electrónica", label: "Electrónica" },
+  { value: "Periféricos", label: "Periféricos" },
+  { value: "Monitores", label: "Monitores" },
+  { value: "Accesorios", label: "Accesorios" },
+  { value: "Software", label: "Software" },
+];
 export const ROLES = {
   SUPERADMIN: "SUPERADMIN",
   ADMIN: "ADMIN",
@@ -37,14 +44,14 @@ export const ORDER_STATUS = {
 export const MENU = [
   { name: "Dashboard", path: "/dashboard", icon: <DashboardOutlinedIcon /> },
   { name: "Proveedores", path: "/suppliers", icon: <BusinessIcon /> },
-  { name: "Warehouse", path: "/warehouses", icon: <StorageOutlinedIcon /> },
+  { name: "Tiendas", path: "/stores", icon: <StorefrontOutlinedIcon /> },
+  { name: "Bodegas", path: "/warehouses", icon: <StorageOutlinedIcon /> },
+  { name: "Zonas", path: "/locations", icon: <LocationOnIcon /> },
+  { name: "Cámaras", path: "/cameras", icon: <VideocamIcon /> },
+  { name: "Productos", path: "/products", icon: <Inventory2OutlinedIcon /> },
   { name: "Órdenes", path: "/orders", icon: <ReceiptLongOutlinedIcon /> },
   { name: "Escaneos", path: "/scans", icon: <QrCodeScannerOutlinedIcon /> },
-  { name: "Tiendas", path: "/stores", icon: <StorefrontOutlinedIcon /> },
-
-  { name: "Productos", path: "/products", icon: <Inventory2OutlinedIcon /> },
   { name: "Usuarios", path: "/users", icon: <PeopleAltOutlinedIcon /> },
-  { name: "Cámaras", path: "/cameras", icon: <VideocamIcon /> },
-  { name: "Ubicaciones", path: "/locations", icon: <LocationOnIcon /> },
+
   { name: "API Test", path: "/api-test", icon: <ScienceOutlinedIcon /> },
 ];

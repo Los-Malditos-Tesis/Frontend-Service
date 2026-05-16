@@ -8,6 +8,7 @@ import CustomSelect from "../../components/generic/CustomSelect";
 import { createLocation, updateLocation } from "../../services/location.service";
 import { searchWarehouses } from "../../services/warehouse.service";
 import { locationSchema } from "../../validations/LocationSchema";
+import { CATEGORIES } from "../../utils/conts";
 
 const LocationForm = ({ selectedLocation, onSuccess }) => {
   const [warehouses, setWarehouses] = useState([]);
@@ -21,10 +22,12 @@ const LocationForm = ({ selectedLocation, onSuccess }) => {
     resolver: zodResolver(locationSchema),
     defaultValues: {
       zone: "",
+      category: "",
       warehouse_id: "",
     },
   });
 
+  const categoryValue = watch("category");
   const warehouseValue = watch("warehouse_id");
 
   useEffect(() => {
@@ -53,11 +56,13 @@ const LocationForm = ({ selectedLocation, onSuccess }) => {
     if (selectedLocation) {
       reset({
         zone: selectedLocation.zone ?? "",
+        category: selectedLocation.category ?? "",
         warehouse_id: selectedLocation.warehouse_id?.toString() ?? selectedLocation.Warehouse?.id?.toString() ?? "",
       });
     } else {
       reset({
         zone: "",
+        category: "",
         warehouse_id: "",
       });
     }
@@ -94,6 +99,15 @@ const LocationForm = ({ selectedLocation, onSuccess }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col gap-4">
+      <CustomSelect
+        labelText="Categoría"
+        placeholderLabel="Debes seleccionar una categoría"
+        options={CATEGORIES}
+        value={categoryValue}
+        {...register("category")}
+        errors={errors.category}
+      />
+
       <CustomSelect
         labelText="Bodega"
         placeholderLabel="Debes seleccionar una bodega"

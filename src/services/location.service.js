@@ -70,6 +70,7 @@ export const createLocation = async (data) => {
     // Trim and validate lengths
     const payload = {
       zone: String(data.zone).trim().toUpperCase(),
+      ...(data.category && { category: data.category }),
       ...(data.warehouse_id && { warehouse_id: data.warehouse_id }),
     };
 
@@ -109,6 +110,7 @@ export const updateLocation = async (id, data) => {
     // Prepare payload with only provided fields
     const payload = {
       ...(data.zone && { zone: String(data.zone).trim().toUpperCase() }),
+      ...(data.category && { category: data.category }),
       ...(data.warehouse_id && { warehouse_id: data.warehouse_id }),
     };
 
