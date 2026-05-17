@@ -10,11 +10,52 @@ import {
 } from "@tanstack/react-table";
 
 import { Search } from "@mui/icons-material";
-import CustomInput from "./CustomInput";
 import EmptyState from "./EmptyState";
 import TableSkeleton from "./TableSkeleton";
-import SearchIcon from "@mui/icons-material/Search";
+import { Title } from "./Title";
 
+
+const BREAKPOINT_MAP = {
+  sm: "640px",
+  md: "768px",
+  lg: "1024px",
+  xl: "1280px",
+  "2xl": "1536px",
+};
+
+const resolveBreakpoint = (value) => {
+  if (typeof value === "number") {
+    return `${value}px`;
+  }
+
+  if (!value) {
+    return BREAKPOINT_MAP.lg;
+  }
+
+  return BREAKPOINT_MAP[value] || value;
+};
+
+const useBelowBreakpoint = (breakpoint) => {
+  const [isBelow, setIsBelow] = React.useState(false);
+
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia(`(max-width: ${breakpoint})`);
+
+    const updateMatch = (event) => setIsBelow(event.matches);
+
+    setIsBelow(mediaQuery.matches);
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", updateMatch);
+      return () => mediaQuery.removeEventListener("change", updateMatch);
+    }
+
+    mediaQuery.addListener(updateMatch);
+    return () => mediaQuery.removeListener(updateMatch);
+  }, [breakpoint]);
+
+  return isBelow;
+};
 
 const CustomTable = ({
   title,
@@ -24,6 +65,7 @@ const CustomTable = ({
   loadingText = "Cargando...",
   emptyTitle = "Sin registros",
   emptyDescription = "No hay datos aún.",
+  mobileBreakpoint = "lg",
 
   // SEARCH
   searchPlaceholder = "Buscar...",
@@ -43,6 +85,8 @@ const CustomTable = ({
   const [sorting, setSorting] = React.useState([]);
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [columnFilters, setColumnFilters] = React.useState([]);
+  const breakpointValue = resolveBreakpoint(mobileBreakpoint);
+  const isMobileView = useBelowBreakpoint(breakpointValue);
 
   // Aplicar filtro de pills activo usando la función del filtro
   // const filteredData = React.useMemo(() => {
@@ -71,9 +115,29 @@ const CustomTable = ({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  if (loading) return (<TableSkeleton />);
+  const rows = table.getRowModel().rows;
 
-  if (!data.length)
+  const getColumnLabel = (column) => {
+    const header = column.columnDef.header;
+
+    if (typeof header === "string" || typeof header === "number") {
+      return header;
+    }
+
+    if (column.columnDef?.meta?.label) {
+      return column.columnDef.meta.label;
+    }
+
+    if (column.id === "actions") {
+      return "Acciones";
+    }
+
+    return column.id;
+  };
+
+  if (loading) return (<TableSkeleton loadingText={loadingText} mobileBreakpoint={mobileBreakpoint} />);
+
+  if (!data.length || (data.length > 0 && rows.length === 0))
     return (
       <EmptyState
         title={emptyTitle}
@@ -84,30 +148,19 @@ const CustomTable = ({
 
   return (
     <div className={`bg-white border-2 border-bordercolor rounded-md p-6 w-full space-y-5 ${className}`}>
+      {title && (
+        <Title as="h3" small className="text-gray-800">
+          {title}
+        </Title>
+      )}
+
       {/* HEADER SUPERIOR */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
         {/* SEARCH */}
         <div className="w-full md:w-[300px]">
-          {/* <CustomInput
-            {...searchInputProps}
-            name="search"
-            placeholder={searchPlaceholder}
-            icon={searchIcon}
-            value={globalFilter ?? ""}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            backgroundColor="#f9fafb"
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                height: "44px",
-                fontSize: "14px",
-                borderRadius: "10px",
-              },
-            }}
-          /> */}
-
           <label className="border-2 border-bordercolor bg-background flex items-center bg-gray-100 px-4 py-2.5 rounded-xl w-full max-w-xl cursor-text focus-within:ring-2 focus-within:ring-blue-500">
-            <SearchIcon className="text-gray-400" />
+            <span className="text-gray-400">{searchIcon}</span>
 
             <input
               {...searchInputProps}
@@ -120,9 +173,10 @@ const CustomTable = ({
         </div>
       </div>
 
-      {/* TABLA */}
-      <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
-        <table className="w-full text-sm">
+      {/* TABLA DESKTOP */}
+      {!isMobileView && (
+        <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+          <table className="w-full text-sm">
           {/* HEADER */}
           <thead className="bg-gray-50">
             {table.getHeaderGroups().map((headerGroup) => (
@@ -183,7 +237,7 @@ const CustomTable = ({
 
           {/* BODY */}
           <tbody>
-            {table.getRowModel().rows.map((row) => (
+            {rows.map((row) => (
               <tr
                 key={row.id}
                 className="border-t border-gray-100 hover:bg-gray-50 transition"
@@ -199,12 +253,63 @@ const CustomTable = ({
               </tr>
             ))}
           </tbody>
-        </table>
-      </div>
+          </table>
+        </div>
+      )}
+
+      {/* TARJETAS MOBILE */}
+      {isMobileView && (
+        <div className="space-y-3">
+          {rows.map((row) => (
+            <article
+              key={row.id}
+              className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+            >
+              <div className="space-y-3">
+                {row.getVisibleCells().map((cell) => {
+                  const isActionsCell = cell.column.id === "actions";
+
+                  if (isActionsCell) {
+                    return (
+                      <div
+                        key={cell.id}
+                        className="flex items-center justify-end gap-2 border-t border-gray-100 pt-3"
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={cell.id}
+                      className="flex items-start justify-between gap-4"
+                    >
+                      <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        {getColumnLabel(cell.column)}
+                      </span>
+
+                      <div className="max-w-[60%] text-right text-sm font-medium text-gray-700">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
 
       {/* PAGINACIÓN PRO */}
       {showPagination && (
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           {/* INFO */}
           <span className="text-sm text-gray-400">
             Página {table.getState().pagination.pageIndex + 1} de{" "}
@@ -212,7 +317,7 @@ const CustomTable = ({
           </span>
 
           {/* CONTROLES */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
@@ -265,6 +370,7 @@ CustomTable.propTypes = {
   loadingText: PropTypes.string,
   emptyTitle: PropTypes.string,
   emptyDescription: PropTypes.string,
+  mobileBreakpoint: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 
   searchPlaceholder: PropTypes.string,
   searchIcon: PropTypes.element,

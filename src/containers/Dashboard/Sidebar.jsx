@@ -11,7 +11,7 @@ export default function Sidebar({ isBlack = false }) {
 
   return (
     <aside
-      className={`bg-white h-screen w-20 xl:w-full xl:max-w-80 flex flex-col border-r-2 border-bordercolor transition-colors duration-300
+      className={`hidden md:flex bg-white h-screen w-20 xl:w-full xl:max-w-80 flex-col border-r-2 border-bordercolor transition-colors duration-300
       ${isBlack ? "bg-black text-white border-gray-800" : "bg-background text-black"}`}
     >
       <div className="px-4 py-6 xl:px-8 xl:py-8 flex gap-3 items-center mb-6">

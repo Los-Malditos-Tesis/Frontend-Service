@@ -110,6 +110,7 @@ const SuppliersTable = ({ suppliers = [], loading, onEdit, onRefresh }) => {
       searchPlaceholder="Buscar proveedor..."
       showColumnFilters={false}
       showPagination={true}
+      mobileBreakpoint="90rem"
     />
   );
 };

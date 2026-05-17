@@ -86,6 +86,7 @@ const ProductsTable = ({ products = [], loading, onEdit, onRefresh }) => {
       searchPlaceholder="Buscar producto..."
       showColumnFilters={false}
       showPagination={true}
+      mobileBreakpoint="85rem"
     />
   );
 };
