@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { createColumnHelper } from "@tanstack/react-table";
 
@@ -5,10 +6,29 @@ import { Edit, Delete } from "@mui/icons-material";
 
 import { deleteCamera } from "../../services/camera.service";
 import CustomTable from "../../components/generic/CustomTable";
+import WarehouseSelect from "../../components/generic/WarehouseSelect";
 
 const columnHelper = createColumnHelper();
 
+const getWarehouse = (camera) => {
+  const warehouse = camera?.location?.Warehouse;
+
+  if (warehouse?.id || warehouse?.name) {
+    return {
+      id: warehouse.id?.toString() || "",
+      name: warehouse.name || "Sin bodega",
+    };
+  }
+
+  return {
+    id: "",
+    name: "Sin bodega",
+  };
+};
+
 const CamerasTable = ({ cameras = [], loading, onEdit, onRefresh }) => {
+  const [warehouseFilter, setWarehouseFilter] = useState("");
+
   const handleDelete = async (id) => {
     if (!confirm("¿Eliminar cámara?")) return;
 
@@ -25,9 +45,70 @@ const CamerasTable = ({ cameras = [], loading, onEdit, onRefresh }) => {
     }
   };
 
+  const warehouseOptions = useMemo(() => {
+    const byId = new Map();
+
+    cameras.forEach((camera) => {
+      const warehouse = getWarehouse(camera);
+
+      if (warehouse.id && !byId.has(warehouse.id)) {
+        byId.set(warehouse.id, {
+          value: warehouse.id,
+          label: warehouse.name,
+        });
+      }
+    });
+
+    return Array.from(byId.values()).sort((a, b) => a.label.localeCompare(b.label));
+  }, [cameras]);
+
+  const groupedAndFilteredCameras = useMemo(() => {
+    const filtered = cameras.filter((camera) => {
+      if (!warehouseFilter) {
+        return true;
+      }
+
+      const warehouse = getWarehouse(camera);
+      return warehouse.id === warehouseFilter;
+    });
+
+    const sorted = [...filtered].sort((a, b) => {
+      const warehouseA = getWarehouse(a).name;
+      const warehouseB = getWarehouse(b).name;
+
+      const warehouseCompare = warehouseA.localeCompare(warehouseB);
+      if (warehouseCompare !== 0) {
+        return warehouseCompare;
+      }
+
+      return (a.code || "").localeCompare(b.code || "");
+    });
+
+    let previousWarehouseId = null;
+
+    return sorted.map((camera) => {
+      const warehouse = getWarehouse(camera);
+      const currentWarehouseId = warehouse.id || `warehouse-${warehouse.name}`;
+      const isWarehouseGroupStart =
+        previousWarehouseId !== null && previousWarehouseId !== currentWarehouseId;
+
+      previousWarehouseId = currentWarehouseId;
+
+      return {
+        ...camera,
+        warehouseName: warehouse.name,
+        isWarehouseGroupStart,
+      };
+    });
+  }, [cameras, warehouseFilter]);
+
   const columns = [
     columnHelper.accessor("code", {
       header: "Code",
+    }),
+    columnHelper.accessor("warehouseName", {
+      header: "Warehouse",
+      cell: ({ getValue }) => getValue() || "Sin bodega",
     }),
     columnHelper.accessor("location", {
       header: "Location",
@@ -74,13 +155,26 @@ const CamerasTable = ({ cameras = [], loading, onEdit, onRefresh }) => {
   return (
     <CustomTable
       title="Cámaras"
-      data={cameras}
+      data={groupedAndFilteredCameras}
       columns={columns}
       loading={loading}
       loadingText="Cargando..."
       emptyTitle="Sin cámaras"
       emptyDescription="No hay datos aún."
       searchPlaceholder="Buscar cámara..."
+      toolbarRight={
+        <div className="w-full md:w-[320px]">
+          <WarehouseSelect
+            labelText=""
+            placeholderLabel="Filtrar por bodega"
+            options={warehouseOptions}
+            value={warehouseFilter}
+            onChange={(event) => setWarehouseFilter(event.target.value)}
+            name="warehouse_filter"
+          />
+        </div>
+      }
+      getRowClassName={(row) => (row.original?.isWarehouseGroupStart ? "border-t-4 border-t-black" : "")}
       showColumnFilters={false}
       showPagination={true}
     />

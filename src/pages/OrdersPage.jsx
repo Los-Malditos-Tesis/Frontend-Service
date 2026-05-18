@@ -17,7 +17,7 @@ import { searchWarehouses } from "../services/warehouse.service";
 import { searchStores } from "../services/store.service";
 import { searchProducts } from "../services/product.service";
 import { ORDER_TYPES } from "../utils/conts.jsx";
-import { SectionIntro } from "../components/generic/SectionIntro.jsx";
+import WarehouseSelect from "../components/generic/WarehouseSelect";
 
 const typeFilters = [
   { value: "ALL", label: "Todas" },
@@ -89,6 +89,26 @@ const normalizeStatus = (status) => {
   return status;
 };
 
+const matchesWarehouse = (order, warehouseId) => {
+  if (!warehouseId) {
+    return true;
+  }
+
+  const selectedId = warehouseId.toString();
+  const relatedWarehouseIds = [
+    order.origin_warehouse_id,
+    order.Origin?.id,
+    order.origin_warehouse?.id,
+    order.destination_warehouse_id,
+    order.DestinationWarehouse?.id,
+    order.destination_warehouse?.id,
+  ]
+    .filter(Boolean)
+    .map((value) => value.toString());
+
+  return relatedWarehouseIds.includes(selectedId);
+};
+
 const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
@@ -97,6 +117,7 @@ const OrdersPage = () => {
   const [loading, setLoading] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState("ALL");
+  const [warehouseFilter, setWarehouseFilter] = useState("");
 
   const fetchPageData = async () => {
     try {
@@ -155,12 +176,22 @@ const OrdersPage = () => {
   }, []);
 
   const filteredOrders = useMemo(() => {
-    if (typeFilter === "ALL") {
-      return orders;
-    }
+    return orders.filter((order) => {
+      const matchesType = typeFilter === "ALL" || order.type === typeFilter;
+      const matchesSelectedWarehouse = matchesWarehouse(order, warehouseFilter);
 
-    return orders.filter((order) => order.type === typeFilter);
-  }, [orders, typeFilter]);
+      return matchesType && matchesSelectedWarehouse;
+    });
+  }, [orders, typeFilter, warehouseFilter]);
+
+  const warehouseOptions = useMemo(
+    () =>
+      warehouses.map((warehouse) => ({
+        value: warehouse.id?.toString() || "",
+        label: warehouse.name,
+      })),
+    [warehouses]
+  );
 
   const stats = useMemo(() => {
     const statusCounts = orders.reduce(
@@ -275,11 +306,26 @@ const OrdersPage = () => {
           })}
         </section>
 
-        <section className="pt-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <section className="PT-8 md:pt-14">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justi fy-between">
+            <div className="w-full max-w-md">
+              <p className="mt-1 text-sm font-semibold text-slate-700">
+                Buscar ordenes relacionadas a una bodega específica..
+              </p>
+              <div className="mt-3">
+                <WarehouseSelect
+                  labelText=""
+                  placeholderLabel="Todas las bodegas"
+                  options={warehouseOptions}
+                  value={warehouseFilter}
+                  onChange={(event) => setWarehouseFilter(event.target.value)}
+                  name="warehouse_filter"
+                />
+              </div>
+            </div>
 
 
-            <div className="ml-auto flex flex-wrap gap-2">
+            <div className="ml-4 mt-8 flex flex-wrap gap-2">
               {typeFilters.map((filter) => (
                 <button
                   key={filter.value}

@@ -202,7 +202,7 @@ const OrderActions = ({ order, onUpdateStatus, onDelete }) => {
   const status = normalizeStatus(order.status);
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2 min-h-[32px]">
       {status === "PENDING" && (
         <>
           <ActionButton
@@ -227,7 +227,7 @@ const OrderActions = ({ order, onUpdateStatus, onDelete }) => {
           variant="success"
           icon={TaskAltOutlinedIcon}
           onClick={() => onUpdateStatus(order, "DELIVERED")}
-        >
+          >
           Marcar entregada
         </ActionButton>
       )}
@@ -367,7 +367,7 @@ const OrdersCards = ({ orders = [], loading, onUpdateStatus, onDelete }) => {
                 </div>
               </div>
 
-              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+              <div className="mt-5 flex flex-col justify-between gap-3 border-t border-slate-100 pt-4">
                 <div className="text-xs font-semibold text-slate-400">
                   <p>Creada: {formatDate(order.createdAt)}</p>
                   <p>Actualizada: {formatDate(order.updatedAt)}</p>

@@ -71,6 +71,7 @@ const CustomTable = ({
   searchPlaceholder = "Buscar...",
   searchIcon = <Search />,
   searchInputProps = {},
+  toolbarRight = null,
 
   // FILTROS TIPO PILLS (GENÉRICO)
   // filters = [], // [{ label: "All", value: "all", filterFn: (row) => boolean }]
@@ -79,6 +80,7 @@ const CustomTable = ({
 
   showColumnFilters = false,
   showPagination = true,
+  getRowClassName,
 
   className = "",
 }) => {
@@ -171,6 +173,12 @@ const CustomTable = ({
             />
           </label>
         </div>
+
+        {toolbarRight && (
+          <div className="w-full md:w-auto">
+            {toolbarRight}
+          </div>
+        )}
       </div>
 
       {/* TABLA DESKTOP */}
@@ -240,7 +248,7 @@ const CustomTable = ({
             {rows.map((row) => (
               <tr
                 key={row.id}
-                className="border-t border-gray-100 hover:bg-gray-50 transition"
+                className={`border-t border-gray-100 hover:bg-gray-50 transition ${getRowClassName ? getRowClassName(row) : ""}`}
               >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="px-6 py-4 text-gray-700">
@@ -263,7 +271,7 @@ const CustomTable = ({
           {rows.map((row) => (
             <article
               key={row.id}
-              className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+              className={`rounded-xl border border-gray-200 bg-white p-4 shadow-sm ${getRowClassName ? getRowClassName(row) : ""}`}
             >
               <div className="space-y-3">
                 {row.getVisibleCells().map((cell) => {
@@ -375,6 +383,7 @@ CustomTable.propTypes = {
   searchPlaceholder: PropTypes.string,
   searchIcon: PropTypes.element,
   searchInputProps: PropTypes.object,
+  toolbarRight: PropTypes.node,
 
   filters: PropTypes.array,
   activeFilter: PropTypes.any,
@@ -382,6 +391,7 @@ CustomTable.propTypes = {
 
   showColumnFilters: PropTypes.bool,
   showPagination: PropTypes.bool,
+  getRowClassName: PropTypes.func,
   className: PropTypes.string,
 };
 

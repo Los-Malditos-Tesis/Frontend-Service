@@ -96,7 +96,11 @@ const CameraForm = ({ selectedCamera, onSuccess }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col gap-4">
-      <CustomInput labelText="Código" {...register("code")} errors={errors.code} />
+      <CustomInput 
+        placeholder="Ej: CAM-001"
+        labelText="Código"
+        {...register("code")} 
+        errors={errors.code} />
 
       <CustomSelect
         labelText="Ubicación"
