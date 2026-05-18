@@ -137,27 +137,6 @@ const WarehouseMapViewer = ({
 
   return (
     <div className="space-y-5">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h3 className="flex items-center gap-2 text-2xl font-bold text-secondary_color">
-            {/* <WarehouseIcon className="text-gray-600" /> */}
-            Mapa de Ubicaciones
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Vista visual de zonas, cámaras y estado de monitoreo
-          </p>
-        </div>
-
-
-        <button
-          onClick={onAddLocation}
-          className="flex items-center gap-2 rounded-lg bg-accent_color px-4 py-2 text-sm font-bold text-white transition hover:shadow-md"
-        >
-          <AddIcon fontSize="small" />
-          Nueva Zona
-        </button>
-      </div>
-
       <div > {/* className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_320px]" */}
 
         {/* MAPA  */}

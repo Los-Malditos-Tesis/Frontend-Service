@@ -7,8 +7,12 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import UpdateIcon from "@mui/icons-material/Update";
 import CustomInput from "../../components/generic/CustomInput";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useNavigate } from "react-router-dom";
 
 const WarehouseInfoSection = ({ warehouse, onUpdate, loading }) => {
+  const navigate = useNavigate();
+
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: warehouse?.name || "",
@@ -57,12 +61,19 @@ const WarehouseInfoSection = ({ warehouse, onUpdate, loading }) => {
   };
 
   return (
-    <div className="mb-20 relative overflow-hidden bg-gradient-to-br from-blue-50/30 via-white to-indigo-/30 border-2 border-bordercolor rounded-xl  transition-all duration-300 p-8">
-    
+    <div className="relative rounded-xl transition-all duration-300">
       {/* Header with title and edit button */}
-      <div className="flex items-start justify-between mb-1">
+      <div className="mb-1 flex items-start justify-between">
         <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="mb-2 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate("/warehouses")}
+              className="text-secondary_color mb-3 flex items-center justify-center rounded-lg bg-gray-100 p-2 transition hover:scale-105 hover:bg-gray-200"
+              title="Volver a bodegas"
+            >
+              <ArrowBackIcon />
+            </button>
             {/* <span className="text-5xl animate-bounce">📦</span> */}
             <div>
               {isEditing ? (
@@ -71,17 +82,15 @@ const WarehouseInfoSection = ({ warehouse, onUpdate, loading }) => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="border-b-3 border-accent_color bg-transparent text-3xl font-extrabold text-secondary_color focus:outline-none px-2 transition"
+                  className="border-accent_color text-secondary_color border-b-3 bg-transparent px-2 text-3xl font-extrabold transition focus:outline-none"
                 />
               ) : (
-                <h2 className="text-4xl font-extrabold text-secondary_color">
-                  {warehouse?.name}
-                </h2>
+                <h2 className="text-secondary_color text-4xl font-extrabold">{warehouse?.name}</h2>
               )}
             </div>
           </div>
 
-          <div className="flex items-start gap-2 mt-2">
+          <div className="mt-2 flex items-start gap-2">
             {/* <LocationOnIcon className="text-accent_color mt-1" fontSize="small" /> */}
             {isEditing ? (
               <input
@@ -89,13 +98,11 @@ const WarehouseInfoSection = ({ warehouse, onUpdate, loading }) => {
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
-                className="border-b-2 border-accent_color bg-transparent text-gray-600 focus:outline-none px-2 flex-1 transition font-medium"
+                className="border-accent_color flex-1 border-b-2 bg-transparent px-2 font-medium text-gray-600 transition focus:outline-none"
                 placeholder="Dirección..."
               />
             ) : (
-              <p className="text-gray-700 font-medium leading-relaxed">
-                {warehouse?.address}
-              </p>
+              <p className="leading-relaxed font-medium text-gray-700">{warehouse?.address}</p>
             )}
           </div>
         </div>
@@ -105,7 +112,7 @@ const WarehouseInfoSection = ({ warehouse, onUpdate, loading }) => {
             <button
               onClick={handleSave}
               disabled={loading}
-              className="p-3 bg-accent_color hover:bg-[#202124] text-white rounded-lg transition transform hover:scale-110 disabled:opacity-50"
+              className="bg-accent_color transform rounded-lg p-3 text-white transition hover:scale-110 hover:bg-[#202124] disabled:opacity-50"
               title="Guardar"
             >
               <SaveIcon />
@@ -114,10 +121,11 @@ const WarehouseInfoSection = ({ warehouse, onUpdate, loading }) => {
           <button
             onClick={isEditing ? handleCancel : handleEdit}
             disabled={loading}
-            className={`p-3 rounded-lg transition transform hover:scale-110 ${isEditing
-              ? "bg-red-50 text-red-600 hover:bg-red-100"
-              : "bg-blue-50 text-accent_color hover:bg-blue-100"
-              } disabled:opacity-50`}
+            className={`transform rounded-lg p-3 transition hover:scale-110 ${
+              isEditing
+                ? "bg-red-50 text-red-600 hover:bg-red-100"
+                : "text-accent_color bg-blue-50 hover:bg-blue-100"
+            } disabled:opacity-50`}
             title={isEditing ? "Cancelar" : "Editar"}
           >
             {isEditing ? <CancelIcon /> : <EditIcon />}
@@ -127,7 +135,7 @@ const WarehouseInfoSection = ({ warehouse, onUpdate, loading }) => {
 
       {/* Info cards */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-4 py-2 text-sm font-bold text-secondary_color backdrop-blur transition hover:border-accent_color hover:text-accent_color hover:shadow-sm">
+        {/* <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-4 py-2 text-sm font-bold text-secondary_color backdrop-blur transition hover:border-accent_color hover:text-accent_color hover:shadow-sm">
           <CalendarTodayIcon fontSize="small" className="text-accent_color" />
           <span className="text-xs uppercase tracking-widest text-gray-500">
             Creada
@@ -141,10 +149,10 @@ const WarehouseInfoSection = ({ warehouse, onUpdate, loading }) => {
             Actualizada
           </span>
           <span>{formatDate(warehouse?.updatedAt)}</span>
-        </div>
+        </div> */}
 
         {isEditing && (
-          <div className="inline-flex items-center gap-2 rounded-full border border-accent_color/30 bg-accent_color/10 px-4 py-2 text-sm font-semibold text-gray-600">
+          <div className="border-accent_color/30 bg-accent_color/10 absolute top-[105%] inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold text-gray-600">
             <span>✨</span>
             <span>Los cambios se guardarán con el botón Guardar</span>
           </div>

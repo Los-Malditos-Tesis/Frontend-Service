@@ -14,7 +14,6 @@ import EmptyState from "./EmptyState";
 import TableSkeleton from "./TableSkeleton";
 import { Title } from "./Title";
 
-
 const BREAKPOINT_MAP = {
   sm: "640px",
   md: "768px",
@@ -66,6 +65,7 @@ const CustomTable = ({
   emptyTitle = "Sin registros",
   emptyDescription = "No hay datos aún.",
   mobileBreakpoint = "lg",
+  groupBy = null,
 
   // SEARCH
   searchPlaceholder = "Buscar...",
@@ -118,6 +118,37 @@ const CustomTable = ({
   });
 
   const rows = table.getRowModel().rows;
+  const groupedCountRows = table.getPrePaginationRowModel().rows;
+  const groupedRows = React.useMemo(() => {
+    if (!groupBy?.getKey) {
+      return rows.map((row) => ({ row, isGroupStart: false, groupLabel: "", groupCount: 0 }));
+    }
+
+    const counts = new Map();
+
+    groupedCountRows.forEach((row) => {
+      const key = groupBy.getKey(row.original, row) ?? "";
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+
+    let previousGroupKey = null;
+
+    return rows.map((row) => {
+      const groupKey = groupBy.getKey(row.original, row) ?? "";
+      const groupLabel = groupBy.getLabel ? groupBy.getLabel(row.original, row) : String(groupKey);
+      const groupCount = counts.get(groupKey) || 0;
+      const isGroupStart = previousGroupKey !== groupKey;
+
+      previousGroupKey = groupKey;
+
+      return {
+        row,
+        isGroupStart,
+        groupLabel,
+        groupCount,
+      };
+    });
+  }, [groupBy, groupedCountRows, rows]);
 
   const getColumnLabel = (column) => {
     const header = column.columnDef.header;
@@ -137,31 +168,27 @@ const CustomTable = ({
     return column.id;
   };
 
-  if (loading) return (<TableSkeleton loadingText={loadingText} mobileBreakpoint={mobileBreakpoint} />);
+  if (loading)
+    return <TableSkeleton loadingText={loadingText} mobileBreakpoint={mobileBreakpoint} />;
 
   if (!data.length || (data.length > 0 && rows.length === 0))
-    return (
-      <EmptyState
-        title={emptyTitle}
-        description={emptyDescription}
-        type="search"
-      />
-    );
+    return <EmptyState title={emptyTitle} description={emptyDescription} type="search" />;
 
   return (
-    <div className={`bg-white border-2 border-bordercolor rounded-md p-6 w-full space-y-5 ${className}`}>
-      {title && (
+    <div
+      className={`border-bordercolor w-full space-y-5 rounded-md border-2 bg-white p-6 ${className}`}
+    >
+      {/* {title && (
         <Title as="h3" small className="text-gray-800">
           {title}
         </Title>
-      )}
+      )} */}
 
       {/* HEADER SUPERIOR */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-
         {/* SEARCH */}
         <div className="w-full md:w-[300px]">
-          <label className="border-2 border-bordercolor bg-background flex items-center bg-gray-100 px-4 py-2.5 rounded-xl w-full max-w-xl cursor-text focus-within:ring-2 focus-within:ring-blue-500">
+          <label className="border-bordercolor bg-background flex w-full max-w-xl cursor-text items-center rounded-xl border-2 bg-gray-100 px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500">
             <span className="text-gray-400">{searchIcon}</span>
 
             <input
@@ -169,98 +196,109 @@ const CustomTable = ({
               placeholder={searchPlaceholder}
               value={globalFilter ?? ""}
               onChange={(e) => setGlobalFilter(e.target.value)}
-              className="bg-transparent outline-none ml-3 w-full text-sm text-gray-700 placeholder-gray-400"
+              className="ml-3 w-full bg-transparent text-sm text-gray-700 placeholder-gray-400 outline-none"
             />
           </label>
         </div>
 
-        {toolbarRight && (
-          <div className="w-full md:w-auto">
-            {toolbarRight}
-          </div>
-        )}
+        {toolbarRight && <div className="w-full md:w-auto">{toolbarRight}</div>}
       </div>
 
       {/* TABLA DESKTOP */}
       {!isMobileView && (
         <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
           <table className="w-full text-sm">
-          {/* HEADER */}
-          <thead className="bg-gray-50">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    onClick={header.column.getToggleSortingHandler()}
-                    className="bg-black text-white px-6 py-4 text-left font-semibold text-gray-500 uppercase tracking-wider cursor-pointer select-none"
-                  >
-                    <div className="flex items-center gap-2">
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+            {/* HEADER */}
+            <thead className="bg-gray-50">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <th
+                      key={header.id}
+                      onClick={header.column.getToggleSortingHandler()}
+                      className="cursor-pointer bg-black px-6 py-4 text-left font-semibold tracking-wider text-gray-500 text-white uppercase select-none"
+                    >
+                      <div className="flex items-center gap-2">
+                        {flexRender(header.column.columnDef.header, header.getContext())}
 
-                      {/* SORT ICON */}
-                      {/* {{
+                        {/* SORT ICON */}
+                        {/* {{
                         asc: "↑",
                         desc: "↓",
                       }[header.column.getIsSorted()] ?? (
                           <span className="opacity-20">↑</span>
                         )} */}
 
-
-                      {{
-                        asc: <span className="text-white">↑</span>,
-                        desc: <span className="text-white">↓</span>,
-                      }[header.column.getIsSorted()] ?? (
+                        {{
+                          asc: <span className="text-white">↑</span>,
+                          desc: <span className="text-white">↓</span>,
+                        }[header.column.getIsSorted()] ?? (
                           <span className="text-gray font-bold">↑</span>
                         )}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            ))}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              ))}
 
-            {/* COLUMN FILTERS */}
-            {showColumnFilters && (
-              <tr>
-                {table.getHeaderGroups()[0].headers.map((header) => (
-                  <th key={header.id} className="px-6 pb-3">
-                    {header.column.getCanFilter() && (
-                      <input
-                        value={header.column.getFilterValue() ?? ""}
-                        onChange={(e) =>
-                          header.column.setFilterValue(e.target.value)
-                        }
-                        placeholder="Filtrar..."
-                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-gray-200"
-                      />
-                    )}
-                  </th>
-                ))}
-              </tr>
-            )}
-          </thead>
+              {/* COLUMN FILTERS */}
+              {showColumnFilters && (
+                <tr>
+                  {table.getHeaderGroups()[0].headers.map((header) => (
+                    <th key={header.id} className="px-6 pb-3">
+                      {header.column.getCanFilter() && (
+                        <input
+                          value={header.column.getFilterValue() ?? ""}
+                          onChange={(e) => header.column.setFilterValue(e.target.value)}
+                          placeholder="Filtrar..."
+                          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:ring-2 focus:ring-gray-200 focus:outline-none"
+                        />
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              )}
+            </thead>
 
-          {/* BODY */}
-          <tbody>
-            {rows.map((row) => (
-              <tr
-                key={row.id}
-                className={`border-t border-gray-100 hover:bg-gray-50 transition ${getRowClassName ? getRowClassName(row) : ""}`}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-6 py-4 text-gray-700">
-                    {flexRender(
-                      cell.column.columnDef.cell,
-                      cell.getContext()
+            {/* BODY */}
+            <tbody>
+              {groupedRows.map(({ row, isGroupStart, groupLabel, groupCount }) => {
+                const rowClassName = getRowClassName
+                  ? getRowClassName(row, { isGroupStart, groupLabel, groupCount })
+                  : "";
+
+                return (
+                  <React.Fragment key={row.id}>
+                    {groupBy?.getKey && isGroupStart && (
+                      <tr className="bg-gray-50">
+                        <td
+                          colSpan={table.getVisibleLeafColumns().length}
+                          className="border-t-4 border-black px-6 py-3"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="text-sm font-semibold tracking-wider text-gray-900 uppercase">
+                              {groupLabel}
+                            </span>
+                            <span className="rounded-full bg-black px-3 py-1 text-xs font-semibold text-white">
+                              {groupCount} elementos
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
                     )}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
+                    <tr
+                      className={`border-t border-gray-100 transition hover:bg-gray-50 ${rowClassName}`}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <td key={cell.id} className="px-6 py-4 text-gray-700">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
           </table>
         </div>
       )}
@@ -268,50 +306,61 @@ const CustomTable = ({
       {/* TARJETAS MOBILE */}
       {isMobileView && (
         <div className="space-y-3">
-          {rows.map((row) => (
-            <article
-              key={row.id}
-              className={`rounded-xl border border-gray-200 bg-white p-4 shadow-sm ${getRowClassName ? getRowClassName(row) : ""}`}
-            >
-              <div className="space-y-3">
-                {row.getVisibleCells().map((cell) => {
-                  const isActionsCell = cell.column.id === "actions";
+          {groupedRows.map(({ row, isGroupStart, groupLabel, groupCount }) => {
+            const rowClassName = getRowClassName
+              ? getRowClassName(row, { isGroupStart, groupLabel, groupCount })
+              : "";
 
-                  if (isActionsCell) {
-                    return (
-                      <div
-                        key={cell.id}
-                        className="flex items-center justify-end gap-2 border-t border-gray-100 pt-3"
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div
-                      key={cell.id}
-                      className="flex items-start justify-between gap-4"
-                    >
-                      <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                        {getColumnLabel(cell.column)}
+            return (
+              <React.Fragment key={row.id}>
+                {groupBy?.getKey && isGroupStart && (
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 shadow-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-sm font-semibold tracking-wider text-gray-900 uppercase">
+                        {groupLabel}
                       </span>
-
-                      <div className="max-w-[60%] text-right text-sm font-medium text-gray-700">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </div>
+                      <span className="rounded-full bg-black px-3 py-1 text-xs font-semibold text-white">
+                        {groupCount} elementos
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
-            </article>
-          ))}
+                  </div>
+                )}
+
+                <article
+                  className={`rounded-xl border border-gray-200 bg-white p-4 shadow-sm ${rowClassName}`}
+                >
+                  <div className="space-y-3">
+                    {row.getVisibleCells().map((cell) => {
+                      const isActionsCell = cell.column.id === "actions";
+
+                      if (isActionsCell) {
+                        return (
+                          <div
+                            key={cell.id}
+                            className="flex items-center justify-end gap-2 border-t border-gray-100 pt-3"
+                          >
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div key={cell.id} className="flex items-start justify-between gap-4">
+                          <span className="text-xs font-semibold tracking-wider text-gray-400 uppercase">
+                            {getColumnLabel(cell.column)}
+                          </span>
+
+                          <div className="max-w-[60%] text-right text-sm font-medium text-gray-700">
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </article>
+              </React.Fragment>
+            );
+          })}
         </div>
       )}
 
@@ -320,8 +369,7 @@ const CustomTable = ({
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           {/* INFO */}
           <span className="text-sm text-gray-400">
-            Página {table.getState().pagination.pageIndex + 1} de{" "}
-            {table.getPageCount()}
+            Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
           </span>
 
           {/* CONTROLES */}
@@ -329,27 +377,22 @@ const CustomTable = ({
             <button
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
-              className="px-3 py-1.5 rounded-md border text-sm hover:bg-gray-100 disabled:opacity-40"
+              className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-100 disabled:opacity-40"
             >
               Anterior
             </button>
 
             {/* NÚMEROS */}
             {Array.from({ length: table.getPageCount() }).map((_, i) => {
-              const isActive =
-                i === table.getState().pagination.pageIndex;
+              const isActive = i === table.getState().pagination.pageIndex;
 
               return (
                 <button
                   key={i}
                   onClick={() => table.setPageIndex(i)}
-                  className={`
-                    w-8 h-8 rounded-md text-sm
-                    ${isActive
-                      ? "bg-[#000] text-white"
-                      : "border hover:bg-gray-100"
-                    }
-                  `}
+                  className={`h-8 w-8 rounded-md text-sm ${
+                    isActive ? "bg-[#000] text-white" : "border hover:bg-gray-100"
+                  } `}
                 >
                   {i + 1}
                 </button>
@@ -359,7 +402,7 @@ const CustomTable = ({
             <button
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
-              className="px-3 py-1.5 rounded-md border text-sm hover:bg-gray-100 disabled:opacity-40"
+              className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-100 disabled:opacity-40"
             >
               Siguiente
             </button>
@@ -388,6 +431,10 @@ CustomTable.propTypes = {
   filters: PropTypes.array,
   activeFilter: PropTypes.any,
   onFilterChange: PropTypes.func,
+  groupBy: PropTypes.shape({
+    getKey: PropTypes.func.isRequired,
+    getLabel: PropTypes.func,
+  }),
 
   showColumnFilters: PropTypes.bool,
   showPagination: PropTypes.bool,

@@ -56,7 +56,7 @@ const TableSkeleton = ({
 
   return (
     <div className="bg-white border-2 border-bordercolor rounded-md p-6 w-full space-y-5">
-      <p className="text-sm font-medium text-gray-400">{loadingText}</p>
+      {/* <p className="text-sm font-medium text-gray-400">{loadingText}</p> */}
       
       {/* HEADER */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

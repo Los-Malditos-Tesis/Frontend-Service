@@ -10,11 +10,16 @@ import AddIcon from "@mui/icons-material/Add";
 const AdminIntroLayout = ({
   title,
   subtitle,
-  eyebrow=<Breadcrumbs />,
+  eyebrow = <Breadcrumbs />,
   buttonLabel,
   onCreate,
+  secondaryButtonLabel,
+  onSecondaryCreate,
+  secondaryStartIcon,
+  secondaryButtonClassName = "max-w-[13.5rem]",
   children,
   showAddIcon = true,
+  className = "mb-6 pt-6 pb-8 md:mb-8 md:pb-10",
 }) => {
   return (
     <DashboardLayout>
@@ -25,15 +30,29 @@ const AdminIntroLayout = ({
             subtitle={subtitle}
             eyebrow={eyebrow}
             smaller
-            className="pb-8 md:pb-10 mb-6 md:mb-8 pt-6"
+            className={className}
           >
-            <CustomButton
-              className="max-w-[13.5rem] ml-auto"
-              action={onCreate}
-              startIcon={showAddIcon ? <AddIcon /> : null}
-            >
-              {buttonLabel}
-            </CustomButton>
+            <div className="ml-auto flex flex-col gap-3 sm:flex-row sm:items-center">
+              {secondaryButtonLabel && onSecondaryCreate && (
+                <CustomButton
+                  className={`max-w-[13.5rem] ${secondaryButtonClassName}`}
+                  action={onSecondaryCreate}
+                  startIcon={secondaryStartIcon}
+                >
+                  {secondaryButtonLabel}
+                </CustomButton>
+              )}
+
+              {buttonLabel && onCreate && (
+                <CustomButton
+                  className="max-w-[13.5rem]"
+                  action={onCreate}
+                  startIcon={showAddIcon ? <AddIcon /> : null}
+                >
+                  {buttonLabel}
+                </CustomButton>
+              )}
+            </div>
           </SectionIntro>
 
           {children}
@@ -49,6 +68,10 @@ AdminIntroLayout.propTypes = {
   eyebrow: PropTypes.node,
   buttonLabel: PropTypes.string.isRequired,
   onCreate: PropTypes.func.isRequired,
+  secondaryButtonLabel: PropTypes.node,
+  onSecondaryCreate: PropTypes.func,
+  secondaryStartIcon: PropTypes.node,
+  secondaryButtonClassName: PropTypes.string,
   children: PropTypes.node.isRequired,
 };
 

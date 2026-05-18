@@ -46,6 +46,15 @@ const ProductsTable = ({ products = [], loading, onEdit, onRefresh }) => {
         return value ? `${value?.name}` : "Sin proveedor";
       },
     }),
+    columnHelper.accessor("total_available_units", {
+      header: "Inventario",
+      cell: ({ getValue }) => {
+        const value = getValue();
+        const numericValue = Number(value || 0);
+
+        return numericValue.toLocaleString("es-SV");
+      },
+    }),
     columnHelper.display({
       id: "actions",
       header: "Actions",

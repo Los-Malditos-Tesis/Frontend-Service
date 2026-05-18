@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { toast } from "sonner";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Edit, Delete } from "@mui/icons-material";
@@ -6,7 +7,54 @@ import CustomTable from "../../components/generic/CustomTable";
 
 const columnHelper = createColumnHelper();
 
+const getWarehouse = (location) => {
+  const warehouse = location?.Warehouse;
+
+  if (warehouse?.id || warehouse?.name) {
+    return {
+      id: warehouse.id?.toString() || "",
+      name: warehouse.name || "Sin almacén",
+    };
+  }
+
+  if (location?.warehouse_id || location?.warehouse_name) {
+    return {
+      id: location.warehouse_id?.toString() || "",
+      name: location.warehouse_name || "Sin almacén",
+    };
+  }
+
+  return {
+    id: "",
+    name: "Sin almacén",
+  };
+};
+
+const getWarehouseGroupKey = (location) => {
+  const warehouse = getWarehouse(location);
+  return warehouse.id || warehouse.name || "Sin almacén";
+};
+
 const LocationsTable = ({ locations = [], loading, onEdit, onRefresh }) => {
+  const groupedAndFilteredLocations = useMemo(() => {
+    return [...locations]
+      .map((location) => ({
+        ...location,
+        warehouseName: getWarehouse(location).name,
+      }))
+      .sort((a, b) => {
+        const warehouseA = getWarehouse(a).name;
+        const warehouseB = getWarehouse(b).name;
+
+        const warehouseCompare = warehouseA.localeCompare(warehouseB);
+        if (warehouseCompare !== 0) {
+          return warehouseCompare;
+        }
+
+        return (a.zone || "").localeCompare(b.zone || "");
+      });
+  }, [locations]);
+
   const handleDelete = async (id) => {
     if (!confirm("¿Estás seguro de que deseas eliminar esta ubicación?")) return;
 
@@ -33,11 +81,11 @@ const LocationsTable = ({ locations = [], loading, onEdit, onRefresh }) => {
       header: "Categoría",
       cell: ({ getValue }) => getValue() || "Sin categoría",
     }),
-    columnHelper.accessor("Warehouse", {
+    columnHelper.accessor("warehouseName", {
       header: "Warehouse",
-       cell: ({ getValue }) => {
+      cell: ({ getValue }) => {
         const value = getValue();
-        return value ? `${value?.name}` : "Sin almacén";
+        return value || "Sin almacén";
       },
     }),
     // columnHelper.accessor("pallets_count", {
@@ -75,13 +123,18 @@ const LocationsTable = ({ locations = [], loading, onEdit, onRefresh }) => {
   return (
     <CustomTable
       title="Ubicaciones"
-      data={locations}
+      data={groupedAndFilteredLocations}
       columns={columns}
       loading={loading}
       loadingText="Cargando..."
       emptyTitle="Sin ubicaciones"
       emptyDescription="Aún no hay zonas registradas en el sistema."
       searchPlaceholder="Buscar ubicación..."
+      groupBy={{
+        getKey: (location) => getWarehouseGroupKey(location),
+        getLabel: (location) => getWarehouse(location).name,
+      }}
+      getRowClassName={(row, group) => (group?.isGroupStart ? "border-t-2 border-t-black/5" : "")}
       showColumnFilters={false}
       showPagination={true}
     />

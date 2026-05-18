@@ -2,26 +2,23 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
 import AdminIntroLayout from "../components/generic/AdminIntroLayout";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
 import CustomDrawer from "../components/generic/CustomDrawer";
 import WarehouseInfoSection from "../containers/WarehouseDetail/WarehouseInfoSection";
 import WarehouseMapLayout from "../containers/WarehouseDetail/WarehouseMapLayout";
+import WarehouseProductsTable from "../containers/WarehouseDetail/WarehouseProductsTable";
+import WarehouseOrdersTable from "../containers/WarehouseDetail/WarehouseOrdersTable";
+import WarehouseScmModeCard from "../containers/WarehouseDetail/WarehouseScmModeCard";
 import LocationForm from "../containers/WarehouseDetail/WarehouseLocationForm";
 import CameraForm from "../containers/WarehouseDetail/WarehouseCameraForm";
-import {
-  getWarehouseStructure,
-} from "../services/warehouse.detail.service";
-import {
-  createLocation,
-  updateLocation,
-  deleteLocation,
-} from "../services/location.service";
-import {
-  createCamera,
-  updateCamera,
-  deleteCamera,
-} from "../services/camera.service";
+import { getWarehouseStructure } from "../services/warehouse.detail.service";
+import { searchProducts } from "../services/product.service";
+import { searchOrders } from "../services/order.service";
+import { getConfigParams } from "../services/configParam.service";
+import { createLocation, updateLocation, deleteLocation } from "../services/location.service";
+import { createCamera, updateCamera, deleteCamera } from "../services/camera.service";
 import { updateWarehouse } from "../services/warehouse.service";
 
 const WarehouseDetailPage = () => {
@@ -30,7 +27,13 @@ const WarehouseDetailPage = () => {
 
   const [warehouse, setWarehouse] = useState(null);
   const [locations, setLocations] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [scmParam, setScmParam] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [ordersLoading, setOrdersLoading] = useState(true);
+  const [scmLoading, setScmLoading] = useState(true);
 
   // Drawer states
   const [isLocationFormOpen, setIsLocationFormOpen] = useState(false);
@@ -61,11 +64,79 @@ const WarehouseDetailPage = () => {
     }
   }, [id]);
 
+  const fetchWarehouseProducts = useCallback(async () => {
+    try {
+      setProductsLoading(true);
+      const result = await searchProducts({ warehouse_id: id });
+
+      if (result.success) {
+        setProducts(result.data || []);
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error("Error fetching warehouse products:", error);
+      toast.error(error?.message || "Error al cargar productos del warehouse");
+      setProducts([]);
+    } finally {
+      setProductsLoading(false);
+    }
+  }, [id]);
+
+  const fetchWarehouseOrders = useCallback(async () => {
+    try {
+      setOrdersLoading(true);
+      const result = await searchOrders({
+        origin_warehouse_id: id,
+        destination_warehouse_id: id,
+      });
+
+      if (result.success) {
+        setOrders(result.data || []);
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error("Error fetching warehouse orders:", error);
+      toast.error(error?.message || "Error al cargar órdenes del warehouse");
+      setOrders([]);
+    } finally {
+      setOrdersLoading(false);
+    }
+  }, [id]);
+
+  const fetchWarehouseScmMode = useCallback(async () => {
+    try {
+      setScmLoading(true);
+      const result = await getConfigParams({ warehouse_id: id, key: "SCM" });
+
+      if (result.success) {
+        const params = Array.isArray(result.data) ? result.data : [];
+        const warehouseParam =
+          params.find(
+            (param) => String(param.warehouse_id) === String(id) && param.key === "SCM"
+          ) || null;
+        setScmParam(warehouseParam);
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error("Error fetching warehouse SCM mode:", error);
+      toast.error(error?.message || "Error al cargar el modo de escaneo de la bodega");
+      setScmParam(null);
+    } finally {
+      setScmLoading(false);
+    }
+  }, [id]);
+
   useEffect(() => {
     if (id) {
       fetchWarehouseData();
+      fetchWarehouseProducts();
+      fetchWarehouseOrders();
+      fetchWarehouseScmMode();
     }
-  }, [id, fetchWarehouseData]);
+  }, [id, fetchWarehouseData, fetchWarehouseProducts, fetchWarehouseOrders, fetchWarehouseScmMode]);
 
   // Warehouse handlers
   const handleUpdateWarehouse = async (data) => {
@@ -83,6 +154,25 @@ const WarehouseDetailPage = () => {
     } catch (error) {
       console.error("Error updating warehouse:", error);
       toast.error(error?.message || "Error al actualizar la bodega");
+    }
+  };
+
+  const handleRefreshScmMode = () => {
+    fetchWarehouseScmMode();
+  };
+
+  const handleRefreshAll = async () => {
+    try {
+      await Promise.all([
+        fetchWarehouseData(),
+        fetchWarehouseProducts(),
+        fetchWarehouseOrders(),
+        fetchWarehouseScmMode(),
+      ]);
+      toast.success("Información de la bodega actualizada");
+    } catch (error) {
+      console.error("Error refreshing warehouse detail:", error);
+      toast.error(error?.message || "Error al refrescar la información");
     }
   };
 
@@ -133,9 +223,7 @@ const WarehouseDetailPage = () => {
 
       if (result.success) {
         toast.success(
-          selectedLocation
-            ? "Ubicación actualizada exitosamente"
-            : "Ubicación creada exitosamente"
+          selectedLocation ? "Ubicación actualizada exitosamente" : "Ubicación creada exitosamente"
         );
         setIsLocationFormOpen(false);
         fetchWarehouseData();
@@ -174,9 +262,9 @@ const WarehouseDetailPage = () => {
           prev.map((loc) =>
             loc.id === location.id
               ? {
-                ...loc,
-                Cameras: loc.Cameras.filter((c) => c.id !== camera.id),
-              }
+                  ...loc,
+                  Cameras: loc.Cameras.filter((c) => c.id !== camera.id),
+                }
               : loc
           )
         );
@@ -206,9 +294,7 @@ const WarehouseDetailPage = () => {
 
       if (result.success) {
         toast.success(
-          selectedCamera
-            ? "Cámara actualizada exitosamente"
-            : "Cámara creada exitosamente"
+          selectedCamera ? "Cámara actualizada exitosamente" : "Cámara creada exitosamente"
         );
         setIsCameraFormOpen(false);
         fetchWarehouseData();
@@ -223,12 +309,9 @@ const WarehouseDetailPage = () => {
 
   if (loading && !warehouse) {
     return (
-      <AdminIntroLayout
-        title="Cargando detalles de bodega..."
-        eyebrow={<Breadcrumbs />}
-      >
-        <div className="flex justify-center items-center gap-3">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-accent_color"></div>
+      <AdminIntroLayout title="Cargando detalles de bodega..." eyebrow={<Breadcrumbs />}>
+        <div className="flex items-center justify-center gap-3">
+          <div className="border-accent_color h-12 w-12 animate-spin rounded-full border-t-2"></div>
           <p className="text-gray-500">Por favor espera...</p>
         </div>
       </AdminIntroLayout>
@@ -238,11 +321,11 @@ const WarehouseDetailPage = () => {
   if (!warehouse) {
     return (
       <AdminIntroLayout title="Bodega no encontrada" eyebrow={<Breadcrumbs />}>
-        <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">No se pudo cargar la bodega solicitada</p>
+        <div className="py-12 text-center">
+          <p className="mb-4 text-gray-500">No se pudo cargar la bodega solicitada</p>
           <button
             onClick={() => navigate("/warehouses")}
-            className="px-4 py-2 bg-accent_color text-white rounded-lg hover:bg-secondary_color transition font-bold inline-flex items-center gap-2"
+            className="bg-accent_color hover:bg-secondary_color inline-flex items-center gap-2 rounded-lg px-4 py-2 font-bold text-white transition"
           >
             <ArrowBackIcon fontSize="small" />
             Volver a bodegas
@@ -254,26 +337,41 @@ const WarehouseDetailPage = () => {
 
   return (
     <AdminIntroLayout
-      title="Detalle de Bodega"
-      // title={warehouse.name}
-      subtitle="Visualiza y gestiona la estructura completa de tu bodega - Mapa de ubicaciones, cámaras y más"
+      // title="Detalle de Bodega"
+      // subtitle="Visualiza y gestiona la estructura completa de tu bodega - Mapa de ubicaciones, cámaras y más"
       eyebrow={<Breadcrumbs />}
-      buttonLabel={
-        <>
-          <ArrowBackIcon fontSize="small" />
-          Volver a Bodegas
-        </>
-      }
-      onCreate={() => navigate("/warehouses")}
-      showAddIcon={false}
+      // buttonLabel={
+      //   <>
+      //     <ArrowBackIcon fontSize="small" />
+      //     Volver a Bodegas
+      //   </>
+      // }
+      // onCreate={() => navigate("/warehouses")}
+      // secondaryButtonLabel="Refrescar"
+      // onSecondaryCreate={handleRefreshAll}
+      // secondaryStartIcon={<RefreshRoundedIcon />}
+      // secondaryButtonClassName="!max-w-[10.5rem]"
+      // showAddIcon={false}
+      className="!mb-0 pt-6 pb-0"
     >
-      <div className="space-y-8">
+      <div className="animate-fadeIn">
+        <WarehouseInfoSection
+          warehouse={warehouse}
+          onUpdate={handleUpdateWarehouse}
+          loading={loading}
+        />
+      </div>
+      <div className="space-y-18">
         {/* Warehouse Info Section */}
-        <div className="animate-fadeIn">
-          <WarehouseInfoSection
-            warehouse={warehouse}
-            onUpdate={handleUpdateWarehouse}
-            loading={loading}
+
+        {/* SCM Mode Card */}
+        <div className="animate-fadeIn" style={{ animationDelay: "0.05s" }}>
+          <WarehouseScmModeCard
+            warehouseId={id}
+            warehouseName={warehouse?.name}
+            param={scmParam}
+            loading={scmLoading}
+            onUpdated={handleRefreshScmMode}
           />
         </div>
 
@@ -288,6 +386,19 @@ const WarehouseDetailPage = () => {
             onEditCamera={handleEditCamera}
             onDeleteCamera={handleDeleteCamera}
             loading={loading}
+          />
+        </div>
+
+        <div className="animate-fadeIn" style={{ animationDelay: "0.35s" }}>
+          <WarehouseProductsTable products={products} loading={productsLoading} />
+        </div>
+
+        <div className="animate-fadeIn" style={{ animationDelay: "0.5s" }}>
+          <WarehouseOrdersTable
+            warehouseId={id}
+            warehouseName={warehouse?.name}
+            orders={orders}
+            loading={ordersLoading}
           />
         </div>
       </div>

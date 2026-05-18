@@ -26,6 +26,11 @@ const getWarehouse = (camera) => {
   };
 };
 
+const getWarehouseGroupKey = (camera) => {
+  const warehouse = getWarehouse(camera);
+  return warehouse.id || warehouse.name || "Sin bodega";
+};
+
 const CamerasTable = ({ cameras = [], loading, onEdit, onRefresh }) => {
   const [warehouseFilter, setWarehouseFilter] = useState("");
 
@@ -84,20 +89,12 @@ const CamerasTable = ({ cameras = [], loading, onEdit, onRefresh }) => {
       return (a.code || "").localeCompare(b.code || "");
     });
 
-    let previousWarehouseId = null;
-
     return sorted.map((camera) => {
       const warehouse = getWarehouse(camera);
-      const currentWarehouseId = warehouse.id || `warehouse-${warehouse.name}`;
-      const isWarehouseGroupStart =
-        previousWarehouseId !== null && previousWarehouseId !== currentWarehouseId;
-
-      previousWarehouseId = currentWarehouseId;
 
       return {
         ...camera,
         warehouseName: warehouse.name,
-        isWarehouseGroupStart,
       };
     });
   }, [cameras, warehouseFilter]);
@@ -174,7 +171,11 @@ const CamerasTable = ({ cameras = [], loading, onEdit, onRefresh }) => {
           />
         </div>
       }
-      getRowClassName={(row) => (row.original?.isWarehouseGroupStart ? "border-t-4 border-t-black" : "")}
+      groupBy={{
+        getKey: (camera) => getWarehouseGroupKey(camera),
+        getLabel: (camera) => getWarehouse(camera).name,
+      }}
+      getRowClassName={(row, group) => (group?.isGroupStart ? "border-t-2 border-t-black/5" : "")}
       showColumnFilters={false}
       showPagination={true}
     />

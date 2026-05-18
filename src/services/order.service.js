@@ -26,9 +26,11 @@ const buildOrderPayload = (data) => {
   return payload;
 };
 
-export const searchOrders = async () => {
+export const searchOrders = async (filters = {}) => {
   try {
-    const response = await api.get(ORDER_BASE_URL);
+    const response = await api.get(ORDER_BASE_URL, {
+      params: filters,
+    });
     return normalizeResponse(response);
   } catch (error) {
     console.warn("Failed to fetch orders from API", error.message);

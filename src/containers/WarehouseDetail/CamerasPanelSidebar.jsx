@@ -14,7 +14,7 @@ const CamerasPanelSidebar = ({
 }) => {
   if (!selectedLocation) {
     return (
-      <div className="bg-white border-2 border-gray-200 rounded-2xl p-8  flex flex-col items-center justify-center text-center">
+      <div className="h-full bg-white border-2 border-gray-200 rounded-2xl p-8  flex flex-col items-center justify-center text-center">
         <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center mb-4">
           <VideocamIcon className="text-gray-400" fontSize="large" />
         </div>
