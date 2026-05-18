@@ -1,16 +1,13 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import EditIcon from "@mui/icons-material/Edit";
+import SearchIcon from "@mui/icons-material/Search";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import UpdateIcon from "@mui/icons-material/Update";
-import CustomInput from "../../components/generic/CustomInput";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
 
-const WarehouseInfoSection = ({ warehouse, onUpdate, loading }) => {
+const WarehouseInfoSection = ({ warehouse, onUpdate, loading, onSearchProducts }) => {
   const navigate = useNavigate();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -108,11 +105,21 @@ const WarehouseInfoSection = ({ warehouse, onUpdate, loading }) => {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => onSearchProducts?.()}
+            disabled={loading}
+            type="button"
+            className="border-accent_color/20 text-secondary_color transform rounded-lg border bg-white px-3 py-3 transition hover:scale-110 hover:bg-blue-50 disabled:opacity-50"
+            title="Buscar producto"
+          >
+            <SearchIcon />
+          </button>
+
           {isEditing && (
             <button
               onClick={handleSave}
               disabled={loading}
-              className="bg-accent_color transform rounded-lg p-3 text-white transition hover:scale-110 hover:bg-[#202124] disabled:opacity-50"
+              className="bg-accent_color hover:bg-secondary_color transform rounded-lg p-3 text-white transition hover:scale-110 disabled:opacity-50"
               title="Guardar"
             >
               <SaveIcon />

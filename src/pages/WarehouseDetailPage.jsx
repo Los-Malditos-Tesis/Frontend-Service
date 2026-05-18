@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
 import AdminIntroLayout from "../components/generic/AdminIntroLayout";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
 import CustomDrawer from "../components/generic/CustomDrawer";
@@ -13,6 +12,7 @@ import WarehouseOrdersTable from "../containers/WarehouseDetail/WarehouseOrdersT
 import WarehouseScmModeCard from "../containers/WarehouseDetail/WarehouseScmModeCard";
 import LocationForm from "../containers/WarehouseDetail/WarehouseLocationForm";
 import CameraForm from "../containers/WarehouseDetail/WarehouseCameraForm";
+import WarehouseProductSearchDialog from "../containers/WarehouseDetail/WarehouseProductSearchDialog";
 import { getWarehouseStructure } from "../services/warehouse.detail.service";
 import { searchProducts } from "../services/product.service";
 import { searchOrders } from "../services/order.service";
@@ -34,6 +34,7 @@ const WarehouseDetailPage = () => {
   const [productsLoading, setProductsLoading] = useState(true);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [scmLoading, setScmLoading] = useState(true);
+  const [isProductSearchOpen, setIsProductSearchOpen] = useState(false);
 
   // Drawer states
   const [isLocationFormOpen, setIsLocationFormOpen] = useState(false);
@@ -161,19 +162,12 @@ const WarehouseDetailPage = () => {
     fetchWarehouseScmMode();
   };
 
-  const handleRefreshAll = async () => {
-    try {
-      await Promise.all([
-        fetchWarehouseData(),
-        fetchWarehouseProducts(),
-        fetchWarehouseOrders(),
-        fetchWarehouseScmMode(),
-      ]);
-      toast.success("Información de la bodega actualizada");
-    } catch (error) {
-      console.error("Error refreshing warehouse detail:", error);
-      toast.error(error?.message || "Error al refrescar la información");
-    }
+  const handleOpenProductSearch = () => {
+    setIsProductSearchOpen(true);
+  };
+
+  const handleCloseProductSearch = () => {
+    setIsProductSearchOpen(false);
   };
 
   // Location handlers
@@ -352,19 +346,19 @@ const WarehouseDetailPage = () => {
       // secondaryStartIcon={<RefreshRoundedIcon />}
       // secondaryButtonClassName="!max-w-[10.5rem]"
       // showAddIcon={false}
-      className="!mb-0 pt-6 pb-0"
+      className="mb-0! pt-6 pb-0"
     >
+      {/* Warehouse Info Section */}
       <div className="animate-fadeIn">
         <WarehouseInfoSection
           warehouse={warehouse}
           onUpdate={handleUpdateWarehouse}
           loading={loading}
+          onSearchProducts={handleOpenProductSearch}
         />
       </div>
       <div className="space-y-18">
-        {/* Warehouse Info Section */}
-
-        {/* SCM Mode Card */}
+        {/* Escaneo Mode Card */}
         <div className="animate-fadeIn" style={{ animationDelay: "0.05s" }}>
           <WarehouseScmModeCard
             warehouseId={id}
@@ -428,6 +422,14 @@ const WarehouseDetailPage = () => {
           onSuccess={handleSaveCamera}
         />
       </CustomDrawer>
+
+      <WarehouseProductSearchDialog
+        open={isProductSearchOpen}
+        onClose={handleCloseProductSearch}
+        warehouseName={warehouse?.name || "esta bodega"}
+        products={products}
+        locations={locations}
+      />
     </AdminIntroLayout>
   );
 };
