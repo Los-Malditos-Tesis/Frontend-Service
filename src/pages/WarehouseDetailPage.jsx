@@ -10,15 +10,16 @@ import WarehouseMapLayout from "../containers/WarehouseDetail/WarehouseMapLayout
 import WarehouseProductsTable from "../containers/WarehouseDetail/WarehouseProductsTable";
 import WarehouseOrdersTable from "../containers/WarehouseDetail/WarehouseOrdersTable";
 import WarehouseScmModeCard from "../containers/WarehouseDetail/WarehouseScmModeCard";
-import LocationForm from "../containers/WarehouseDetail/WarehouseLocationForm";
-import CameraForm from "../containers/WarehouseDetail/WarehouseCameraForm";
+import LocationForm from "../containers/Locations/LocationForm";
+import CameraForm from "../containers/Cameras/CameraForm";
+import ApiKeyDialog from "../components/camera/ApiKeyDialog";
 import WarehouseProductSearchDialog from "../containers/WarehouseDetail/WarehouseProductSearchDialog";
 import { getWarehouseStructure } from "../services/warehouse.detail.service";
 import { searchProducts } from "../services/product.service";
 import { searchOrders } from "../services/order.service";
 import { getConfigParams } from "../services/configParam.service";
-import { createLocation, updateLocation, deleteLocation } from "../services/location.service";
-import { createCamera, updateCamera, deleteCamera } from "../services/camera.service";
+import { deleteLocation } from "../services/location.service";
+import { deleteCamera } from "../services/camera.service";
 import { updateWarehouse } from "../services/warehouse.service";
 
 const WarehouseDetailPage = () => {
@@ -35,6 +36,7 @@ const WarehouseDetailPage = () => {
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [scmLoading, setScmLoading] = useState(true);
   const [isProductSearchOpen, setIsProductSearchOpen] = useState(false);
+  const [createdApiKey, setCreatedApiKey] = useState("");
 
   // Drawer states
   const [isLocationFormOpen, setIsLocationFormOpen] = useState(false);
@@ -201,33 +203,10 @@ const WarehouseDetailPage = () => {
     }
   };
 
-  const handleSaveLocation = async (formData) => {
-    try {
-      const payload = {
-        ...formData,
-        warehouse_id: id,
-      };
-
-      let result;
-      if (selectedLocation) {
-        result = await updateLocation(selectedLocation.id, payload);
-      } else {
-        result = await createLocation(payload);
-      }
-
-      if (result.success) {
-        toast.success(
-          selectedLocation ? "Ubicación actualizada exitosamente" : "Ubicación creada exitosamente"
-        );
-        setIsLocationFormOpen(false);
-        fetchWarehouseData();
-      } else {
-        throw new Error(result.error);
-      }
-    } catch (error) {
-      console.error("Error saving location:", error);
-      toast.error(error?.message || "Error al guardar la ubicación");
-    }
+  const handleLocationSaved = async () => {
+    setIsLocationFormOpen(false);
+    setSelectedLocation(null);
+    await fetchWarehouseData();
   };
 
   // Camera handlers
@@ -272,32 +251,23 @@ const WarehouseDetailPage = () => {
     }
   };
 
-  const handleSaveCamera = async (formData) => {
+  const handleCameraSaved = async () => {
+    setIsCameraFormOpen(false);
+    setSelectedCamera(null);
+    setCameraLocationId(null);
+    await fetchWarehouseData();
+  };
+
+  const handleCloseApiKeyDialog = () => {
+    setCreatedApiKey("");
+  };
+
+  const handleCopyApiKey = async () => {
     try {
-      const payload = {
-        ...formData,
-        location_id: cameraLocationId,
-      };
-
-      let result;
-      if (selectedCamera) {
-        result = await updateCamera(selectedCamera.id, payload);
-      } else {
-        result = await createCamera(payload);
-      }
-
-      if (result.success) {
-        toast.success(
-          selectedCamera ? "Cámara actualizada exitosamente" : "Cámara creada exitosamente"
-        );
-        setIsCameraFormOpen(false);
-        fetchWarehouseData();
-      } else {
-        throw new Error(result.error);
-      }
-    } catch (error) {
-      console.error("Error saving camera:", error);
-      toast.error(error?.message || "Error al guardar la cámara");
+      await navigator.clipboard.writeText(createdApiKey);
+      toast.success("API Key copiada al portapapeles");
+    } catch {
+      toast.error("No se pudo copiar la API Key");
     }
   };
 
@@ -406,7 +376,7 @@ const WarehouseDetailPage = () => {
         <LocationForm
           selectedLocation={selectedLocation}
           warehouseId={id}
-          onSuccess={handleSaveLocation}
+          onSuccess={handleLocationSaved}
         />
       </CustomDrawer>
 
@@ -419,9 +389,24 @@ const WarehouseDetailPage = () => {
         <CameraForm
           selectedCamera={selectedCamera}
           locationId={cameraLocationId}
-          onSuccess={handleSaveCamera}
+          onSuccess={(responseData) => {
+            const apiKey = responseData?.data?.api_key || responseData?.api_key || "";
+
+            handleCameraSaved();
+
+            if (!selectedCamera && apiKey) {
+              setCreatedApiKey(apiKey);
+            }
+          }}
         />
       </CustomDrawer>
+
+      <ApiKeyDialog
+        open={Boolean(createdApiKey)}
+        apiKey={createdApiKey}
+        onClose={handleCloseApiKeyDialog}
+        onCopy={handleCopyApiKey}
+      />
 
       <WarehouseProductSearchDialog
         open={isProductSearchOpen}

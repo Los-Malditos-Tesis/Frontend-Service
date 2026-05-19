@@ -10,8 +10,10 @@ import { searchWarehouses } from "../../services/warehouse.service";
 import { locationSchema } from "../../validations/LocationSchema";
 import { CATEGORIES } from "../../utils/conts";
 
-const LocationForm = ({ selectedLocation, onSuccess }) => {
+const LocationForm = ({ selectedLocation, warehouseId, onSuccess }) => {
   const [warehouses, setWarehouses] = useState([]);
+  const shouldShowWarehouseSelect = !warehouseId;
+
   const {
     register,
     handleSubmit,
@@ -23,7 +25,7 @@ const LocationForm = ({ selectedLocation, onSuccess }) => {
     defaultValues: {
       zone: "",
       category: "",
-      warehouse_id: "",
+      warehouse_id: warehouseId || "",
     },
   });
 
@@ -31,6 +33,10 @@ const LocationForm = ({ selectedLocation, onSuccess }) => {
   const warehouseValue = watch("warehouse_id");
 
   useEffect(() => {
+    if (!shouldShowWarehouseSelect) {
+      return;
+    }
+
     const fetchWarehouses = async () => {
       try {
         const result = await searchWarehouses();
@@ -50,45 +56,57 @@ const LocationForm = ({ selectedLocation, onSuccess }) => {
     };
 
     fetchWarehouses();
-  }, []);
+  }, [shouldShowWarehouseSelect]);
 
   useEffect(() => {
     if (selectedLocation) {
       reset({
         zone: selectedLocation.zone ?? "",
         category: selectedLocation.category ?? "",
-        warehouse_id: selectedLocation.warehouse_id?.toString() ?? selectedLocation.Warehouse?.id?.toString() ?? "",
+        warehouse_id:
+          warehouseId ||
+          selectedLocation.warehouse_id?.toString() ||
+          selectedLocation.Warehouse?.id?.toString() ||
+          "",
       });
     } else {
       reset({
         zone: "",
         category: "",
-        warehouse_id: "",
+        warehouse_id: warehouseId || "",
       });
     }
-  }, [selectedLocation, reset]);
+  }, [selectedLocation, warehouseId, reset]);
 
   const onSubmit = async (data) => {
     try {
+      const resolvedWarehouseId = warehouseId || data.warehouse_id;
+
+      if (!data.zone.trim()) {
+        toast.error("La zona es requerida");
+        return;
+      }
+
+      const payload = {
+        zone: data.zone,
+        category: data.category,
+        warehouse_id: resolvedWarehouseId,
+      };
+
       let result;
 
       if (selectedLocation) {
-        result = await updateLocation(selectedLocation.id, data);
-        if (result.success) {
-          toast.success("Ubicación actualizada correctamente");
-        } else {
-          throw new Error(result.error);
-        }
+        result = await updateLocation(selectedLocation.id, payload);
       } else {
-        result = await createLocation(data);
-        if (result.success) {
-          toast.success("Ubicación creada correctamente");
-        } else {
-          throw new Error(result.error);
-        }
+        result = await createLocation(payload);
       }
 
-      onSuccess();
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      toast.success(selectedLocation ? "Ubicación actualizada correctamente" : "Ubicación creada correctamente");
+      await onSuccess(result.data);
       reset();
     } catch (err) {
       const errorMsg = err?.message || "Error en la operación";
@@ -108,14 +126,16 @@ const LocationForm = ({ selectedLocation, onSuccess }) => {
         errors={errors.category}
       />
 
-      <CustomSelect
-        labelText="Bodega"
-        placeholderLabel="Debes seleccionar una bodega"
-        options={warehouses}
-        value={warehouseValue}
-        {...register("warehouse_id")}
-        errors={errors.warehouse_id}
-      />
+      {shouldShowWarehouseSelect && (
+        <CustomSelect
+          labelText="Bodega"
+          placeholderLabel="Debes seleccionar una bodega"
+          options={warehouses}
+          value={warehouseValue}
+          {...register("warehouse_id")}
+          errors={errors.warehouse_id}
+        />
+      )}
 
       <CustomInput
         labelText="Zona"

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -9,8 +9,9 @@ import { createCamera, updateCamera } from "../../services/camera.service";
 import { searchLocations } from "../../services/location.service";
 import { cameraSchema } from "../../validations/CameraSchema";
 
-const CameraForm = ({ selectedCamera, onSuccess }) => {
+const CameraForm = ({ selectedCamera, locationId, onSuccess }) => {
   const [locations, setLocations] = useState([]);
+  const shouldShowLocationSelect = !locationId;
   const {
     register,
     handleSubmit,
@@ -21,13 +22,17 @@ const CameraForm = ({ selectedCamera, onSuccess }) => {
     resolver: zodResolver(cameraSchema),
     defaultValues: {
       code: "",
-      location_id: "",
+      location_id: locationId || "",
     },
   });
 
   const locationValue = watch("location_id");
 
   useEffect(() => {
+    if (!shouldShowLocationSelect) {
+      return;
+    }
+
     const fetchLocations = async () => {
       try {
         const result = await searchLocations();
@@ -49,35 +54,47 @@ const CameraForm = ({ selectedCamera, onSuccess }) => {
     };
 
     fetchLocations();
-  }, []);
+  }, [shouldShowLocationSelect]);
 
   useEffect(() => {
     if (selectedCamera) {
       reset({
         code: selectedCamera.code ?? "",
-        location_id: selectedCamera.location_id?.toString() ?? selectedCamera.location?.id?.toString() ?? "",
+        location_id:
+          locationId ||
+          selectedCamera.location_id?.toString() ||
+          selectedCamera.location?.id?.toString() ||
+          "",
       });
     } else {
       reset({
         code: "",
-        location_id: "",
+        location_id: locationId || "",
       });
     }
-  }, [selectedCamera, reset]);
+  }, [selectedCamera, locationId, reset]);
 
   const onSubmit = async (data) => {
     try {
+      const resolvedLocationId = locationId || data.location_id;
+
       let result;
 
       if (selectedCamera) {
-        result = await updateCamera(selectedCamera.id, data);
+        result = await updateCamera(selectedCamera.id, {
+          ...data,
+          location_id: resolvedLocationId,
+        });
         if (result.success) {
           toast.success("Cámara actualizada correctamente");
         } else {
           throw new Error(result.error);
         }
       } else {
-        result = await createCamera(data);
+        result = await createCamera({
+          ...data,
+          location_id: resolvedLocationId,
+        });
         if (result.success) {
           toast.success("Cámara creada correctamente");
         } else {
@@ -102,14 +119,16 @@ const CameraForm = ({ selectedCamera, onSuccess }) => {
         {...register("code")} 
         errors={errors.code} />
 
-      <CustomSelect
-        labelText="Ubicación"
-        placeholderLabel="Debe seleccionar una ubicación"
-        options={locations}
-        value={locationValue}
-        {...register("location_id")}
-        errors={errors.location_id}
-      />
+      {shouldShowLocationSelect && (
+        <CustomSelect
+          labelText="Ubicación"
+          placeholderLabel="Debe seleccionar una ubicación"
+          options={locations}
+          value={locationValue}
+          {...register("location_id")}
+          errors={errors.location_id}
+        />
+      )}
 
       <div className="mt-6">
         <CustomButton type="submit" loading={isSubmitting}>
