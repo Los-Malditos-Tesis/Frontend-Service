@@ -52,6 +52,85 @@ const TYPE_META = {
   },
 };
 
+const GS1_PATTERNS = {
+  PALLET: /^\(00\)([^()]+)\(01\)([^()]+)\(37\)([^()]+)\(30\)([^()]+)$/,
+  BOX: /^\(01\)([^()]+)\(21\)([^()]+)\(30\)([^()]+)$/,
+};
+
+const parseGs1Qr = (qrCode = "") => {
+  const qrValue = String(qrCode).trim();
+
+  if (!qrValue) {
+    return {
+      unitType: null,
+      fields: [],
+      totalItems: null,
+      boxesInPallet: null,
+      itemsPerBox: null,
+      rawType: null,
+    };
+  }
+
+  const palletMatch = qrValue.match(GS1_PATTERNS.PALLET);
+  if (palletMatch) {
+    const [, palletCode, productCode, boxesInPallet, itemsPerBox] = palletMatch;
+
+    return {
+      unitType: "PAL",
+      rawType: "PALLET",
+      fields: [
+        // { label: "Código pallet", value: palletCode },
+        { label: "Código producto", value: productCode },
+        { label: "Cajas en pallet", value: boxesInPallet },
+        { label: "Productos por caja", value: itemsPerBox },
+        // {
+        //   label: "Total productos",
+        //   value: `${Number(boxesInPallet || 0) * Number(itemsPerBox || 0)}`,
+        // },
+      ],
+      totalItems: Number(boxesInPallet || 0) * Number(itemsPerBox || 0),
+      boxesInPallet,
+      itemsPerBox,
+      palletCode,
+      boxCode: null,
+      parentPalletCode: null,
+    };
+  }
+
+  const boxMatch = qrValue.match(GS1_PATTERNS.BOX);
+  if (boxMatch) {
+    const [, boxCode, palletCode, items] = boxMatch;
+
+    return {
+      unitType: "BOX",
+      rawType: "BOX",
+      fields: [
+        { label: "Código caja", value: boxCode },
+        { label: "Pallet padre", value: palletCode },
+        { label: "Artículos", value: items },
+      ],
+      totalItems: Number(items || 0),
+      boxesInPallet: null,
+      itemsPerBox: null,
+      palletCode,
+      boxCode,
+      parentPalletCode: palletCode,
+    };
+  }
+
+  return {
+    unitType: null,
+    rawType: null,
+    fields: [],
+    totalItems: null,
+    boxesInPallet: null,
+    itemsPerBox: null,
+    palletCode: null,
+    boxCode: null,
+    parentPalletCode: null,
+  };
+};
+
 const formatDate = (value) => {
   if (!value) return "--";
 
@@ -64,24 +143,18 @@ const formatDate = (value) => {
   });
 };
 
-const formatConfidence = (value) => {
-  const confidence = Number(value ?? 0);
-
-  if (Number.isNaN(confidence)) return "--";
-
-  if (confidence >= 0 && confidence <= 1) {
-    return `${Math.round(confidence * 100)}%`;
-  }
-
-  return `${Math.round(confidence)}%`;
-};
-
 const ScanCard = ({ scan }) => {
   const status = STATUS_META[scan.status] || STATUS_META.ERR;
   const StatusIcon = status.icon;
+  const parsedQr = parseGs1Qr(scan.qrCode);
   const unitMeta = UNIT_META[scan.detectedType] || {
-    label: scan.detectedType || "Sin tipo",
-    shortLabel: scan.detectedType || "--",
+    label:
+      parsedQr.unitType === "PAL"
+        ? "Pallet"
+        : parsedQr.unitType === "BOX"
+          ? "Caja"
+          : scan.detectedType || "Sin tipo",
+    shortLabel: parsedQr.unitType || scan.detectedType || "--",
     image: null,
     className: "border-slate-200 bg-slate-50 text-slate-700",
   };
@@ -94,7 +167,7 @@ const ScanCard = ({ scan }) => {
     <motion.article
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="group relative overflow-hidden rounded-md border border-bordercolor bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.1)]"
+      className="group border-bordercolor relative overflow-hidden rounded-md border bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.1)]"
     >
       <div className="absolute top-4 right-4 hidden h-24 w-24 opacity-90 sm:block">
         {unitMeta.image ? (
@@ -150,7 +223,7 @@ const ScanCard = ({ scan }) => {
       </div>
 
       <div className="relative mt-5 grid gap-3">
-        <div className="rounded-2xl bg-slate-50/80 p-4">
+        {/* <div className="rounded-2xl bg-slate-50/80 p-4">
           <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
             <QrCodeOutlinedIcon fontSize="small" />
             QR
@@ -158,16 +231,16 @@ const ScanCard = ({ scan }) => {
           <p className="mt-2 text-sm font-semibold break-all text-slate-800">
             {scan.qrCode || "--"}
           </p>
-        </div>
+        </div> */}
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
+          {/* <div className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
             <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
               <CodeOutlinedIcon fontSize="small" />
-              Código
+              Código GS1
             </div>
             <p className="mt-1 text-sm font-bold text-slate-800">{scan.itemCode || "--"}</p>
-          </div>
+          </div> */}
 
           <div className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
             <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
@@ -179,14 +252,44 @@ const ScanCard = ({ scan }) => {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm sm:col-span-2">
+          {/* <div className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm sm:col-span-2">
             <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
               <AccessTimeOutlinedIcon fontSize="small" />
               Fecha
             </div>
             <p className="mt-1 text-sm font-bold text-slate-800">{formatDate(scan.createdAt)}</p>
-          </div>
+          </div> */}
         </div>
+
+        {parsedQr.fields.length > 0 ? (
+          <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-black tracking-[0.12em] text-slate-400 uppercase">
+                <Inventory2OutlinedIcon fontSize="small" />
+                Información
+              </div>
+              {parsedQr.totalItems ? (
+                <div className="text-xs text-slate-500">
+                  Total productos: <span className="font-bold text-slate-800">{parsedQr.totalItems}</span>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {parsedQr.fields.map((field) => (
+                <div
+                  key={field.label}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm"
+                >
+                  <span className="text-[10px] text-slate-400 uppercase">{field.label}</span>
+                  <span className="text-sm font-bold break-all text-slate-900">
+                    {field.value || "--"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         {scan.errorMessage ? (
           <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-800">
