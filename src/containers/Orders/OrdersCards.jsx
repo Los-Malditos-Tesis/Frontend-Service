@@ -101,10 +101,12 @@ const getOriginLabel = (order) => {
 const getProgressPercent = (order) => {
   const total = Number(order.total_quantity || 0);
   const delivered = Number(order.total_delivered || 0);
+  const dispatched = Number(order.total_dispatched || 0);
 
   if (!total) return 0;
 
-  return Math.min(100, Math.max(0, (delivered / total) * 100));
+  // return Math.min(100, Math.max(0, (delivered / total) * 100));
+  return Math.min(100, Math.max(0, ((dispatched) / total) * 100));
 };
 
 const UnitIllustration = ({ unitType, type }) => {

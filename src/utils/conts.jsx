@@ -53,5 +53,5 @@ export const MENU = [
   { name: "Escaneos", path: "/scans", icon: <QrCodeScannerOutlinedIcon /> },
   { name: "Usuarios", path: "/users", icon: <PeopleAltOutlinedIcon /> },
 
-  { name: "API Test", path: "/api-test", icon: <ScienceOutlinedIcon /> },
+  // { name: "API Test", path: "/api-test", icon: <ScienceOutlinedIcon /> },
 ];

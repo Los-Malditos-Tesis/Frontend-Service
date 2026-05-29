@@ -621,7 +621,7 @@ const WarehouseProductSearchDialog = ({
             <Box sx={{ display: "grid", gap: 3, alignContent: "start" }}>
               <SelectedProductCard selectedProduct={selectedProduct} handleAnalyze={handleAnalyze} />
 
-              <CamerasPanel previewCameras={previewCameras} renderCameraCard={renderCameraCard} selectedProduct={selectedProduct} />
+              {/* <CamerasPanel previewCameras={previewCameras} renderCameraCard={renderCameraCard} selectedProduct={selectedProduct} /> */}
 
               <AnalysisPanel
                 analysis={analysis}
