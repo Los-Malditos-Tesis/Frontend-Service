@@ -8,12 +8,17 @@ const SCAN_BASE_URL = "/scan";
  */
 export const searchScans = async (filters = {}) => {
   try {
+     const payload = {
+      ...filters,
+      limit: 99999,
+    };
+
     if (Object.keys(filters).length > 0) {
-      const response = await api.post(`${SCAN_BASE_URL}/search`, filters);
+      const response = await api.post(`${SCAN_BASE_URL}/search`, payload);
       return normalizeResponse(response);
     }
 
-    const response = await api.post(`${SCAN_BASE_URL}/search`, {});
+    const response = await api.post(`${SCAN_BASE_URL}/search`, payload);
     return normalizeResponse(response);
   } catch (error) {
     console.warn("Failed to fetch scan events from API", error.message);
