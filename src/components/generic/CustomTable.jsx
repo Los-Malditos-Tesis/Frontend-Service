@@ -12,7 +12,6 @@ import {
 import { Search } from "@mui/icons-material";
 import EmptyState from "./EmptyState";
 import TableSkeleton from "./TableSkeleton";
-import { Title } from "./Title";
 
 const BREAKPOINT_MAP = {
   sm: "640px",
@@ -168,27 +167,24 @@ const CustomTable = ({
     return column.id;
   };
 
-  if (loading)
-    return <TableSkeleton loadingText={loadingText} mobileBreakpoint={mobileBreakpoint} />;
+  const hasNoData = !data.length;
+  const hasNoFilteredRows = data.length > 0 && rows.length === 0;
 
-  if (!data.length || (data.length > 0 && rows.length === 0))
-    return <EmptyState title={emptyTitle} description={emptyDescription} type="search" />;
+  if (loading) {
+    return <TableSkeleton loadingText={loadingText} mobileBreakpoint={mobileBreakpoint} />;
+  }
 
   return (
     <div
       className={`border-bordercolor w-full space-y-5 rounded-md border-2 bg-white p-6 ${className}`}
     >
-      {/* {title && (
-        <Title as="h3" small className="text-gray-800">
-          {title}
-        </Title>
-      )} */}
+      {title ? <h3 className="text-lg font-bold text-gray-800">{title}</h3> : null}
 
       {/* HEADER SUPERIOR */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         {/* SEARCH */}
-        <div className="w-full md:w-[300px]">
-          <label className="border-bordercolor bg-background flex w-full max-w-xl cursor-text items-center rounded-xl border-2 bg-gray-100 px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500">
+        <div className="w-full md:w-75">
+          <label className="border-bordercolor flex w-full max-w-xl cursor-text items-center rounded-xl border-2 bg-gray-100 px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500">
             <span className="text-gray-400">{searchIcon}</span>
 
             <input
@@ -216,7 +212,7 @@ const CustomTable = ({
                     <th
                       key={header.id}
                       onClick={header.column.getToggleSortingHandler()}
-                      className="cursor-pointer bg-black px-6 py-4 text-left font-semibold tracking-wider text-gray-500 text-white uppercase select-none"
+                      className="cursor-pointer bg-black px-6 py-4 text-left font-semibold tracking-wider text-white uppercase select-none"
                     >
                       <div className="flex items-center gap-2">
                         {flexRender(header.column.columnDef.header, header.getContext())}
@@ -262,42 +258,56 @@ const CustomTable = ({
 
             {/* BODY */}
             <tbody>
-              {groupedRows.map(({ row, isGroupStart, groupLabel, groupCount }) => {
-                const rowClassName = getRowClassName
-                  ? getRowClassName(row, { isGroupStart, groupLabel, groupCount })
-                  : "";
+              {hasNoData ? (
+                <tr>
+                  <td colSpan={table.getVisibleLeafColumns().length} className="px-6 py-10">
+                    <EmptyState title={emptyTitle} description={emptyDescription} type="search" />
+                  </td>
+                </tr>
+              ) : hasNoFilteredRows ? (
+                <tr>
+                  <td colSpan={table.getVisibleLeafColumns().length} className="px-6 py-10">
+                    <EmptyState title={emptyTitle} description={emptyDescription} type="search" />
+                  </td>
+                </tr>
+              ) : (
+                groupedRows.map(({ row, isGroupStart, groupLabel, groupCount }) => {
+                  const rowClassName = getRowClassName
+                    ? getRowClassName(row, { isGroupStart, groupLabel, groupCount })
+                    : "";
 
-                return (
-                  <React.Fragment key={row.id}>
-                    {groupBy?.getKey && isGroupStart && (
-                      <tr className="bg-gray-50">
-                        <td
-                          colSpan={table.getVisibleLeafColumns().length}
-                          className="border-t-4 border-black px-6 py-3"
-                        >
-                          <div className="flex items-center justify-between gap-3">
-                            <span className="text-sm font-semibold tracking-wider text-gray-900 uppercase">
-                              {groupLabel}
-                            </span>
-                            <span className="rounded-full bg-black px-3 py-1 text-xs font-semibold text-white">
-                              {groupCount} elementos
-                            </span>
-                          </div>
-                        </td>
+                  return (
+                    <React.Fragment key={row.id}>
+                      {groupBy?.getKey && isGroupStart && (
+                        <tr className="bg-gray-50">
+                          <td
+                            colSpan={table.getVisibleLeafColumns().length}
+                            className="border-t-4 border-black px-6 py-3"
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="text-sm font-semibold tracking-wider text-gray-900 uppercase">
+                                {groupLabel}
+                              </span>
+                              <span className="rounded-full bg-black px-3 py-1 text-xs font-semibold text-white">
+                                {groupCount} elementos
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                      <tr
+                        className={`border-t border-gray-100 transition hover:bg-gray-50 ${rowClassName}`}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <td key={cell.id} className="px-6 py-4 text-gray-700">
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        ))}
                       </tr>
-                    )}
-                    <tr
-                      className={`border-t border-gray-100 transition hover:bg-gray-50 ${rowClassName}`}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="px-6 py-4 text-gray-700">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
-                    </tr>
-                  </React.Fragment>
-                );
-              })}
+                    </React.Fragment>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -306,61 +316,67 @@ const CustomTable = ({
       {/* TARJETAS MOBILE */}
       {isMobileView && (
         <div className="space-y-3">
-          {groupedRows.map(({ row, isGroupStart, groupLabel, groupCount }) => {
-            const rowClassName = getRowClassName
-              ? getRowClassName(row, { isGroupStart, groupLabel, groupCount })
-              : "";
+          {hasNoData || hasNoFilteredRows ? (
+            <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-8">
+              <EmptyState title={emptyTitle} description={emptyDescription} type="search" />
+            </div>
+          ) : (
+            groupedRows.map(({ row, isGroupStart, groupLabel, groupCount }) => {
+              const rowClassName = getRowClassName
+                ? getRowClassName(row, { isGroupStart, groupLabel, groupCount })
+                : "";
 
-            return (
-              <React.Fragment key={row.id}>
-                {groupBy?.getKey && isGroupStart && (
-                  <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 shadow-sm">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-sm font-semibold tracking-wider text-gray-900 uppercase">
-                        {groupLabel}
-                      </span>
-                      <span className="rounded-full bg-black px-3 py-1 text-xs font-semibold text-white">
-                        {groupCount} elementos
-                      </span>
+              return (
+                <React.Fragment key={row.id}>
+                  {groupBy?.getKey && isGroupStart && (
+                    <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 shadow-sm">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-sm font-semibold tracking-wider text-gray-900 uppercase">
+                          {groupLabel}
+                        </span>
+                        <span className="rounded-full bg-black px-3 py-1 text-xs font-semibold text-white">
+                          {groupCount} elementos
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                <article
-                  className={`rounded-xl border border-gray-200 bg-white p-4 shadow-sm ${rowClassName}`}
-                >
-                  <div className="space-y-3">
-                    {row.getVisibleCells().map((cell) => {
-                      const isActionsCell = cell.column.id === "actions";
+                  <article
+                    className={`rounded-xl border border-gray-200 bg-white p-4 shadow-sm ${rowClassName}`}
+                  >
+                    <div className="space-y-3">
+                      {row.getVisibleCells().map((cell) => {
+                        const isActionsCell = cell.column.id === "actions";
 
-                      if (isActionsCell) {
+                        if (isActionsCell) {
+                          return (
+                            <div
+                              key={cell.id}
+                              className="flex items-center justify-end gap-2 border-t border-gray-100 pt-3"
+                            >
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </div>
+                          );
+                        }
+
                         return (
-                          <div
-                            key={cell.id}
-                            className="flex items-center justify-end gap-2 border-t border-gray-100 pt-3"
-                          >
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          <div key={cell.id} className="flex items-start justify-between gap-4">
+                            <span className="text-xs font-semibold tracking-wider text-gray-400 uppercase">
+                              {getColumnLabel(cell.column)}
+                            </span>
+
+                            <div className="max-w-[60%] text-right text-sm font-medium text-gray-700">
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </div>
                           </div>
                         );
-                      }
-
-                      return (
-                        <div key={cell.id} className="flex items-start justify-between gap-4">
-                          <span className="text-xs font-semibold tracking-wider text-gray-400 uppercase">
-                            {getColumnLabel(cell.column)}
-                          </span>
-
-                          <div className="max-w-[60%] text-right text-sm font-medium text-gray-700">
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </article>
-              </React.Fragment>
-            );
-          })}
+                      })}
+                    </div>
+                  </article>
+                </React.Fragment>
+              );
+            })
+          )}
         </div>
       )}
 
@@ -391,7 +407,7 @@ const CustomTable = ({
                   key={i}
                   onClick={() => table.setPageIndex(i)}
                   className={`h-8 w-8 rounded-md text-sm ${
-                    isActive ? "bg-[#000] text-white" : "border hover:bg-gray-100"
+                    isActive ? "bg-black text-white" : "border hover:bg-gray-100"
                   } `}
                 >
                   {i + 1}
