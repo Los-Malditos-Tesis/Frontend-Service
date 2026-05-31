@@ -18,14 +18,19 @@ const STORE_BASE_URL = "/store";
  */
 export const searchStores = async (filters = {}) => {
   try {
+    const payload = {
+      ...filters,
+      limit: 99999,
+    };
+
     // If filters are provided, use POST /search
     if (Object.keys(filters).length > 0) {
-      const response = await api.post(`${STORE_BASE_URL}/search`, filters);
+      const response = await api.post(`${STORE_BASE_URL}/search`, payload);
       return normalizeResponse(response);
     }
 
     // Otherwise, try to get all stores via search with empty filters
-    const response = await api.post(`${STORE_BASE_URL}/search`, {});
+    const response = await api.post(`${STORE_BASE_URL}/search`, payload);
     return normalizeResponse(response);
   } catch (error) {
     console.warn("Failed to fetch stores from API", error.message);

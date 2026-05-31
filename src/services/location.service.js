@@ -18,14 +18,19 @@ const LOCATION_BASE_URL = "/location";
  */
 export const searchLocations = async (filters = {}) => {
   try {
+    const payload = {
+      ...filters,
+      limit: 99999,
+    };
+
     // If filters are provided, use POST /search
     if (Object.keys(filters).length > 0) {
-      const response = await api.post(`${LOCATION_BASE_URL}/search`, filters);
+      const response = await api.post(`${LOCATION_BASE_URL}/search`, payload);
       return normalizeResponse(response);
     }
 
     // Otherwise, try to get all locations via search with empty filters
-    const response = await api.post(`${LOCATION_BASE_URL}/search`, {});
+    const response = await api.post(`${LOCATION_BASE_URL}/search`, payload);
     return normalizeResponse(response);
   } catch (error) {
     console.warn("Failed to fetch locations from API", error.message);

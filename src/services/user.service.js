@@ -5,7 +5,7 @@ const USER_BASE_URL = "/user";
 
 export const searchUsers = async (filters = {}) => {
   try {
-    const { data } = await api.get(`${USER_BASE_URL}/search`, filters);
+    const { data } = await api.get(`${USER_BASE_URL}/search?page=1&limit=99999`, filters);
     return { data: data?.data, success: true };
   } catch (error) {
     console.warn("Failed to fetch users from API", error.message);

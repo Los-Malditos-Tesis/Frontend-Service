@@ -18,14 +18,19 @@ const WAREHOUSE_BASE_URL = "/warehouse";
  */
 export const searchWarehouses = async (filters = {}) => {
   try {
+    const payload = {
+      ...filters,
+      limit: 99999,
+    };
+
     // If filters are provided, use POST /search
     if (Object.keys(filters).length > 0) {
-      const response = await api.post(`${WAREHOUSE_BASE_URL}/search`, filters);
+      const response = await api.post(`${WAREHOUSE_BASE_URL}/search`, payload);
       return normalizeResponse(response);
     }
 
     // Otherwise, try to get all warehouses via search with empty filters
-    const response = await api.post(`${WAREHOUSE_BASE_URL}/search`, {});
+    const response = await api.post(`${WAREHOUSE_BASE_URL}/search`, payload);
     return normalizeResponse(response);
   } catch (error) {
     console.warn("Failed to fetch warehouses from API", error.message);
