@@ -31,7 +31,7 @@ const getWarehouseGroupKey = (camera) => {
   return warehouse.id || warehouse.name || "Sin bodega";
 };
 
-const CamerasTable = ({ cameras = [], loading, onEdit, onRefresh }) => {
+const CamerasTable = ({ cameras = [], loading, onEdit, onRefresh, canManage = true }) => {
   const [warehouseFilter, setWarehouseFilter] = useState("");
 
   const handleDelete = async (id) => {
@@ -121,33 +121,38 @@ const CamerasTable = ({ cameras = [], loading, onEdit, onRefresh }) => {
         return value ? `${value}` : "••••••••••••••••••••••••";
       },
     }),
-    columnHelper.display({
-      id: "actions",
-      header: "Actions",
-      enableColumnFilter: false,
-      cell: ({ row }) => {
-        const camera = row.original;
-
-        return (
-          <div className="flex items-center justify-center gap-2">
-            <button
-              onClick={() => onEdit(camera)}
-              className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
-            >
-              <Edit fontSize="small" />
-            </button>
-
-            <button
-              onClick={() => handleDelete(camera.id)}
-              className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
-            >
-              <Delete fontSize="small" />
-            </button>
-          </div>
-        );
-      },
-    }),
   ];
+
+  if (canManage) {
+    columns.push(
+      columnHelper.display({
+        id: "actions",
+        header: "Actions",
+        enableColumnFilter: false,
+        cell: ({ row }) => {
+          const camera = row.original;
+
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={() => onEdit(camera)}
+                className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
+              >
+                <Edit fontSize="small" />
+              </button>
+
+              <button
+                onClick={() => handleDelete(camera.id)}
+                className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
+              >
+                <Delete fontSize="small" />
+              </button>
+            </div>
+          );
+        },
+      })
+    );
+  }
 
   return (
     <CustomTable

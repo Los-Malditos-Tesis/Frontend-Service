@@ -16,7 +16,6 @@ const AdminIntroLayout = ({
   secondaryButtonLabel,
   onSecondaryCreate,
   secondaryStartIcon,
-  secondaryButtonClassName = "max-w-[13.5rem]",
   children,
   showAddIcon = true,
   className = "mb-6 pt-6 pb-8 md:mb-8 md:pb-10",
@@ -34,21 +33,13 @@ const AdminIntroLayout = ({
           >
             <div className="ml-auto flex flex-col gap-3 sm:flex-row sm:items-center">
               {secondaryButtonLabel && onSecondaryCreate && (
-                <CustomButton
-                  className={`max-w-[13.5rem] ${secondaryButtonClassName}`}
-                  action={onSecondaryCreate}
-                  startIcon={secondaryStartIcon}
-                >
+                <CustomButton action={onSecondaryCreate} startIcon={secondaryStartIcon}>
                   {secondaryButtonLabel}
                 </CustomButton>
               )}
 
               {buttonLabel && onCreate && (
-                <CustomButton
-                  className="max-w-[13.5rem]"
-                  action={onCreate}
-                  startIcon={showAddIcon ? <AddIcon /> : null}
-                >
+                <CustomButton action={onCreate} startIcon={showAddIcon ? <AddIcon /> : null}>
                   {buttonLabel}
                 </CustomButton>
               )}
@@ -66,12 +57,11 @@ AdminIntroLayout.propTypes = {
   title: PropTypes.string.isRequired,
   subtitle: PropTypes.string.isRequired,
   eyebrow: PropTypes.node,
-  buttonLabel: PropTypes.string.isRequired,
-  onCreate: PropTypes.func.isRequired,
+  buttonLabel: PropTypes.node,
+  onCreate: PropTypes.func,
   secondaryButtonLabel: PropTypes.node,
   onSecondaryCreate: PropTypes.func,
   secondaryStartIcon: PropTypes.node,
-  secondaryButtonClassName: PropTypes.string,
   children: PropTypes.node.isRequired,
 };
 

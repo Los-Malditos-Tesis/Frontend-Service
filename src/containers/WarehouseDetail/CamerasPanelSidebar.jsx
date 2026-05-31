@@ -10,18 +10,19 @@ const CamerasPanelSidebar = ({
   onAddCamera,
   onEditCamera,
   onDeleteCamera,
+  canManage = true,
   onClose,
 }) => {
   if (!selectedLocation) {
     return (
-      <div className="h-full bg-white border-2 border-gray-200 rounded-2xl p-8  flex flex-col items-center justify-center text-center">
-        <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center mb-4">
+      <div className="flex h-full flex-col items-center justify-center rounded-2xl border-2 border-gray-200 bg-white p-8 text-center">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-xl bg-gray-100">
           <VideocamIcon className="text-gray-400" fontSize="large" />
         </div>
-        <p className="text-gray-600 font-bold text-base">
+        <p className="text-base font-bold text-gray-600">
           Selecciona una zona para ver sus cámaras
         </p>
-        <p className="text-gray-500 text-sm mt-2">Haz clic en una ubicación en el mapa</p>
+        <p className="mt-2 text-sm text-gray-500">Haz clic en una ubicación en el mapa</p>
       </div>
     );
   }
@@ -30,18 +31,16 @@ const CamerasPanelSidebar = ({
   const hasMonitoring = cameras.length > 0;
 
   return (
-    <div className="bg-white border-2 border-gray-200 rounded-2xl p-6   flex flex-col">
+    <div className="flex flex-col rounded-2xl border-2 border-gray-200 bg-white p-6">
       {/* Header Panel */}
-      <div className="mb-5 pb-5 border-b border-gray-200">
-        <div className="flex items-start gap-3 mb-3">
-          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
+      <div className="mb-5 border-b border-gray-200 pb-5">
+        <div className="mb-3 flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100">
             <VideocamIcon fontSize="small" className="text-secondary_color" />
           </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-secondary_color truncate">
-              {selectedLocation.zone}
-            </h3>
-            <p className="text-xs text-gray-500 mt-0.5">Zona seleccionada</p>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-secondary_color truncate font-bold">{selectedLocation.zone}</h3>
+            <p className="mt-0.5 text-xs text-gray-500">Zona seleccionada</p>
           </div>
         </div>
 
@@ -62,49 +61,49 @@ const CamerasPanelSidebar = ({
       </div>
 
       {/* Cameras List */}
-      <div className="flex-1 overflow-y-auto mb-4 space-y-2">
+      <div className="mb-4 flex-1 space-y-2 overflow-y-auto">
         {cameras.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-3">
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
               <VideocamIcon className="text-gray-400" />
             </div>
-            <p className="text-gray-600 font-medium text-sm">Sin cámaras</p>
-            <p className="text-gray-500 text-xs mt-1">
-              Agrega vigilancia a esta zona
-            </p>
+            <p className="text-sm font-medium text-gray-600">Sin cámaras</p>
+            <p className="mt-1 text-xs text-gray-500">Agrega vigilancia a esta zona</p>
           </div>
         ) : (
           cameras.map((camera) => (
             <div
               key={camera.id}
-              className="group bg-gray-50 border border-gray-100 rounded-lg p-3 hover:border-gray-300 hover:bg-gray-100 transition"
+              className="group rounded-lg border border-gray-100 bg-gray-50 p-3 transition hover:border-gray-300 hover:bg-gray-100"
             >
               {/* Camera Header */}
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <p className="font-bold text-secondary_color text-sm truncate flex-1">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="text-secondary_color flex-1 truncate text-sm font-bold">
                   {camera.code}
                 </p>
                 {/* Action Buttons */}
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                  <button
-                    onClick={() => onEditCamera(camera, selectedLocation)}
-                    className="p-1 text-gray-600 hover:text-accent_color hover:bg-blue-50 rounded-md transition"
-                    title="Editar"
-                  >
-                    <EditIcon fontSize="small" />
-                  </button>
-                  <button
-                    onClick={() => onDeleteCamera(camera, selectedLocation)}
-                    className="p-1 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-md transition"
-                    title="Eliminar"
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </button>
-                </div>
+                {canManage ? (
+                  <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <button
+                      onClick={() => onEditCamera(camera, selectedLocation)}
+                      className="hover:text-accent_color rounded-md p-1 text-gray-600 transition hover:bg-blue-50"
+                      title="Editar"
+                    >
+                      <EditIcon fontSize="small" />
+                    </button>
+                    <button
+                      onClick={() => onDeleteCamera(camera, selectedLocation)}
+                      className="rounded-md p-1 text-gray-600 transition hover:bg-red-50 hover:text-red-500"
+                      title="Eliminar"
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </button>
+                  </div>
+                ) : null}
               </div>
 
               {/* Camera Info */}
-              <p className="text-xs text-gray-500 font-mono truncate">
+              <p className="truncate font-mono text-xs text-gray-500">
                 {camera.id.substring(0, 20)}...
               </p>
             </div>
@@ -113,13 +112,15 @@ const CamerasPanelSidebar = ({
       </div>
 
       {/* Add Camera Button */}
-      <button
-        onClick={() => onAddCamera(selectedLocation)}
-        className="w-full py-2.5 bg-accent_color text-white rounded-lg hover:shadow-md transition font-bold text-sm flex items-center justify-center gap-2"
-      >
-        <AddIcon fontSize="small" />
-        Agregar Cámara
-      </button>
+      {canManage ? (
+        <button
+          onClick={() => onAddCamera(selectedLocation)}
+          className="bg-accent_color flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-bold text-white transition hover:shadow-md"
+        >
+          <AddIcon fontSize="small" />
+          Agregar Cámara
+        </button>
+      ) : null}
     </div>
   );
 };

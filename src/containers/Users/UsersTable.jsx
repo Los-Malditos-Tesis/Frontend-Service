@@ -10,7 +10,14 @@ import CustomTable from "../../components/generic/CustomTable";
 
 const columnHelper = createColumnHelper();
 
-const UsersTable = ({ users = [], loading, onEdit, onRefresh, showPagination = true }) => {
+const UsersTable = ({
+  users = [],
+  loading,
+  onEdit,
+  onRefresh,
+  showPagination = true,
+  canManage = true,
+}) => {
   // HANDLERS
   const handleToggleStatus = async (id, currentlyActive) => {
     const action = currentlyActive ? "bloquear" : "desbloquear";
@@ -78,43 +85,47 @@ const UsersTable = ({ users = [], loading, onEdit, onRefresh, showPagination = t
       header: "Status",
       cell: ({ getValue }) => (
         <span
-          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getValue()
-            ? "bg-green-100 text-green-700"
-            : "bg-red-100 text-red-700"
-            }`}
+          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+            getValue() ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+          }`}
         >
           {getValue() ? "Activo" : "Bloqueado"}
         </span>
       ),
     }),
-    columnHelper.display({
-      id: "actions",
-      header: "Actions",
-      enableColumnFilter: false,
-      cell: ({ row }) => {
-        const u = row.original;
-
-        return (
-          <div className="flex items-center justify-center gap-2">
-            <button
-              onClick={() => onEdit(u)}
-              className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
-            >
-              <Edit fontSize="small" />
-            </button>
-
-            <button
-              onClick={() => handleToggleStatus(u.id, u.active)}
-              className="rounded-lg p-2 transition hover:bg-yellow-50 active:scale-95"
-              title={u.active ? "Bloquear usuario" : "Desbloquear usuario"}
-            >
-              {u.active ? <Lock fontSize="small" /> : <LockOpen fontSize="small" />}
-            </button>
-          </div>
-        );
-      },
-    }),
   ];
+
+  if (canManage) {
+    columns.push(
+      columnHelper.display({
+        id: "actions",
+        header: "Actions",
+        enableColumnFilter: false,
+        cell: ({ row }) => {
+          const u = row.original;
+
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={() => onEdit(u)}
+                className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
+              >
+                <Edit fontSize="small" />
+              </button>
+
+              <button
+                onClick={() => handleToggleStatus(u.id, u.active)}
+                className="rounded-lg p-2 transition hover:bg-yellow-50 active:scale-95"
+                title={u.active ? "Bloquear usuario" : "Desbloquear usuario"}
+              >
+                {u.active ? <Lock fontSize="small" /> : <LockOpen fontSize="small" />}
+              </button>
+            </div>
+          );
+        },
+      })
+    );
+  }
 
   return (
     <CustomTable

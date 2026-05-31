@@ -17,6 +17,8 @@ import ScansPage from "../pages/ScansPage";
 import ApiTestPage from "../pages/ApiTestPage";
 import { ROLES } from "../utils/conts";
 
+const APP_ROLES = [ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.VIEWER, ROLES.VIEWER_ORDER, ROLES.USER];
+
 export const router = createBrowserRouter([
   {
     path: "/login",
@@ -29,7 +31,7 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+      <ProtectedRoute allowedRoles={APP_ROLES}>
         <Dashboard />
       </ProtectedRoute>
     ),
@@ -37,7 +39,7 @@ export const router = createBrowserRouter([
   {
     path: "/dashboard",
     element: (
-      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+      <ProtectedRoute allowedRoles={APP_ROLES}>
         <Dashboard />
       </ProtectedRoute>
     ),
@@ -45,7 +47,7 @@ export const router = createBrowserRouter([
   {
     path: "/warehouses",
     element: (
-      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+      <ProtectedRoute allowedRoles={APP_ROLES}>
         <WarehousesPage />
       </ProtectedRoute>
     ),
@@ -53,40 +55,34 @@ export const router = createBrowserRouter([
   {
     path: "/warehouses/:id",
     element: (
-      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+      <ProtectedRoute allowedRoles={APP_ROLES}>
         <WarehouseDetailPage />
       </ProtectedRoute>
     ),
   },
 
-
-
-
   {
     path: "/products",
     element: (
-      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+      <ProtectedRoute allowedRoles={APP_ROLES}>
         <ProductsPage />
       </ProtectedRoute>
     ),
   },
 
-
   {
     path: "/users",
     element: (
-      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN]}>
         <UsersPage />
       </ProtectedRoute>
     ),
   },
 
-
-
   {
     path: "/stores",
     element: (
-      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN]}>
+      <ProtectedRoute allowedRoles={APP_ROLES}>
         <StoresPage />
       </ProtectedRoute>
     ),
@@ -94,7 +90,7 @@ export const router = createBrowserRouter([
   {
     path: "/locations",
     element: (
-      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+      <ProtectedRoute allowedRoles={APP_ROLES}>
         <LocationsPage />
       </ProtectedRoute>
     ),
@@ -102,7 +98,7 @@ export const router = createBrowserRouter([
   {
     path: "/suppliers",
     element: (
-      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+      <ProtectedRoute allowedRoles={APP_ROLES}>
         <SuppliersPage />
       </ProtectedRoute>
     ),
@@ -110,7 +106,7 @@ export const router = createBrowserRouter([
   {
     path: "/scans",
     element: (
-      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+      <ProtectedRoute allowedRoles={APP_ROLES}>
         <ScansPage />
       </ProtectedRoute>
     ),
@@ -118,7 +114,7 @@ export const router = createBrowserRouter([
   {
     path: "/orders",
     element: (
-      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+      <ProtectedRoute allowedRoles={APP_ROLES}>
         <OrdersPage />
       </ProtectedRoute>
     ),
@@ -126,7 +122,7 @@ export const router = createBrowserRouter([
   {
     path: "/cameras",
     element: (
-      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+      <ProtectedRoute allowedRoles={APP_ROLES}>
         <CamerasPage />
       </ProtectedRoute>
     ),
@@ -134,7 +130,7 @@ export const router = createBrowserRouter([
   {
     path: "/api-test",
     element: (
-      <ProtectedRoute allowedRoles={[ROLES.SUPERADMIN, ROLES.ADMIN, ROLES.USER]}>
+      <ProtectedRoute allowedRoles={APP_ROLES}>
         <ApiTestPage />
       </ProtectedRoute>
     ),

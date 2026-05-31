@@ -6,12 +6,16 @@ import StoreForm from "../containers/Stores/StoreForm";
 import CustomDrawer from "../components/generic/CustomDrawer";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
 import AdminIntroLayout from "../components/generic/AdminIntroLayout";
+import { useAuth } from "../context/AuthContext";
+import { canManageGeneral } from "../utils/accessControl";
 
 const StoresPage = () => {
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedStore, setSelectedStore] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { user } = useAuth();
+  const canManage = canManageGeneral(user);
 
   const handleCloseDrawer = () => {
     setSelectedStore(null);
@@ -59,8 +63,8 @@ const StoresPage = () => {
       title="Gestión de Tiendas"
       subtitle="Administra las tiendas registradas en el sistema, crea nuevos accesos y controla su información principal."
       eyebrow={<Breadcrumbs />}
-      buttonLabel="Crear tienda"
-      onCreate={handleCreateStore}
+      buttonLabel={canManage ? "Crear tienda" : undefined}
+      onCreate={canManage ? handleCreateStore : undefined}
     >
       <CustomDrawer
         isOpen={isDrawerOpen}
@@ -81,6 +85,7 @@ const StoresPage = () => {
         loading={loading}
         onEdit={handleEditStore}
         onRefresh={fetchStores}
+        canManage={canManage}
       />
     </AdminIntroLayout>
   );

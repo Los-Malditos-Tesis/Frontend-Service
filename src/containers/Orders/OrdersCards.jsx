@@ -66,7 +66,7 @@ const UNIT_META = {
 };
 
 // const normalizeStatus = (status) => (status === "DISPATCHED" ? "SHIPPED" : status);
-const normalizeStatus = (status) => (status);
+const normalizeStatus = (status) => status;
 
 const formatDate = (value) => {
   if (!value) return "--";
@@ -87,11 +87,7 @@ const getDestinationLabel = (order) => {
     return order.DestinationStore?.name || order.store_name || "Tienda destino";
   }
 
-  return (
-    order.DestinationWarehouse?.name ||
-    order.destination_warehouse_name ||
-    "Bodega destino"
-  );
+  return order.DestinationWarehouse?.name || order.destination_warehouse_name || "Bodega destino";
 };
 
 const getOriginLabel = (order) => {
@@ -106,7 +102,7 @@ const getProgressPercent = (order) => {
   if (!total) return 0;
 
   // return Math.min(100, Math.max(0, (delivered / total) * 100));
-  return Math.min(100, Math.max(0, ((dispatched) / total) * 100));
+  return Math.min(100, Math.max(0, (dispatched / total) * 100));
 };
 
 const UnitIllustration = ({ unitType, type }) => {
@@ -114,15 +110,13 @@ const UnitIllustration = ({ unitType, type }) => {
   const isSale = type === "SALE";
 
   return (
-    // <div className="pointer-events-none absolute -right-4 bottom-0 hidden h-36 w-40 opacity-90 sm:block">
-    <div className={`pointer-events-none absolute  hidden opacity-90 sm:block ${
-      isPallet ? "h-36 w-40 -right-4 -bottom-0" : "h-34 w-34 -right-4 -bottom-2"
-    }`}>
-      {isPallet ? (
-        <img src={palletIcon} alt="Pallet icon" />
-      ) : (
-        <img src={boxIcon} alt="Box icon" />
-      )}
+    <div
+      className={`pointer-events-none absolute hidden opacity-90 sm:block ${
+        isPallet ? "-right-4 h-36 w-40" : "-right-4 -bottom-2 h-34 w-34"
+      }`}
+      style={isPallet ? { bottom: 0 } : undefined}
+    >
+      {isPallet ? <img src={palletIcon} alt="Pallet icon" /> : <img src={boxIcon} alt="Box icon" />}
       {/* {isPallet ? (
         <svg viewBox="0 0 220 180" className="h-full w-full">
           <defs>
@@ -178,12 +172,10 @@ const UnitIllustration = ({ unitType, type }) => {
 
 const ActionButton = ({ variant = "primary", icon: Icon, children, onClick }) => {
   const styles = {
-    primary:
-      "border-sky-200 bg-sky-50 text-sky-700 hover:border-sky-300 hover:bg-sky-100",
+    primary: "border-sky-200 bg-sky-50 text-sky-700 hover:border-sky-300 hover:bg-sky-100",
     success:
       "border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300 hover:bg-emerald-100",
-    danger:
-      "border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300 hover:bg-rose-100",
+    danger: "border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300 hover:bg-rose-100",
     ghost:
       "border-slate-200 bg-white text-slate-600 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600",
   };
@@ -204,7 +196,7 @@ const OrderActions = ({ order, onUpdateStatus, onDelete }) => {
   const status = normalizeStatus(order.status);
 
   return (
-    <div className="flex flex-wrap gap-2 min-h-[32px]">
+    <div className="flex min-h-8 flex-wrap gap-2">
       {status === "PENDING" && (
         <>
           <ActionButton
@@ -229,7 +221,7 @@ const OrderActions = ({ order, onUpdateStatus, onDelete }) => {
           variant="success"
           icon={TaskAltOutlinedIcon}
           onClick={() => onUpdateStatus(order, "DELIVERED")}
-          >
+        >
           Marcar entregada
         </ActionButton>
       )}
@@ -247,7 +239,7 @@ const OrderActions = ({ order, onUpdateStatus, onDelete }) => {
   );
 };
 
-const OrdersCards = ({ orders = [], loading, onUpdateStatus, onDelete }) => {
+const OrdersCards = ({ orders = [], loading, onUpdateStatus, onDelete, canManage = true }) => {
   if (!loading && (!orders || orders.length === 0)) {
     return (
       <EmptyState
@@ -259,7 +251,7 @@ const OrdersCards = ({ orders = [], loading, onUpdateStatus, onDelete }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
       {orders.map((order, index) => {
         const typeMeta = TYPE_META[order.type] || TYPE_META.TRANSFER;
         const statusMeta = STATUS_META[order.status] || STATUS_META.PENDING;
@@ -278,13 +270,20 @@ const OrdersCards = ({ orders = [], loading, onUpdateStatus, onDelete }) => {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.035 }}
-            className="group relative overflow-hidden  border-2 border-bordercolor rounded-lg bg-white shadow-[0_12px_35px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.1)]"
+            className="group border-bordercolor relative overflow-hidden rounded-lg border-2 bg-white shadow-[0_12px_35px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.1)]"
           >
-            <div className={`h-1.5 bg-gradient-to-r ${typeMeta.gradient}`} />
+            <div
+              className="h-1.5"
+              style={{
+                backgroundImage: `linear-gradient(to right, ${
+                  order.type === "SALE" ? "#f59e0b, #ea580c" : "#0284c7, #4f46e5"
+                })`,
+              }}
+            />
 
             <UnitIllustration unitType={order.unit_type} type={order.type} />
             {/* sm:pr-40 */}
-            <div className="relative p-5 pr-5 ">
+            <div className="relative p-5 pr-5">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -311,24 +310,20 @@ const OrdersCards = ({ orders = [], loading, onUpdateStatus, onDelete }) => {
                 </div>
 
                 <div className="text-right">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
+                  <p className="text-xs font-bold tracking-[0.2em] text-slate-400 uppercase">
                     Progreso
                   </p>
-                  <p className={`text-2xl font-black ${typeMeta.text}`}>
-                    {progress.toFixed(0)}%
-                  </p>
+                  <p className={`text-2xl font-black ${typeMeta.text}`}>{progress.toFixed(0)}%</p>
                 </div>
               </div>
 
               <div className="mt-5 flex flex-col gap-3 rounded-2xl bg-slate-50/80 p-4 sm:flex-row sm:items-center">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-slate-400">
+                  <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
                     <WarehouseOutlinedIcon sx={{ fontSize: 16 }} />
                     Origen
                   </div>
-                  <p className="mt-1 truncate text-sm font-bold text-slate-800">
-                    {originLabel}
-                  </p>
+                  <p className="mt-1 truncate text-sm font-bold text-slate-800">{originLabel}</p>
                 </div>
 
                 <div className="hidden text-slate-300 sm:block">
@@ -336,7 +331,7 @@ const OrdersCards = ({ orders = [], loading, onUpdateStatus, onDelete }) => {
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-slate-400">
+                  <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
                     {order.type === "SALE" ? (
                       <StorefrontOutlinedIcon sx={{ fontSize: 16 }} />
                     ) : (
@@ -364,7 +359,12 @@ const OrdersCards = ({ orders = [], loading, onUpdateStatus, onDelete }) => {
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
                     transition={{ duration: 0.65 }}
-                    className={`h-full rounded-full bg-gradient-to-r ${typeMeta.gradient}`}
+                    className="h-full rounded-full"
+                    style={{
+                      backgroundImage: `linear-gradient(to right, ${
+                        order.type === "SALE" ? "#f59e0b, #ea580c" : "#0284c7, #4f46e5"
+                      })`,
+                    }}
                   />
                 </div>
               </div>
@@ -375,11 +375,9 @@ const OrdersCards = ({ orders = [], loading, onUpdateStatus, onDelete }) => {
                   <p>Actualizada: {formatDate(order.updatedAt)}</p>
                 </div>
 
-                <OrderActions
-                  order={order}
-                  onUpdateStatus={onUpdateStatus}
-                  onDelete={onDelete}
-                />
+                {canManage ? (
+                  <OrderActions order={order} onUpdateStatus={onUpdateStatus} onDelete={onDelete} />
+                ) : null}
               </div>
             </div>
           </motion.article>
@@ -403,15 +401,16 @@ ActionButton.propTypes = {
 
 OrderActions.propTypes = {
   order: PropTypes.object.isRequired,
-  onUpdateStatus: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
+  onUpdateStatus: PropTypes.func,
+  onDelete: PropTypes.func,
 };
 
 OrdersCards.propTypes = {
   orders: PropTypes.array,
   loading: PropTypes.bool,
-  onUpdateStatus: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
+  onUpdateStatus: PropTypes.func,
+  onDelete: PropTypes.func,
+  canManage: PropTypes.bool,
 };
 
 export default OrdersCards;

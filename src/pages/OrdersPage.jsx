@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "../context/AuthContext";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
@@ -18,6 +19,7 @@ import { searchStores } from "../services/store.service";
 import { searchProducts } from "../services/product.service";
 import { ORDER_TYPES } from "../utils/conts.jsx";
 import WarehouseSelect from "../components/generic/WarehouseSelect";
+import { canManageOrders } from "../utils/accessControl";
 
 const typeFilters = [
   { value: "ALL", label: "Todas" },
@@ -32,7 +34,6 @@ const summaryCards = [
     icon: ReceiptLongOutlinedIcon,
     bgColor: "bg-slate-100",
     color: "text-slate-700",
-
   },
   {
     key: "pending",
@@ -118,17 +119,20 @@ const OrdersPage = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState("ALL");
   const [warehouseFilter, setWarehouseFilter] = useState("");
+  const { user } = useAuth();
+  const canManage = canManageOrders(user);
 
   const fetchPageData = async () => {
     try {
       setLoading(true);
 
-      const [ordersResult, warehousesResult, storesResult, productsResult] = await Promise.allSettled([
-        searchOrders(),
-        searchWarehouses(),
-        searchStores(),
-        searchProducts(),
-      ]);
+      const [ordersResult, warehousesResult, storesResult, productsResult] =
+        await Promise.allSettled([
+          searchOrders(),
+          searchWarehouses(),
+          searchStores(),
+          searchProducts(),
+        ]);
 
       const nextOrders =
         ordersResult.status === "fulfilled" && ordersResult.value.success
@@ -153,7 +157,8 @@ const OrdersPage = () => {
       setProducts(nextProducts);
 
       const failedRequests = [ordersResult, warehousesResult, storesResult, productsResult].filter(
-        (result) => result.status === "rejected" || (result.status === "fulfilled" && !result.value.success)
+        (result) =>
+          result.status === "rejected" || (result.status === "fulfilled" && !result.value.success)
       ).length;
 
       if (failedRequests > 0) {
@@ -277,8 +282,8 @@ const OrdersPage = () => {
       title="Gestión de Órdenes"
       subtitle="Crea ventas y transferencias con una vista visual tipo tablero, y controla el ciclo de vida de cada orden desde un solo lugar."
       eyebrow={<Breadcrumbs />}
-      buttonLabel="Crear orden"
-      onCreate={handleOpenDrawer}
+      buttonLabel={canManage ? "Crear orden" : undefined}
+      onCreate={canManage ? handleOpenDrawer : undefined}
       showAddIcon={true}
     >
       <div className="space-y-6">
@@ -288,12 +293,12 @@ const OrdersPage = () => {
             return (
               <article
                 key={card.key}
-                className="bg-white border-2 border-bordercolor rounded-md p-5 transition hover:shadow-md hover:-translate-y-0.5"
+                className="border-bordercolor rounded-md border-2 bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium text-slate-500">{card.label}</p>
-                    <p className="mt-2 text-3xl font-extrabold text-secondary_color">
+                    <p className="text-secondary_color mt-2 text-3xl font-extrabold">
                       {loading ? "--" : stats[card.key].toLocaleString("es-SV")}
                     </p>
                   </div>
@@ -307,7 +312,7 @@ const OrdersPage = () => {
         </section>
 
         <section className="PT-8 md:pt-14">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justi fy-between">
+          <div className="lg:justi fy-between flex flex-col gap-4 lg:flex-row lg:items-center">
             <div className="w-full max-w-md">
               <p className="mt-1 text-sm font-semibold text-slate-700">
                 Buscar ordenes relacionadas a una bodega específica..
@@ -324,17 +329,17 @@ const OrdersPage = () => {
               </div>
             </div>
 
-
-            <div className="ml-4 mt-8 flex flex-wrap gap-2">
+            <div className="mt-8 ml-4 flex flex-wrap gap-2">
               {typeFilters.map((filter) => (
                 <button
                   key={filter.value}
                   type="button"
                   onClick={() => setTypeFilter(filter.value)}
-                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${typeFilter === filter.value
-                    ? "bg-slate-900 text-white shadow-md"
-                    : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
-                    }`}
+                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                    typeFilter === filter.value
+                      ? "bg-slate-900 text-white shadow-md"
+                      : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
+                  }`}
                 >
                   {filter.label}
                 </button>
@@ -348,6 +353,7 @@ const OrdersPage = () => {
           loading={loading}
           onUpdateStatus={handleUpdateStatus}
           onDelete={handleDeleteOrder}
+          canManage={canManage}
         />
       </div>
 

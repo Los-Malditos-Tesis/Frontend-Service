@@ -1,17 +1,22 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "../context/AuthContext";
 import { searchUsers } from "../services/user.service";
 import UsersTable from "../containers/Users/UsersTable";
 import UserForm from "../containers/Users/UserForm";
 import CustomDrawer from "../components/generic/CustomDrawer";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
 import AdminIntroLayout from "../components/generic/AdminIntroLayout";
+import { hasAnyRole } from "../utils/accessControl";
+import { ROLES } from "../utils/conts.jsx";
 
 const UsersPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { user } = useAuth();
+  const canManage = hasAnyRole(user, [ROLES.SUPERADMIN]);
 
   const handleCloseDrawer = () => {
     setSelectedUser(null);
@@ -57,8 +62,8 @@ const UsersPage = () => {
       title="Gestión de Usuarios"
       subtitle="Administra los accesos y permisos de los usuarios en el sistema."
       eyebrow={<Breadcrumbs />}
-      buttonLabel="Crear usuarios"
-      onCreate={handleCreateUser}
+      buttonLabel={canManage ? "Crear usuarios" : undefined}
+      onCreate={canManage ? handleCreateUser : undefined}
     >
       <CustomDrawer
         isOpen={isDrawerOpen}
@@ -79,6 +84,7 @@ const UsersPage = () => {
         loading={loading}
         onEdit={handleEditUser}
         onRefresh={fetchUsers}
+        canManage={canManage}
       />
     </AdminIntroLayout>
   );

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useAuth } from "../context/AuthContext";
 import AdminIntroLayout from "../components/generic/AdminIntroLayout";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
 import CustomDrawer from "../components/generic/CustomDrawer";
@@ -10,30 +11,37 @@ import WarehouseMapLayout from "../containers/WarehouseDetail/WarehouseMapLayout
 import WarehouseProductsTable from "../containers/WarehouseDetail/WarehouseProductsTable";
 import WarehouseOrdersTable from "../containers/WarehouseDetail/WarehouseOrdersTable";
 import WarehouseScmModeCard from "../containers/WarehouseDetail/WarehouseScmModeCard";
+import WarehouseScansOverview from "../containers/WarehouseDetail/WarehouseScansOverview";
 import LocationForm from "../containers/Locations/LocationForm";
 import CameraForm from "../containers/Cameras/CameraForm";
 import ApiKeyDialog from "../components/camera/ApiKeyDialog";
 import WarehouseProductSearchDialog from "../containers/WarehouseDetail/WarehouseProductSearchDialog";
 import { getWarehouseStructure } from "../services/warehouse.detail.service";
+import { searchScans } from "../services/scan.service";
 import { searchProducts } from "../services/product.service";
 import { searchOrders } from "../services/order.service";
 import { getConfigParams } from "../services/configParam.service";
 import { deleteLocation } from "../services/location.service";
 import { deleteCamera } from "../services/camera.service";
 import { updateWarehouse } from "../services/warehouse.service";
+import { canManageGeneral } from "../utils/accessControl";
 
 const WarehouseDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const canManage = canManageGeneral(user);
 
   const [warehouse, setWarehouse] = useState(null);
   const [locations, setLocations] = useState([]);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [scans, setScans] = useState([]);
   const [scmParam, setScmParam] = useState(null);
   const [loading, setLoading] = useState(true);
   const [productsLoading, setProductsLoading] = useState(true);
   const [ordersLoading, setOrdersLoading] = useState(true);
+  const [scansLoading, setScansLoading] = useState(true);
   const [scmLoading, setScmLoading] = useState(true);
   const [isProductSearchOpen, setIsProductSearchOpen] = useState(false);
   const [createdApiKey, setCreatedApiKey] = useState("");
@@ -108,6 +116,25 @@ const WarehouseDetailPage = () => {
     }
   }, [id]);
 
+  const fetchWarehouseScans = useCallback(async () => {
+    try {
+      setScansLoading(true);
+      const result = await searchScans({ warehouse_id: id });
+
+      if (result.success) {
+        setScans(result.data || []);
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error("Error fetching warehouse scans:", error);
+      toast.error(error?.message || "Error al cargar escaneos de la bodega");
+      setScans([]);
+    } finally {
+      setScansLoading(false);
+    }
+  }, [id]);
+
   const fetchWarehouseScmMode = useCallback(async () => {
     try {
       setScmLoading(true);
@@ -137,9 +164,17 @@ const WarehouseDetailPage = () => {
       fetchWarehouseData();
       fetchWarehouseProducts();
       fetchWarehouseOrders();
+      fetchWarehouseScans();
       fetchWarehouseScmMode();
     }
-  }, [id, fetchWarehouseData, fetchWarehouseProducts, fetchWarehouseOrders, fetchWarehouseScmMode]);
+  }, [
+    id,
+    fetchWarehouseData,
+    fetchWarehouseProducts,
+    fetchWarehouseOrders,
+    fetchWarehouseScans,
+    fetchWarehouseScmMode,
+  ]);
 
   // Warehouse handlers
   const handleUpdateWarehouse = async (data) => {
@@ -325,6 +360,7 @@ const WarehouseDetailPage = () => {
           onUpdate={handleUpdateWarehouse}
           loading={loading}
           onSearchProducts={handleOpenProductSearch}
+          canManage={canManage}
         />
       </div>
       <div className="space-y-18">
@@ -336,6 +372,7 @@ const WarehouseDetailPage = () => {
             param={scmParam}
             loading={scmLoading}
             onUpdated={handleRefreshScmMode}
+            canManage={canManage}
           />
         </div>
 
@@ -349,6 +386,7 @@ const WarehouseDetailPage = () => {
             onAddCameraToLocation={handleAddCamera}
             onEditCamera={handleEditCamera}
             onDeleteCamera={handleDeleteCamera}
+            canManage={canManage}
             loading={loading}
           />
         </div>
@@ -358,6 +396,10 @@ const WarehouseDetailPage = () => {
         </div>
 
         <div className="animate-fadeIn" style={{ animationDelay: "0.5s" }}>
+          <WarehouseScansOverview scans={scans} loading={scansLoading} />
+        </div>
+
+        <div className="animate-fadeIn" style={{ animationDelay: "0.65s" }}>
           <WarehouseOrdersTable
             warehouseId={id}
             warehouseName={warehouse?.name}

@@ -6,7 +6,6 @@ import StorageOutlinedIcon from "@mui/icons-material/StorageOutlined";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
-import ScienceOutlinedIcon from "@mui/icons-material/ScienceOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import QrCodeScannerOutlinedIcon from "@mui/icons-material/QrCodeScannerOutlined";
 
@@ -20,6 +19,8 @@ export const CATEGORIES = [
 export const ROLES = {
   SUPERADMIN: "SUPERADMIN",
   ADMIN: "ADMIN",
+  VIEWER: "VIEWER",
+  VIEWER_ORDER: "VIEWER-ORDER",
   USER: "USER",
 };
 

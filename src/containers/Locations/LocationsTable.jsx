@@ -35,7 +35,7 @@ const getWarehouseGroupKey = (location) => {
   return warehouse.id || warehouse.name || "Sin almacén";
 };
 
-const LocationsTable = ({ locations = [], loading, onEdit, onRefresh }) => {
+const LocationsTable = ({ locations = [], loading, onEdit, onRefresh, canManage = true }) => {
   const groupedAndFilteredLocations = useMemo(() => {
     return [...locations]
       .map((location) => ({
@@ -92,33 +92,38 @@ const LocationsTable = ({ locations = [], loading, onEdit, onRefresh }) => {
     //   header: "Pallets",
     //   cell: ({ getValue }) => getValue() ?? 0,
     // }),
-    columnHelper.display({
-      id: "actions",
-      header: "Actions",
-      enableColumnFilter: false,
-      cell: ({ row }) => {
-        const loc = row.original;
-
-        return (
-          <div className="flex items-center justify-center gap-2">
-            <button
-              onClick={() => onEdit(loc)}
-              className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
-            >
-              <Edit fontSize="small" />
-            </button>
-
-            <button
-              onClick={() => handleDelete(loc.id)}
-              className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
-            >
-              <Delete fontSize="small" />
-            </button>
-          </div>
-        );
-      },
-    }),
   ];
+
+  if (canManage) {
+    columns.push(
+      columnHelper.display({
+        id: "actions",
+        header: "Actions",
+        enableColumnFilter: false,
+        cell: ({ row }) => {
+          const loc = row.original;
+
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={() => onEdit(loc)}
+                className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
+              >
+                <Edit fontSize="small" />
+              </button>
+
+              <button
+                onClick={() => handleDelete(loc.id)}
+                className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
+              >
+                <Delete fontSize="small" />
+              </button>
+            </div>
+          );
+        },
+      })
+    );
+  }
 
   return (
     <CustomTable

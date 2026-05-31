@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { getUserRoleIds } from "../../utils/accessControl";
 
 export default function ProtectedRoute({ children, allowedRoles = [] }) {
   const { isAuthenticated, loading, user } = useAuth();
@@ -12,15 +13,9 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
   }
 
   if (Array.isArray(allowedRoles) && allowedRoles.length > 0) {
-    const userRoles = [];
-
     if (!user) return <Navigate to="/login" replace />;
 
-    if (Array.isArray(user.roles)) {
-      userRoles.push(...user.roles.map((r) => (typeof r === "string" ? r : r.id)));
-    } else if (typeof user.role === "string") {
-      userRoles.push(user.role);
-    } 
+    const userRoles = getUserRoleIds(user);
 
     const hasAccess = userRoles.some((r) => allowedRoles.includes(r));
 

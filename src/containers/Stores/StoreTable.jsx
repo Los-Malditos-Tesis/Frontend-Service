@@ -6,7 +6,7 @@ import CustomTable from "../../components/generic/CustomTable";
 
 const columnHelper = createColumnHelper();
 
-const StoreTable = ({ stores = [], loading, onEdit, onRefresh }) => {
+const StoreTable = ({ stores = [], loading, onEdit, onRefresh, canManage = true }) => {
   const handleDelete = async (id) => {
     if (!confirm("¿Estás seguro de que deseas eliminar esta tienda?")) return;
 
@@ -35,33 +35,37 @@ const StoreTable = ({ stores = [], loading, onEdit, onRefresh }) => {
     columnHelper.accessor("address", {
       header: "Dirección",
     }),
-    columnHelper.display({
-      id: "actions",
-      header: "Actions",
-      enableColumnFilter: false,
-      cell: ({ row }) => {
-        const store = row.original;
-
-        return (
-          <div className="flex items-center justify-center gap-2">
-            <button
-              onClick={() => onEdit(store)}
-              className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
-            >
-              <Edit fontSize="small" />
-            </button>
-
-            <button
-              onClick={() => handleDelete(store.id)}
-              className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
-            >
-              <Delete fontSize="small" />
-            </button>
-          </div>
-        );
-      },
-    }),
   ];
+
+  if (canManage) {
+    columns.push(
+      columnHelper.display({
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+          const store = row.original;
+
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={() => onEdit(store)}
+                className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
+              >
+                <Edit fontSize="small" />
+              </button>
+
+              <button
+                onClick={() => handleDelete(store.id)}
+                className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
+              >
+                <Delete fontSize="small" />
+              </button>
+            </div>
+          );
+        },
+      })
+    );
+  }
 
   return (
     <CustomTable

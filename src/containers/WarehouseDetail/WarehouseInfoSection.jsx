@@ -7,7 +7,13 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
 
-const WarehouseInfoSection = ({ warehouse, onUpdate, loading, onSearchProducts }) => {
+const WarehouseInfoSection = ({
+  warehouse,
+  onUpdate,
+  loading,
+  onSearchProducts,
+  canManage = true,
+}) => {
   const navigate = useNavigate();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -115,7 +121,7 @@ const WarehouseInfoSection = ({ warehouse, onUpdate, loading, onSearchProducts }
             <SearchIcon />
           </button>
 
-          {isEditing && (
+          {isEditing && canManage && (
             <button
               onClick={handleSave}
               disabled={loading}
@@ -125,18 +131,20 @@ const WarehouseInfoSection = ({ warehouse, onUpdate, loading, onSearchProducts }
               <SaveIcon />
             </button>
           )}
-          <button
-            onClick={isEditing ? handleCancel : handleEdit}
-            disabled={loading}
-            className={`transform rounded-lg p-3 transition hover:scale-110 ${
-              isEditing
-                ? "bg-red-50 text-red-600 hover:bg-red-100"
-                : "text-accent_color bg-blue-50 hover:bg-blue-100"
-            } disabled:opacity-50`}
-            title={isEditing ? "Cancelar" : "Editar"}
-          >
-            {isEditing ? <CancelIcon /> : <EditIcon />}
-          </button>
+          {canManage ? (
+            <button
+              onClick={isEditing ? handleCancel : handleEdit}
+              disabled={loading}
+              className={`transform rounded-lg p-3 transition hover:scale-110 ${
+                isEditing
+                  ? "bg-red-50 text-red-600 hover:bg-red-100"
+                  : "text-accent_color bg-blue-50 hover:bg-blue-100"
+              } disabled:opacity-50`}
+              title={isEditing ? "Cancelar" : "Editar"}
+            >
+              {isEditing ? <CancelIcon /> : <EditIcon />}
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -158,7 +166,7 @@ const WarehouseInfoSection = ({ warehouse, onUpdate, loading, onSearchProducts }
           <span>{formatDate(warehouse?.updatedAt)}</span>
         </div> */}
 
-        {isEditing && (
+        {isEditing && canManage && (
           <div className="border-accent_color/30 bg-accent_color/10 absolute top-[105%] inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold text-gray-600">
             <span>✨</span>
             <span>Los cambios se guardarán con el botón Guardar</span>

@@ -1,17 +1,21 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "../context/AuthContext";
 import { searchProducts } from "../services/product.service";
 import ProductsTable from "../containers/Products/ProductsTable";
 import ProductForm from "../containers/Products/ProductForm";
 import CustomDrawer from "../components/generic/CustomDrawer";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
 import AdminIntroLayout from "../components/generic/AdminIntroLayout";
+import { canManageGeneral } from "../utils/accessControl";
 
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { user } = useAuth();
+  const canManage = canManageGeneral(user);
 
   const handleCloseDrawer = () => {
     setSelectedProduct(null);
@@ -59,8 +63,8 @@ const ProductsPage = () => {
       title="Gestión de Productos"
       subtitle="Administra el catálogo maestro de productos, crea nuevos accesos y controla su relación con proveedores."
       eyebrow={<Breadcrumbs />}
-      buttonLabel="Crear productos"
-      onCreate={handleCreateProduct}
+      buttonLabel={canManage ? "Crear productos" : undefined}
+      onCreate={canManage ? handleCreateProduct : undefined}
     >
       <CustomDrawer
         isOpen={isDrawerOpen}
@@ -81,9 +85,9 @@ const ProductsPage = () => {
         loading={loading}
         onEdit={handleEditProduct}
         onRefresh={fetchProducts}
+        canManage={canManage}
       />
-    </AdminIntroLayout >
-
+    </AdminIntroLayout>
   );
 };
 

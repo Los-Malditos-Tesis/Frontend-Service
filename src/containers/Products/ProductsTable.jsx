@@ -7,7 +7,7 @@ import CustomTable from "../../components/generic/CustomTable";
 
 const columnHelper = createColumnHelper();
 
-const ProductsTable = ({ products = [], loading, onEdit, onRefresh }) => {
+const ProductsTable = ({ products = [], loading, onEdit, onRefresh, canManage = true }) => {
   const handleDelete = async (id) => {
     if (!confirm("¿Eliminar producto?")) return;
 
@@ -41,7 +41,7 @@ const ProductsTable = ({ products = [], loading, onEdit, onRefresh }) => {
     }),
     columnHelper.accessor("Supplier", {
       header: "Proveedor",
-       cell: ({ getValue }) => {
+      cell: ({ getValue }) => {
         const value = getValue();
         return value ? `${value?.name}` : "Sin proveedor";
       },
@@ -55,33 +55,38 @@ const ProductsTable = ({ products = [], loading, onEdit, onRefresh }) => {
         return numericValue.toLocaleString("es-SV");
       },
     }),
-    columnHelper.display({
-      id: "actions",
-      header: "Actions",
-      enableColumnFilter: false,
-      cell: ({ row }) => {
-        const product = row.original;
-
-        return (
-          <div className="flex items-center justify-center gap-2">
-            <button
-              onClick={() => onEdit(product)}
-              className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
-            >
-              <Edit fontSize="small" />
-            </button>
-
-            <button
-              onClick={() => handleDelete(product.id)}
-              className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
-            >
-              <Delete fontSize="small" />
-            </button>
-          </div>
-        );
-      },
-    }),
   ];
+
+  if (canManage) {
+    columns.push(
+      columnHelper.display({
+        id: "actions",
+        header: "Actions",
+        enableColumnFilter: false,
+        cell: ({ row }) => {
+          const product = row.original;
+
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={() => onEdit(product)}
+                className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
+              >
+                <Edit fontSize="small" />
+              </button>
+
+              <button
+                onClick={() => handleDelete(product.id)}
+                className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
+              >
+                <Delete fontSize="small" />
+              </button>
+            </div>
+          );
+        },
+      })
+    );
+  }
 
   return (
     <CustomTable

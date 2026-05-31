@@ -6,7 +6,7 @@ import CustomTable from "../../components/generic/CustomTable";
 
 const columnHelper = createColumnHelper();
 
-const SuppliersTable = ({ suppliers = [], loading, onEdit, onRefresh }) => {
+const SuppliersTable = ({ suppliers = [], loading, onEdit, onRefresh, canManage = true }) => {
   const handleDelete = async (id) => {
     if (!confirm("¿Estás seguro de que deseas eliminar este proveedor?")) return;
 
@@ -70,33 +70,38 @@ const SuppliersTable = ({ suppliers = [], loading, onEdit, onRefresh }) => {
         );
       },
     }),
-    columnHelper.display({
-      id: "actions",
-      header: "Actions",
-      enableColumnFilter: false,
-      cell: ({ row }) => {
-        const supplier = row.original;
-
-        return (
-          <div className="flex items-center justify-center gap-2">
-            <button
-              onClick={() => onEdit(supplier)}
-              className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
-            >
-              <Edit fontSize="small" />
-            </button>
-
-            <button
-              onClick={() => handleDelete(supplier.id)}
-              className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
-            >
-              <Delete fontSize="small" />
-            </button>
-          </div>
-        );
-      },
-    }),
   ];
+
+  if (canManage) {
+    columns.push(
+      columnHelper.display({
+        id: "actions",
+        header: "Actions",
+        enableColumnFilter: false,
+        cell: ({ row }) => {
+          const supplier = row.original;
+
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={() => onEdit(supplier)}
+                className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
+              >
+                <Edit fontSize="small" />
+              </button>
+
+              <button
+                onClick={() => handleDelete(supplier.id)}
+                className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
+              >
+                <Delete fontSize="small" />
+              </button>
+            </div>
+          );
+        },
+      })
+    );
+  }
 
   return (
     <CustomTable

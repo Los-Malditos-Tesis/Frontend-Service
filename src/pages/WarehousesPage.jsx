@@ -1,17 +1,21 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "../context/AuthContext";
 import { searchWarehouses } from "../services/warehouse.service";
 import WarehousesTable from "../containers/Warehouses/WarehousesTable";
 import WarehouseForm from "../containers/Warehouses/WarehouseForm";
 import CustomDrawer from "../components/generic/CustomDrawer";
 import AdminIntroLayout from "../components/generic/AdminIntroLayout";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
+import { canManageGeneral } from "../utils/accessControl";
 
 const WarehousesPage = () => {
   const [warehouses, setWarehouses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { user } = useAuth();
+  const canManage = canManageGeneral(user);
 
   const handleCloseDrawer = () => {
     setSelectedWarehouse(null);
@@ -59,8 +63,8 @@ const WarehousesPage = () => {
       title="Gestión de Bodegas"
       subtitle="Administra los centros de distribución y consulta su estado general."
       eyebrow={<Breadcrumbs />}
-      buttonLabel="Crear bodega"
-      onCreate={handleCreateWarehouse}
+      buttonLabel={canManage ? "Crear bodega" : undefined}
+      onCreate={canManage ? handleCreateWarehouse : undefined}
     >
       <CustomDrawer
         isOpen={isDrawerOpen}
@@ -81,6 +85,7 @@ const WarehousesPage = () => {
         loading={loading}
         onEdit={handleEditWarehouse}
         onRefresh={fetchWarehouses}
+        canManage={canManage}
       />
     </AdminIntroLayout>
   );

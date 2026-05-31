@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "../context/AuthContext";
 import { searchCameras } from "../services/camera.service";
 import CamerasTable from "../containers/Cameras/CamerasTable";
 import CameraForm from "../containers/Cameras/CameraForm";
@@ -7,6 +8,7 @@ import CustomDrawer from "../components/generic/CustomDrawer";
 import AdminIntroLayout from "../components/generic/AdminIntroLayout";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
 import ApiKeyDialog from "../components/camera/ApiKeyDialog";
+import { canManageGeneral } from "../utils/accessControl";
 
 const CamerasPage = () => {
   const [cameras, setCameras] = useState([]);
@@ -14,6 +16,8 @@ const CamerasPage = () => {
   const [selectedCamera, setSelectedCamera] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [createdApiKey, setCreatedApiKey] = useState("");
+  const { user } = useAuth();
+  const canManage = canManageGeneral(user);
 
   const handleCloseDrawer = () => {
     setSelectedCamera(null);
@@ -73,8 +77,8 @@ const CamerasPage = () => {
       title="Gestión de Cámaras"
       subtitle="Administra los dispositivos de visión y su ubicación dentro del almacén."
       eyebrow={<Breadcrumbs />}
-      buttonLabel="Crear cámaras"
-      onCreate={handleCreateCamera}
+      buttonLabel={canManage ? "Crear cámaras" : undefined}
+      onCreate={canManage ? handleCreateCamera : undefined}
     >
       <CustomDrawer
         isOpen={isDrawerOpen}
@@ -108,6 +112,7 @@ const CamerasPage = () => {
         loading={loading}
         onEdit={handleEditCamera}
         onRefresh={fetchCameras}
+        canManage={canManage}
       />
     </AdminIntroLayout>
   );

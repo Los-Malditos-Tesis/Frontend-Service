@@ -11,6 +11,7 @@ const WarehouseMapLayout = ({
   onAddCameraToLocation,
   onEditCamera,
   onDeleteCamera,
+  canManage = true,
   loading,
 }) => {
   const [selectedLocationId, setSelectedLocationId] = useState(
@@ -31,13 +32,15 @@ const WarehouseMapLayout = ({
           </p>
         </div>
 
-        <button
-          onClick={onAddLocation}
-          className="bg-accent_color flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold text-white transition hover:shadow-md"
-        >
-          <AddIcon fontSize="small" />
-          Nueva Zona
-        </button>
+        {canManage ? (
+          <button
+            onClick={onAddLocation}
+            className="bg-accent_color flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold text-white transition hover:shadow-md"
+          >
+            <AddIcon fontSize="small" />
+            Nueva Zona
+          </button>
+        ) : null}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -50,6 +53,7 @@ const WarehouseMapLayout = ({
             onEditLocation={onEditLocation}
             onDeleteLocation={onDeleteLocation}
             onAddLocation={onAddLocation}
+            canManage={canManage}
             loading={loading}
           />
         </div>
@@ -61,6 +65,7 @@ const WarehouseMapLayout = ({
             onAddCamera={onAddCameraToLocation}
             onEditCamera={onEditCamera}
             onDeleteCamera={onDeleteCamera}
+            canManage={canManage}
           />
         </div>
       </div>

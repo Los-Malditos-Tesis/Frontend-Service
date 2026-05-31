@@ -7,7 +7,7 @@ import CustomTable from "../../components/generic/CustomTable";
 
 const columnHelper = createColumnHelper();
 
-const WarehousesTable = ({ warehouses = [], loading, onEdit, onRefresh }) => {
+const WarehousesTable = ({ warehouses = [], loading, onEdit, onRefresh, canManage = true }) => {
   const navigate = useNavigate();
 
   const handleDelete = async (id) => {
@@ -35,43 +35,71 @@ const WarehousesTable = ({ warehouses = [], loading, onEdit, onRefresh }) => {
     columnHelper.accessor("address", {
       header: "Dirección",
     }),
-    columnHelper.display({
-      id: "actions",
-      header: "Acciones",
-      enableColumnFilter: false,
-      cell: ({ row }) => {
-        const warehouse = row.original;
-
-        return (
-          <div className="flex items-center justify-center gap-2">
-            <button
-              onClick={() => navigate(`/warehouses/${warehouse.id}`)}
-              className="rounded-lg p-2 transition hover:bg-blue-50 active:scale-95"
-              title="Ver detalles y estructura"
-            >
-              <Visibility fontSize="small" className="text-blue-600" />
-            </button>
-
-            <button
-              onClick={() => onEdit(warehouse)}
-              className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
-              title="Editar información"
-            >
-              <Edit fontSize="small" />
-            </button>
-
-            <button
-              onClick={() => handleDelete(warehouse.id)}
-              className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
-              title="Eliminar"
-            >
-              <Delete fontSize="small" className="text-red-500" />
-            </button>
-          </div>
-        );
-      },
-    }),
   ];
+
+  if (canManage) {
+    columns.push(
+      columnHelper.display({
+        id: "actions",
+        header: "Acciones",
+        enableColumnFilter: false,
+        cell: ({ row }) => {
+          const warehouse = row.original;
+
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={() => navigate(`/warehouses/${warehouse.id}`)}
+                className="rounded-lg p-2 transition hover:bg-blue-50 active:scale-95"
+                title="Ver detalles y estructura"
+              >
+                <Visibility fontSize="small" className="text-blue-600" />
+              </button>
+
+              <button
+                onClick={() => onEdit(warehouse)}
+                className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
+                title="Editar información"
+              >
+                <Edit fontSize="small" />
+              </button>
+
+              <button
+                onClick={() => handleDelete(warehouse.id)}
+                className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
+                title="Eliminar"
+              >
+                <Delete fontSize="small" className="text-red-500" />
+              </button>
+            </div>
+          );
+        },
+      })
+    );
+  } else {
+    columns.push(
+      columnHelper.display({
+        id: "actions",
+        header: "Acciones",
+        enableColumnFilter: false,
+        cell: ({ row }) => {
+          const warehouse = row.original;
+
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={() => navigate(`/warehouses/${warehouse.id}`)}
+                className="rounded-lg p-2 transition hover:bg-blue-50 active:scale-95"
+                title="Ver detalles y estructura"
+              >
+                <Visibility fontSize="small" className="text-blue-600" />
+              </button>
+            </div>
+          );
+        },
+      })
+    );
+  }
 
   return (
     <CustomTable

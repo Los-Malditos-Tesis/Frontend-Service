@@ -62,10 +62,10 @@ const getLocationPosition = (index, total) => {
   }
 
   // Distribución normal para 3 o más
-   const xValues = [11, 33, 55];
+  const xValues = [11, 33, 55];
 
-  const col = index % 3;              // 0, 1, 2
-  const row = Math.floor(index / 3);  // grupo de 3
+  const col = index % 3; // 0, 1, 2
+  const row = Math.floor(index / 3); // grupo de 3
   const topPadding = 50; // espacio superior para el header
 
   return {
@@ -73,8 +73,6 @@ const getLocationPosition = (index, total) => {
     y: topPadding + row * 130 + col * 64,
   };
 };
-
-
 
 // const getLocationPosition = (index) => {
 //   const positions = [
@@ -97,6 +95,7 @@ const WarehouseMapViewer = ({
   onEditLocation,
   onDeleteLocation,
   onAddLocation,
+  canManage = true,
 }) => {
   const selectedLocation = locations?.find((loc) => loc.id === selectedLocationId);
 
@@ -110,41 +109,38 @@ const WarehouseMapViewer = ({
         </div>
 
         <p className="mb-2 text-lg font-bold text-gray-700">Bodega Sin Zonas</p>
-        <p className="mb-6 text-gray-500">
-          Comienza creando tu primera zona de almacenamiento
-        </p>
+        <p className="mb-6 text-gray-500">Comienza creando tu primera zona de almacenamiento</p>
 
-        <button
-          onClick={onAddLocation}
-          className="inline-flex items-center gap-2 rounded-lg bg-accent_color px-6 py-2.5 font-bold text-white transition hover:shadow-md"
-        >
-          <AddIcon fontSize="small" />
-          Crear Zona
-        </button>
+        {canManage ? (
+          <button
+            onClick={onAddLocation}
+            className="bg-accent_color inline-flex items-center gap-2 rounded-lg px-6 py-2.5 font-bold text-white transition hover:shadow-md"
+          >
+            <AddIcon fontSize="small" />
+            Crear Zona
+          </button>
+        ) : null}
       </div>
     );
   }
 
-  const totalCameras = locations.reduce(
-    (sum, loc) => sum + (loc.Cameras?.length || 0),
-    0
-  );
+  const totalCameras = locations.reduce((sum, loc) => sum + (loc.Cameras?.length || 0), 0);
 
   const multiplier = 40;
 
-  const multipliedLocations = Array.from({ length: multiplier })
-    .flatMap(() => locations);
+  const multipliedLocations = Array.from({ length: multiplier }).flatMap(() => locations);
 
   return (
     <div className="space-y-5">
-      <div > {/* className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_320px]" */}
-
+      <div>
+        {" "}
+        {/* className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_320px]" */}
         {/* MAPA  */}
         {/* "relative min-h-[560px] overflow-hidden rounded-3xl border border-gray-200 bg-[#eef1f3] shadow-sm" */}
-        <div className="relative min-h-[560px] overflow-auto rounded-3xl border border-gray-200 bg-[#eef1f3] shadow-sm">
+        <div className="relative min-h-140 overflow-auto rounded-3xl border border-gray-200 bg-[#eef1f3] shadow-sm">
           {/* Header flotante */}
-          <div className="absolute right-5 top-5 z-30 rounded-2xl border border-gray-200 bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
-            <p className="text-xs font-bold uppercase tracking-wide text-gray-400">
+          <div className="absolute top-5 right-5 z-30 rounded-2xl border border-gray-200 bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
+            <p className="text-xs font-bold tracking-wide text-gray-400 uppercase">
               Warehouse overview
             </p>
             <p className="text-sm font-bold text-gray-700">
@@ -153,11 +149,11 @@ const WarehouseMapViewer = ({
           </div>
 
           {/* Líneas de pasillos */}
-          <div className="pointer-events-none absolute left-[0px] top-[0px] h-full w-full overflow-hidden pasillos">
+          <div className="pasillos pointer-events-none absolute top-0 left-0 h-full w-full overflow-hidden">
             {Array.from({ length: 80 }).map((_, index) => (
               <div
                 key={`pasillo-a-${index}`}
-                className="absolute top-[10px] left-[-50%] h-[6px] w-[220%] bg-white/80"
+                className="absolute top-2.5 left-[-50%] h-1.5 w-[220%] bg-white/80"
                 style={{
                   top: `${index * 227 + 26}px`,
                   transform: "rotate(-33deg)",
@@ -168,7 +164,7 @@ const WarehouseMapViewer = ({
             {Array.from({ length: 60 }).map((_, index) => (
               <div
                 key={`pasillo-b-${index}`}
-                className="absolute top-[-50%] h-[220%] w-[6px] bg-white/60"
+                className="absolute top-[-50%] h-[220%] w-1.5 bg-white/60"
                 style={{
                   left: `${index * 370}px`,
                   transform: "rotate(-57deg)",
@@ -177,16 +173,13 @@ const WarehouseMapViewer = ({
             ))}
           </div>
 
-
           {/* className="relative z-20 flex flex-wrap gap-x-20 gap-y-16 px-12 pt-28 pb-16" */}
           {/* nuevov "relative z-20 flex flex-wrap  gap-y-16 px-12 pt-28 pb-16"  */}
-          <div className="min-w-[750px] relative z-20 flex flex-wrap  gap-y-16 px-12 pt-28 pb-16">
-
+          <div className="relative z-20 flex min-w-187.5 flex-wrap gap-y-16 px-12 pt-28 pb-16">
             {locations.map((location, index) => {
               const pos = getLocationPosition(index, locations.length);
               const cameraCount = location.Cameras?.length || 0;
               const isSelected = selectedLocationId === location.id;
-
 
               return (
                 <WarehouseMapCube
@@ -197,7 +190,6 @@ const WarehouseMapViewer = ({
                   onClick={() => onSelectLocation(location)}
                   x={pos.x}
                   y={pos.y}
-
                   // width={180}
                   // height={24}
                   // depth={90}
@@ -208,7 +200,6 @@ const WarehouseMapViewer = ({
               );
             })}
           </div>
-
 
           {/* Cámaras como puntos flotantes */}
           {/* {locations.map((location, index) => {
@@ -233,7 +224,7 @@ const WarehouseMapViewer = ({
 
           {/* Popup de selección */}
           {selectedLocation && (
-            <div className="absolute bottom-5 left-5 z-40 w-[340px] rounded-2xl border border-gray-200 bg-white p-4 shadow-2xl">
+            <div className="absolute bottom-5 left-5 z-40 w-85 rounded-2xl border border-gray-200 bg-white p-4 shadow-2xl">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="flex gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-100">
@@ -241,27 +232,19 @@ const WarehouseMapViewer = ({
                   </div>
 
                   <div>
-                    <p className="font-black text-gray-800">
-                      {selectedLocation.zone}
-                    </p>
-                    <p className="text-xs font-semibold text-gray-400">
-                      Zona seleccionada
-                    </p>
+                    <p className="font-black text-gray-800">{selectedLocation.zone}</p>
+                    <p className="text-xs font-semibold text-gray-400">Zona seleccionada</p>
                   </div>
                 </div>
 
                 <span
-                  className={`
-                    rounded-full px-2.5 py-1 text-xs font-black
-                    ${(selectedLocation.Cameras?.length || 0) > 0
+                  className={`rounded-full px-2.5 py-1 text-xs font-black ${
+                    (selectedLocation.Cameras?.length || 0) > 0
                       ? "bg-emerald-100 text-emerald-700"
                       : "bg-gray-100 text-gray-400"
-                    }
-                  `}
+                  } `}
                 >
-                  {(selectedLocation.Cameras?.length || 0) > 0
-                    ? "Online"
-                    : "Sin cámaras"}
+                  {(selectedLocation.Cameras?.length || 0) > 0 ? "Online" : "Sin cámaras"}
                 </span>
               </div>
 
@@ -275,23 +258,25 @@ const WarehouseMapViewer = ({
                 </p>
               </div> */}
 
-              <div className="flex gap-2">
-                <button
-                  onClick={() => onEditLocation(selectedLocation)}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-bold text-gray-700 transition hover:bg-gray-50"
-                >
-                  <EditIcon sx={{ fontSize: 16 }} />
-                  Editar
-                </button>
+              {canManage ? (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onEditLocation(selectedLocation)}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-bold text-gray-700 transition hover:bg-gray-50"
+                  >
+                    <EditIcon sx={{ fontSize: 16 }} />
+                    Editar
+                  </button>
 
-                <button
-                  onClick={() => onDeleteLocation(selectedLocation)}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-100 px-3 py-2 text-sm font-bold text-red-500 transition hover:bg-red-50"
-                >
-                  <DeleteIcon sx={{ fontSize: 16 }} />
-                  Eliminar
-                </button>
-              </div>
+                  <button
+                    onClick={() => onDeleteLocation(selectedLocation)}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-100 px-3 py-2 text-sm font-bold text-red-500 transition hover:bg-red-50"
+                  >
+                    <DeleteIcon sx={{ fontSize: 16 }} />
+                    Eliminar
+                  </button>
+                </div>
+              ) : null}
             </div>
           )}
 
@@ -306,7 +291,6 @@ const WarehouseMapViewer = ({
             </button>
           </div> */}
         </div>
-
         {/* PANEL DERECHO */}
         {/* <aside className="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
           <div className="mb-5 flex items-center justify-between">

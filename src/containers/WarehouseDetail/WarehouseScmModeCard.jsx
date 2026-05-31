@@ -56,12 +56,7 @@ const ModeButton = ({ mode, selected, disabled, onClick }) => {
   );
 };
 
-const WarehouseScmModeCard = ({
-  warehouseId,
-  param,
-  loading,
-  onUpdated,
-}) => {
+const WarehouseScmModeCard = ({ warehouseId, param, loading, onUpdated, canManage = true }) => {
   const currentMode = param?.value || DEFAULT_MODE;
 
   const [isEditing, setIsEditing] = useState(false);
@@ -135,12 +130,10 @@ const WarehouseScmModeCard = ({
           </div>
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+            <p className="text-xs font-bold tracking-[0.18em] text-slate-400 uppercase">
               Modo de escaneo
             </p>
-            <p className="mt-1 text-sm font-bold text-slate-800">
-              No configurado
-            </p>
+            <p className="mt-1 text-sm font-bold text-slate-800">No configurado</p>
           </div>
         </div>
       </section>
@@ -161,14 +154,12 @@ const WarehouseScmModeCard = ({
           </div>
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+            <p className="text-xs font-bold tracking-[0.18em] text-slate-400 uppercase">
               Modo de escaneo
             </p>
 
             <div className="mt-1 flex flex-wrap items-center gap-2">
-              <h3 className="text-lg font-black text-slate-900">
-                Flujo de productos
-              </h3>
+              <h3 className="text-lg font-black text-slate-900">Flujo de productos</h3>
 
               <span
                 className={[
@@ -180,13 +171,11 @@ const WarehouseScmModeCard = ({
               </span>
             </div>
 
-            <p className="mt-1 text-sm text-slate-500">
-              {mode.description}
-            </p>
+            <p className="mt-1 text-sm text-slate-500">{mode.description}</p>
           </div>
         </div>
 
-        {!isEditing ? (
+        {!isEditing && canManage ? (
           <button
             type="button"
             onClick={handleEdit}
@@ -195,7 +184,7 @@ const WarehouseScmModeCard = ({
             <EditRoundedIcon fontSize="small" />
             Cambiar
           </button>
-        ) : (
+        ) : isEditing && canManage ? (
           <div className="flex flex-wrap items-center gap-2">
             <ModeButton
               mode="ENT"
@@ -231,7 +220,7 @@ const WarehouseScmModeCard = ({
               Cancelar
             </button>
           </div>
-        )}
+        ) : null}
       </div>
     </section>
   );
