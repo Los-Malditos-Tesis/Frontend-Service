@@ -178,7 +178,7 @@ const CustomTable = ({
     <div
       className={`border-bordercolor w-full space-y-5 rounded-md border-2 bg-white p-6 ${className}`}
     >
-      {title ? <h3 className="text-lg font-bold text-gray-800">{title}</h3> : null}
+      {/* {title ? <h3 className="text-lg font-bold text-gray-800">{title}</h3> : null} */}
 
       {/* HEADER SUPERIOR */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
