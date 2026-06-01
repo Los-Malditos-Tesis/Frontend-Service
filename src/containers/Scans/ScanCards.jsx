@@ -1,11 +1,8 @@
 import PropTypes from "prop-types";
 import { motion } from "framer-motion";
 import EmptyState from "../../components/generic/EmptyState";
-import QrCodeOutlinedIcon from "@mui/icons-material/QrCodeOutlined";
 import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
-import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
-import CodeOutlinedIcon from "@mui/icons-material/CodeOutlined";
 import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
@@ -46,7 +43,7 @@ const TYPE_META = {
     label: "Entrada",
     className: "border-sky-200 bg-sky-50 text-sky-700",
   },
-  SAL: {
+  SLD: {
     label: "Salida",
     className: "border-rose-200 bg-rose-50 text-rose-700",
   },
@@ -57,7 +54,7 @@ const GS1_PATTERNS = {
   BOX: /^\(01\)([^()]+)\(21\)([^()]+)\(30\)([^()]+)$/,
 };
 
-const parseGs1Qr = (qrCode = "") => {
+const parseGs1Qr = (qrCode = "", isHorizontal = false) => {
   const qrValue = String(qrCode).trim();
 
   if (!qrValue) {
@@ -83,10 +80,15 @@ const parseGs1Qr = (qrCode = "") => {
         { label: "Código producto", value: productCode },
         { label: "Cajas en pallet", value: boxesInPallet },
         { label: "Productos por caja", value: itemsPerBox },
-        // {
-        //   label: "Total productos",
-        //   value: `${Number(boxesInPallet || 0) * Number(itemsPerBox || 0)}`,
-        // },
+        // agregar solo si isHorizontal es true
+        ...(isHorizontal
+          ? [
+              {
+                label: "Total productos",
+                value: `${Number(boxesInPallet || 0) * Number(itemsPerBox || 0)}`,
+              },
+            ]
+          : []),
       ],
       totalItems: Number(boxesInPallet || 0) * Number(itemsPerBox || 0),
       boxesInPallet,
@@ -107,7 +109,11 @@ const parseGs1Qr = (qrCode = "") => {
       fields: [
         { label: "Código caja", value: boxCode },
         { label: "Pallet padre", value: palletCode },
-        { label: "Artículos", value: items },
+         ...(isHorizontal
+          ? [
+              { label: "Artículos", value: items },
+            ]
+          : []),
       ],
       totalItems: Number(items || 0),
       boxesInPallet: null,
@@ -143,10 +149,13 @@ const formatDate = (value) => {
   });
 };
 
-const ScanCard = ({ scan }) => {
+const renderValue = (value) => value ?? "--";
+
+const ScanCard = ({ scan, layoutMode = "vertical" }) => {
   const status = STATUS_META[scan.status] || STATUS_META.ERR;
   const StatusIcon = status.icon;
-  const parsedQr = parseGs1Qr(scan.qrCode);
+  const parsedQr = parseGs1Qr(scan.qrCode, layoutMode === "horizontal");
+  const isHorizontal = layoutMode === "horizontal";
   const unitMeta = UNIT_META[scan.detectedType] || {
     label:
       parsedQr.unitType === "PAL"
@@ -162,12 +171,62 @@ const ScanCard = ({ scan }) => {
     label: scan.type || "Sin tipo",
     className: "border-slate-200 bg-slate-50 text-slate-700",
   };
+  const importantDetails = [
+    {
+      title: "Producto",
+      value: scan.Product?.name,
+    },
+    {
+      title: "Bodega",
+      value: scan.Warehouse?.name,
+    },
+    {
+      title: "Orden",
+      value: scan.Order?.type,
+    },
+  ];
+  const cardClassName = `group border-bordercolor relative overflow-hidden rounded-md border bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.1)] ${
+    isHorizontal ? "lg:p-3" : ""
+  }`;
+
+  const DetailsBlock = () => (
+    <div
+      className={
+        isHorizontal ? "grid gap-3 sm:grid-cols-2 xl:grid-cols-4" : "grid gap-3 sm:grid-cols-2"
+      }
+    >
+      <div className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
+        <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
+          <CameraAltOutlinedIcon fontSize="small" />
+          Cámara
+        </div>
+        <p className="mt-1 truncate text-sm font-bold text-slate-800">
+          {scan.Camera?.code ? scan.Camera.code : "Sin cámara"}
+        </p>
+      </div>
+
+      {importantDetails.map((detail) => (
+        <div
+          key={detail.title}
+          className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm"
+        >
+          <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
+            <Inventory2OutlinedIcon fontSize="small" />
+            {detail.title}
+          </div>
+          <p className="mt-1 truncate text-sm font-bold text-slate-800">
+            {renderValue(detail.value)}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <motion.article
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="group border-bordercolor relative overflow-hidden rounded-md border bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.1)]"
+      className={cardClassName}
     >
       <div className="absolute top-4 right-4 hidden h-24 w-24 opacity-90 sm:block">
         {unitMeta.image ? (
@@ -178,13 +237,18 @@ const ScanCard = ({ scan }) => {
           </div>
         )}
       </div>
-
       <div className="relative flex items-start justify-between gap-4 pr-24 sm:pr-28">
         <div>
-          <p className="text-xs font-black tracking-[0.18em] text-slate-400 uppercase">Escaneo</p>
-          <h3 className="mt-2 text-lg font-black text-slate-950">
-            {scan.id?.slice(0, 8) || "SCAN"}
-          </h3>
+          {!isHorizontal && (
+            <>
+              <p className="text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
+                Escaneo
+              </p>
+              <h3 className="mt-2 text-lg font-black text-slate-950">
+                {scan.id?.slice(0, 8) || "SCAN"}
+              </h3>
+            </>
+          )}
 
           <div className="mt-3 flex flex-wrap gap-2">
             <span
@@ -193,7 +257,6 @@ const ScanCard = ({ scan }) => {
               <StatusIcon fontSize="small" />
               {status.label}
             </span>
-
             <span
               className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold ${unitMeta.className}`}
             >
@@ -204,16 +267,31 @@ const ScanCard = ({ scan }) => {
               )}
               {unitMeta.label}
             </span>
-
             <span
               className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold ${typeMeta.className}`}
             >
               <Inventory2OutlinedIcon fontSize="small" />
               {typeMeta.label}
             </span>
+
+            {isHorizontal && (
+              <>
+                <span className="xl:px-4"> </span>
+                {parsedQr.fields.map((field) => (
+                  <div
+                    key={field.label}
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm"
+                  >
+                    <span className="text-[10px] text-slate-400 uppercase">{field.label}</span>
+                    <span className="text-sm font-bold break-all text-slate-900">
+                      {field.value || "--"}
+                    </span>
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </div>
-
         {/* <div className="text-right">
           <p className="text-xs font-bold tracking-[0.18em] text-slate-400 uppercase">Confianza</p>
           <p className="mt-2 text-2xl font-black text-slate-950">
@@ -221,8 +299,7 @@ const ScanCard = ({ scan }) => {
           </p>
         </div> */}
       </div>
-
-      <div className="relative mt-5 grid gap-3">
+      <div className={`relative mt-5 grid gap-3 ${isHorizontal ? "lg:gap-4" : ""}`}>
         {/* <div className="rounded-2xl bg-slate-50/80 p-4">
           <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
             <QrCodeOutlinedIcon fontSize="small" />
@@ -233,90 +310,148 @@ const ScanCard = ({ scan }) => {
           </p>
         </div> */}
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          {/* <div className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
-            <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
-              <CodeOutlinedIcon fontSize="small" />
-              Código GS1
-            </div>
-            <p className="mt-1 text-sm font-bold text-slate-800">{scan.itemCode || "--"}</p>
-          </div> */}
-
-          <div className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
-            <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
-              <CameraAltOutlinedIcon fontSize="small" />
-              Cámara
-            </div>
-            <p className="mt-1 truncate text-sm font-bold text-slate-800">
-              {scan.camera_id ? scan.camera_id.slice(0, 8) : "Sin cámara"}
-            </p>
-          </div>
-
-          {/* <div className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm sm:col-span-2">
-            <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
-              <AccessTimeOutlinedIcon fontSize="small" />
-              Fecha
-            </div>
-            <p className="mt-1 text-sm font-bold text-slate-800">{formatDate(scan.createdAt)}</p>
-          </div> */}
-        </div>
-
-        {parsedQr.fields.length > 0 ? (
-          <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-black tracking-[0.12em] text-slate-400 uppercase">
-                <Inventory2OutlinedIcon fontSize="small" />
-                Información
-              </div>
-              {parsedQr.totalItems ? (
-                <div className="text-xs text-slate-500">
-                  Total productos: <span className="font-bold text-slate-800">{parsedQr.totalItems}</span>
+        {isHorizontal ? (
+          <div className="space-y-3">
+            <div
+              className={
+                isHorizontal
+                  ? "grid gap-3 p-1 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_1fr_350px]"
+                  : "grid gap-3 sm:grid-cols-2"
+              }
+            >
+              <div className=" ">
+                <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
+                  <CameraAltOutlinedIcon fontSize="small" />
+                  Cámara
                 </div>
-              ) : null}
-            </div>
+                <p className="mt-1 truncate text-sm font-bold text-slate-800">
+                  {scan.Camera?.code ? scan.Camera.code : "Sin cámara"}
+                </p>
+              </div>
 
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              {parsedQr.fields.map((field) => (
+              {importantDetails.map((detail) => (
+                <div key={detail.title} className=" ">
+                  <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
+                    <Inventory2OutlinedIcon fontSize="small" />
+                    {detail.title}
+                  </div>
+                  <p className="mt-1 truncate text-sm font-bold text-slate-800">
+                    {renderValue(detail.value)}
+                  </p>
+                </div>
+              ))}
+
+              {scan.errorMessage ? (
+                <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-rose-800">
+                  <p className="text-xs font-black tracking-[0.18em] text-rose-500 uppercase">
+                    Mensaje de error
+                  </p>
+                  <p className="mt-1 text-sm font-semibold">{scan.errorMessage}</p>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-emerald-800">
+                  <p className="text-xs font-black tracking-[0.18em] text-emerald-500 uppercase">
+                    Resultado
+                  </p>
+                  <p className="mt-1 text-sm font-semibold">Evento procesado correctamente</p>
+                </div>
+              )}
+            </div>
+            <div className="absolute -bottom-2.5 right-0 flex flex-wrap items-center justify-between gap-2  text-xs font-semibold text-slate-400">
+              <span>Actualizado {formatDate(scan.updatedAt)}</span>
+              <span>ID {scan.id?.slice(0, 8) || "--"}</span>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div
+              className={`grid gap-3 ${isHorizontal ? "sm:grid-cols-2 xl:grid-cols-4" : "sm:grid-cols-2"}`}
+            >
+              <div className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
+                <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
+                  <CameraAltOutlinedIcon fontSize="small" />
+                  Cámara
+                </div>
+                <p className="mt-1 truncate text-sm font-bold text-slate-800">
+                  {scan.Camera?.code ? scan.Camera.code : "Sin cámara"}
+                </p>
+              </div>
+
+              {importantDetails.map((detail) => (
                 <div
-                  key={field.label}
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm"
+                  key={detail.title}
+                  className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm"
                 >
-                  <span className="text-[10px] text-slate-400 uppercase">{field.label}</span>
-                  <span className="text-sm font-bold break-all text-slate-900">
-                    {field.value || "--"}
-                  </span>
+                  <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
+                    <Inventory2OutlinedIcon fontSize="small" />
+                    {detail.title}
+                  </div>
+                  <p className="mt-1 truncate text-sm font-bold text-slate-800">
+                    {renderValue(detail.value)}
+                  </p>
                 </div>
               ))}
             </div>
-          </div>
-        ) : null}
 
-        {scan.errorMessage ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-800">
-            <p className="text-xs font-black tracking-[0.18em] text-rose-500 uppercase">
-              Mensaje de error
-            </p>
-            <p className="mt-1 text-sm font-semibold">{scan.errorMessage}</p>
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
-            <p className="text-xs font-black tracking-[0.18em] text-emerald-500 uppercase">
-              Resultado
-            </p>
-            <p className="mt-1 text-sm font-semibold">Evento procesado correctamente</p>
-          </div>
+            {parsedQr.fields.length > 0 ? (
+              <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-black tracking-[0.12em] text-slate-400 uppercase">
+                    <Inventory2OutlinedIcon fontSize="small" />
+                    Información
+                  </div>
+                  {parsedQr.totalItems ? (
+                    <div className="text-xs text-slate-500">
+                      Total productos:{" "}
+                      <span className="font-bold text-slate-800">{parsedQr.totalItems}</span>
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {parsedQr.fields.map((field) => (
+                    <div
+                      key={field.label}
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm"
+                    >
+                      <span className="text-[10px] text-slate-400 uppercase">{field.label}</span>
+                      <span className="text-sm font-bold break-all text-slate-900">
+                        {field.value || "--"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {scan.errorMessage ? (
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-800">
+                <p className="text-xs font-black tracking-[0.18em] text-rose-500 uppercase">
+                  Mensaje de error
+                </p>
+                <p className="mt-1 text-sm font-semibold">{scan.errorMessage}</p>
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
+                <p className="text-xs font-black tracking-[0.18em] text-emerald-500 uppercase">
+                  Resultado
+                </p>
+                <p className="mt-1 text-sm font-semibold">Evento procesado correctamente</p>
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2 text-xs font-semibold text-slate-400">
+              <span>Actualizado {formatDate(scan.updatedAt)}</span>
+              <span>ID {scan.id?.slice(0, 8) || "--"}</span>
+            </div>
+          </>
         )}
-
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2 text-xs font-semibold text-slate-400">
-          <span>Actualizado {formatDate(scan.updatedAt)}</span>
-          <span>ID {scan.id?.slice(0, 8) || "--"}</span>
-        </div>
       </div>
     </motion.article>
   );
 };
 
-const ScanCards = ({ items = [], loading }) => {
+const ScanCards = ({ items = [], loading, layoutMode = "vertical" }) => {
   if (!loading && (!items || items.length === 0)) {
     return (
       <EmptyState
@@ -328,9 +463,13 @@ const ScanCards = ({ items = [], loading }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div
+      className={`grid grid-cols-1 gap-4 ${
+        layoutMode === "horizontal" ? "" : "sm:grid-cols-2 lg:grid-cols-3"
+      }`}
+    >
       {items.map((scan) => (
-        <ScanCard key={scan.id} scan={scan} />
+        <ScanCard key={scan.id} scan={scan} layoutMode={layoutMode} />
       ))}
     </div>
   );
@@ -339,6 +478,7 @@ const ScanCards = ({ items = [], loading }) => {
 ScanCards.propTypes = {
   items: PropTypes.array,
   loading: PropTypes.bool,
+  layoutMode: PropTypes.oneOf(["vertical", "horizontal"]),
 };
 
 export default ScanCards;
