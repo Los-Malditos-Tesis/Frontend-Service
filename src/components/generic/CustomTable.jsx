@@ -299,7 +299,7 @@ const CustomTable = ({
                         className={`border-t border-gray-100 transition hover:bg-gray-50 ${rowClassName}`}
                       >
                         {row.getVisibleCells().map((cell) => (
-                          <td key={cell.id} className="px-6 py-4 text-gray-700">
+                          <td key={cell.id} className="px-5 py-3 wrap-anywhere text-gray-700">
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </td>
                         ))}

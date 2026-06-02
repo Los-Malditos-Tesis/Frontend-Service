@@ -348,8 +348,9 @@ const OrdersCards = ({ orders = [], loading, onUpdateStatus, onDelete, canManage
               <div className="mt-5">
                 <div className="mb-2 flex justify-between text-xs font-bold text-slate-500">
                   <span>
-                    Entregadas {formatNumber(order.total_delivered)} de{" "}
-                    {formatNumber(order.total_quantity)}
+                    Despachadas {formatNumber(order.total_dispatched)} de {formatNumber(order.total_quantity)}
+                    {/* Entregadas {formatNumber(order.total_delivered)} de{" "} */}
+                    {/* {formatNumber(order.total_quantity)} */}
                   </span>
                   <span>{progress.toFixed(0)}%</span>
                 </div>

@@ -19,7 +19,7 @@ const WarehouseSelect = forwardRef(
         labelText={labelText}
         placeholderLabel={placeholderLabel}
         options={options}
-        icon={<WarehouseOutlinedIcon />}
+        // icon={<WarehouseOutlinedIcon />}
         iconPosition={iconPosition}
         {...props}
       />

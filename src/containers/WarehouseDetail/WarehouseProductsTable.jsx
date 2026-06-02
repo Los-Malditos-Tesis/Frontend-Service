@@ -1,9 +1,23 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import CustomTable from "../../components/generic/CustomTable";
+import TableExportButtons from "../../components/generic/TableExportButtons";
+import { exportRowsToCsv, exportRowsToExcel } from "../../utils/exportTable";
 
 const columnHelper = createColumnHelper();
 
 const WarehouseProductsTable = ({ products = [], loading }) => {
+  const exportRows = products.map((product) => ({
+    ID: product.id || "--",
+    Nombre: product.name || "--",
+    Código: product.code || "--",
+    SKU: product.sku || "--",
+    Categoría: product.category || "--",
+    Proveedor: product.Supplier?.name || "Sin proveedor",
+    Inventario: Number(product.total_available_units || 0).toLocaleString("es-SV"),
+    Pallets: Number(product.total_pallets || 0).toLocaleString("es-SV"),
+    Cajas: Number(product.total_boxes || 0).toLocaleString("es-SV"),
+  }));
+
   const columns = [
     columnHelper.accessor("name", {
       header: "Producto",
@@ -72,6 +86,19 @@ const WarehouseProductsTable = ({ products = [], loading }) => {
         emptyTitle="Sin productos en esta bodega"
         emptyDescription="No hay productos asociados a este warehouse todavía."
         searchPlaceholder="Buscar producto del warehouse..."
+        toolbarRight={
+          <TableExportButtons
+            onExcel={() =>
+              exportRowsToExcel({
+                rows: exportRows,
+                fileName: "productos-en-bodega",
+                sheetName: "Productos",
+              })
+            }
+            onCsv={() => exportRowsToCsv({ rows: exportRows, fileName: "productos-en-bodega" })}
+            disabled={loading || !exportRows.length}
+          />
+        }
         showColumnFilters={false}
         showPagination={true}
         mobileBreakpoint="xl"

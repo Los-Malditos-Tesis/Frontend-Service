@@ -4,10 +4,22 @@ import { Edit, Delete } from "@mui/icons-material";
 
 import { deleteProduct } from "../../services/product.service";
 import CustomTable from "../../components/generic/CustomTable";
+import TableExportButtons from "../../components/generic/TableExportButtons";
+import { exportRowsToCsv, exportRowsToExcel } from "../../utils/exportTable";
 
 const columnHelper = createColumnHelper();
 
 const ProductsTable = ({ products = [], loading, onEdit, onRefresh, canManage = true }) => {
+  const exportRows = products.map((product) => ({
+    ID: product.id || "--",
+    Nombre: product.name || "--",
+    Código: product.code || "--",
+    SKU: product.sku || "--",
+    Categoría: product.category || "--",
+    Proveedor: product.Supplier?.name || "Sin proveedor",
+    Inventario: Number(product.total_available_units || 0).toLocaleString("es-SV"),
+  }));
+
   const handleDelete = async (id) => {
     if (!confirm("¿Eliminar producto?")) return;
 
@@ -61,7 +73,7 @@ const ProductsTable = ({ products = [], loading, onEdit, onRefresh, canManage = 
     columns.push(
       columnHelper.display({
         id: "actions",
-        header: "Actions",
+        header: "Acciones",
         enableColumnFilter: false,
         cell: ({ row }) => {
           const product = row.original;
@@ -79,7 +91,7 @@ const ProductsTable = ({ products = [], loading, onEdit, onRefresh, canManage = 
                 onClick={() => handleDelete(product.id)}
                 className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
               >
-                <Delete fontSize="small" />
+                <Delete fontSize="small" className="text-red-700" />
               </button>
             </div>
           );
@@ -98,6 +110,15 @@ const ProductsTable = ({ products = [], loading, onEdit, onRefresh, canManage = 
       emptyTitle="Sin productos"
       emptyDescription="No hay datos aún."
       searchPlaceholder="Buscar producto..."
+      toolbarRight={
+        <TableExportButtons
+          onExcel={() =>
+            exportRowsToExcel({ rows: exportRows, fileName: "productos", sheetName: "Productos" })
+          }
+          onCsv={() => exportRowsToCsv({ rows: exportRows, fileName: "productos" })}
+          disabled={loading || !exportRows.length}
+        />
+      }
       showColumnFilters={false}
       showPagination={true}
       mobileBreakpoint="85rem"

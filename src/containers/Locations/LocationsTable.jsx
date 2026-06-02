@@ -4,6 +4,8 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Edit, Delete } from "@mui/icons-material";
 import { deleteLocation } from "../../services/location.service";
 import CustomTable from "../../components/generic/CustomTable";
+import TableExportButtons from "../../components/generic/TableExportButtons";
+import { exportRowsToCsv, exportRowsToExcel } from "../../utils/exportTable";
 
 const columnHelper = createColumnHelper();
 
@@ -55,6 +57,18 @@ const LocationsTable = ({ locations = [], loading, onEdit, onRefresh, canManage 
       });
   }, [locations]);
 
+  const exportRows = useMemo(
+    () =>
+      groupedAndFilteredLocations.map((location) => ({
+        Zona: location.zone || "--",
+        Categoría: location.category || "--",
+        Almacén: location.warehouseName || "Sin almacén",
+        "ID almacén": location.warehouse_id || location.Warehouse?.id || "--",
+        "ID ubicación": location.id || "--",
+      })),
+    [groupedAndFilteredLocations]
+  );
+
   const handleDelete = async (id) => {
     if (!confirm("¿Estás seguro de que deseas eliminar esta ubicación?")) return;
 
@@ -75,14 +89,14 @@ const LocationsTable = ({ locations = [], loading, onEdit, onRefresh, canManage 
 
   const columns = [
     columnHelper.accessor("zone", {
-      header: "Zone",
+      header: "Zona",
     }),
     columnHelper.accessor("category", {
       header: "Categoría",
       cell: ({ getValue }) => getValue() || "Sin categoría",
     }),
     columnHelper.accessor("warehouseName", {
-      header: "Warehouse",
+      header: "Bodega",
       cell: ({ getValue }) => {
         const value = getValue();
         return value || "Sin almacén";
@@ -98,7 +112,7 @@ const LocationsTable = ({ locations = [], loading, onEdit, onRefresh, canManage 
     columns.push(
       columnHelper.display({
         id: "actions",
-        header: "Actions",
+        header: "Acciones",
         enableColumnFilter: false,
         cell: ({ row }) => {
           const loc = row.original;
@@ -116,7 +130,7 @@ const LocationsTable = ({ locations = [], loading, onEdit, onRefresh, canManage 
                 onClick={() => handleDelete(loc.id)}
                 className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
               >
-                <Delete fontSize="small" />
+                <Delete fontSize="small" className="text-red-700" />
               </button>
             </div>
           );
@@ -135,6 +149,15 @@ const LocationsTable = ({ locations = [], loading, onEdit, onRefresh, canManage 
       emptyTitle="Sin ubicaciones"
       emptyDescription="Aún no hay zonas registradas en el sistema."
       searchPlaceholder="Buscar ubicación..."
+      toolbarRight={
+        <TableExportButtons
+          onExcel={() =>
+            exportRowsToExcel({ rows: exportRows, fileName: "ubicaciones", sheetName: "Ubicaciones" })
+          }
+          onCsv={() => exportRowsToCsv({ rows: exportRows, fileName: "ubicaciones" })}
+          disabled={loading || !exportRows.length}
+        />
+      }
       groupBy={{
         getKey: (location) => getWarehouseGroupKey(location),
         getLabel: (location) => getWarehouse(location).name,

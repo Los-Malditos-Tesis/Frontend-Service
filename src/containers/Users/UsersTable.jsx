@@ -7,6 +7,8 @@ import Chip from "@mui/material/Chip";
 
 import { toggleUserStatus } from "../../services/user.service";
 import CustomTable from "../../components/generic/CustomTable";
+import TableExportButtons from "../../components/generic/TableExportButtons";
+import { exportRowsToCsv, exportRowsToExcel } from "../../utils/exportTable";
 
 const columnHelper = createColumnHelper();
 
@@ -18,6 +20,14 @@ const UsersTable = ({
   showPagination = true,
   canManage = true,
 }) => {
+  const exportRows = users.map((user) => ({
+    ID: user.id || "--",
+    Nombre: user.name || "--",
+    Email: user.email || "--",
+    Roles: (user.roles || []).map((role) => role.id).join(", ") || "--",
+    Estado: user.active ? "Activo" : "Bloqueado",
+  }));
+
   // HANDLERS
   const handleToggleStatus = async (id, currentlyActive) => {
     const action = currentlyActive ? "bloquear" : "desbloquear";
@@ -99,7 +109,7 @@ const UsersTable = ({
     columns.push(
       columnHelper.display({
         id: "actions",
-        header: "Actions",
+        header: "Acciones",
         enableColumnFilter: false,
         cell: ({ row }) => {
           const u = row.original;
@@ -137,6 +147,15 @@ const UsersTable = ({
       emptyTitle="Sin usuarios"
       emptyDescription="No hay datos aún."
       searchPlaceholder="Buscar usuario..."
+      toolbarRight={
+        <TableExportButtons
+          onExcel={() =>
+            exportRowsToExcel({ rows: exportRows, fileName: "usuarios", sheetName: "Usuarios" })
+          }
+          onCsv={() => exportRowsToCsv({ rows: exportRows, fileName: "usuarios" })}
+          disabled={loading || !exportRows.length}
+        />
+      }
       showColumnFilters={false}
       showPagination={showPagination}
     />

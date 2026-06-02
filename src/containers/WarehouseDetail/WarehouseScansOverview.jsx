@@ -16,6 +16,8 @@ import ArrowUpwardOutlinedIcon from "@mui/icons-material/ArrowUpwardOutlined";
 import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import CustomTable from "../../components/generic/CustomTable";
+import TableExportButtons from "../../components/generic/TableExportButtons";
+import { exportRowsToCsv, exportRowsToExcel } from "../../utils/exportTable";
 
 const columnHelper = createColumnHelper();
 
@@ -181,6 +183,22 @@ const StatCard = ({ label, value, description, className }) => (
 );
 
 const WarehouseScansOverview = ({ scans = [], loading }) => {
+  const exportRows = useMemo(
+    () =>
+      scans.map((scan) => ({
+        ID: formatShortId(scan.id),
+        "ID completo": scan.id || "--",
+        Movimiento: getTypeMeta(normalizeScanType(scan.type)).label,
+        Estado: getStatusMeta(scan.status).label,
+        "Tipo detectado": scan.detectedType || "--",
+        Código: scan.itemCode || "--",
+        Cámara: scan.Camera?.code || "--",
+        Fecha: formatDateTime(scan.createdAt),
+        Detalle: scan.errorMessage || "--",
+      })),
+    [scans]
+  );
+
   const { chartData, summary } = useMemo(() => {
     const last7Days = buildLast7Days();
     const countsByDay = new Map(
@@ -285,8 +303,8 @@ const WarehouseScansOverview = ({ scans = [], loading }) => {
               />
               <Tooltip contentStyle={chartTooltipStyle} />
               <Legend />
-              <Bar dataKey="ent" name="Entradas" fill="#0ea5e9" radius={[8, 8, 0, 0]} />
-              <Bar dataKey="ext" name="Salidas" fill="#f59e0b" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="ent" name="Entradas" fill="#202124" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="ext" name="Salidas" fill="#4880FF" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -301,6 +319,19 @@ const WarehouseScansOverview = ({ scans = [], loading }) => {
         emptyTitle="Sin escaneos en esta bodega"
         emptyDescription="Todavía no hay eventos de escaneo asociados a esta bodega."
         searchPlaceholder="Buscar escaneo..."
+        toolbarRight={
+          <TableExportButtons
+            onExcel={() =>
+              exportRowsToExcel({
+                rows: exportRows,
+                fileName: "escaneos-bodega",
+                sheetName: "Escaneos",
+              })
+            }
+            onCsv={() => exportRowsToCsv({ rows: exportRows, fileName: "escaneos-bodega" })}
+            disabled={loading || !exportRows.length}
+          />
+        }
         showColumnFilters={false}
         showPagination={true}
         mobileBreakpoint="xl"

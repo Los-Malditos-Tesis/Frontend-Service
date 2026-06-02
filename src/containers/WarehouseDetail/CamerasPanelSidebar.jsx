@@ -31,7 +31,7 @@ const CamerasPanelSidebar = ({
   const hasMonitoring = cameras.length > 0;
 
   return (
-    <div className="flex flex-col rounded-2xl border-2 border-gray-200 bg-white p-6">
+    <div className="flex flex-col rounded-2xl border-2 h-full border-gray-200 bg-white p-6">
       {/* Header Panel */}
       <div className="mb-5 border-b border-gray-200 pb-5">
         <div className="mb-3 flex items-start gap-3">
@@ -96,7 +96,7 @@ const CamerasPanelSidebar = ({
                       className="rounded-md p-1 text-gray-600 transition hover:bg-red-50 hover:text-red-500"
                       title="Eliminar"
                     >
-                      <DeleteIcon fontSize="small" />
+                      <DeleteIcon fontSize="small" className="text-red-700" />
                     </button>
                   </div>
                 ) : null}
