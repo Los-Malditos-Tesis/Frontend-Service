@@ -29,7 +29,7 @@ const normalizeScanType = (value) => {
   const type = String(value || "").toUpperCase();
 
   if (type === "ENT") return "ENT";
-  if (type === "EXT" || type === "SAL") return "EXT";
+  if (type === "SLD" || type === "SAL") return "SLD";
 
   return "OTHER";
 };
@@ -91,7 +91,7 @@ const getTypeMeta = (type) => {
     };
   }
 
-  if (type === "EXT") {
+  if (type === "SLD") {
     return {
       label: "Salida",
       className: "border-amber-200 bg-amber-50 text-amber-700",
@@ -201,14 +201,14 @@ const WarehouseScansOverview = ({ scans = [], loading }) => {
       const type = normalizeScanType(scan.type);
 
       if (type === "ENT") entries += 1;
-      if (type === "EXT") exits += 1;
+      if (type === "SLD") exits += 1;
 
       const dateKey = new Date(scan.createdAt || 0).toISOString().slice(0, 10);
       if (!countsByDay.has(dateKey)) return;
 
       const bucket = countsByDay.get(dateKey);
       if (type === "ENT") bucket.ent += 1;
-      if (type === "EXT") bucket.ext += 1;
+      if (type === "SLD") bucket.ext += 1;
     });
 
     return {
@@ -241,13 +241,13 @@ const WarehouseScansOverview = ({ scans = [], loading }) => {
         <StatCard
           label="Entradas"
           value={summary.entries}
-          description="Escaneos con tipo ENT"
+          description="Escaneos con tipo entrada"
           className="border-sky-200"
         />
         <StatCard
           label="Salidas"
           value={summary.exits}
-          description="Escaneos con tipo EXT o SAL"
+          description="Escaneos con tipo salida"
           className="border-amber-200"
         />
       </div>

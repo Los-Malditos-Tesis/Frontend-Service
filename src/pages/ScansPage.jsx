@@ -12,7 +12,7 @@ const ScansPage = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
-  const [layoutMode, setLayoutMode] = useState("vertical");
+  const [layoutMode, setLayoutMode] = useState("horizontal");
 
   const fetchScans = useCallback(
     async (status = statusFilter) => {
