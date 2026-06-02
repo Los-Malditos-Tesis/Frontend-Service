@@ -288,7 +288,8 @@ const CustomTable = ({
                               <span className="text-sm font-semibold tracking-wider text-gray-900 uppercase">
                                 {groupLabel}
                               </span>
-                              <span className="rounded-full bg-black px-3 py-1 text-xs font-semibold text-white">
+                              {/* <span className="rounded-full bg-black px-3 py-1 text-xs font-semibold text-white"> */}
+                              <span className="text-xs font-semibold text-gray-900">
                                 {groupCount} elementos
                               </span>
                             </div>
@@ -334,7 +335,8 @@ const CustomTable = ({
                         <span className="text-sm font-semibold tracking-wider text-gray-900 uppercase">
                           {groupLabel}
                         </span>
-                        <span className="rounded-full bg-black px-3 py-1 text-xs font-semibold text-white">
+                        {/* <span className="rounded-full bg-black px-3 py-1 text-xs font-semibold text-white"> */}
+                        <span className="text-xs font-semibold text-gray-900">
                           {groupCount} elementos
                         </span>
                       </div>
