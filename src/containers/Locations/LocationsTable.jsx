@@ -10,7 +10,7 @@ import { exportRowsToCsv, exportRowsToExcel } from "../../utils/exportTable";
 const columnHelper = createColumnHelper();
 
 const getWarehouse = (location) => {
-  const warehouse = location?.Warehouse;
+  const warehouse = location?.warehouse;
 
   if (warehouse?.id || warehouse?.name) {
     return {
