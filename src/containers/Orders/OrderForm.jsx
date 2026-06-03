@@ -194,7 +194,7 @@ const OrderForm = ({ warehouses = [], stores = [], products = [], onSuccess }) =
       <CustomInput
         name="total_quantity"
         type="number"
-        labelText="Cantidad total"
+        labelText={`Cantidad a mover (${unitType === ORDER_UNIT_TYPES.PALLET ? "Pallets" : "Cajas"})`}
         placeholder="Ej: 24"
         icon={<StraightenOutlinedIcon />}
         {...register("total_quantity", { valueAsNumber: true })}

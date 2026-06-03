@@ -6,7 +6,9 @@ import { Edit, Delete } from "@mui/icons-material";
 
 import { deleteCamera } from "../../services/camera.service";
 import CustomTable from "../../components/generic/CustomTable";
+import TableExportButtons from "../../components/generic/TableExportButtons";
 import WarehouseSelect from "../../components/generic/WarehouseSelect";
+import { exportRowsToCsv, exportRowsToExcel } from "../../utils/exportTable";
 
 const columnHelper = createColumnHelper();
 
@@ -99,16 +101,28 @@ const CamerasTable = ({ cameras = [], loading, onEdit, onRefresh, canManage = tr
     });
   }, [cameras, warehouseFilter]);
 
+  const exportRows = useMemo(
+    () =>
+      groupedAndFilteredCameras.map((camera) => ({
+        ID: camera.id || "--",
+        Código: camera.code || "--",
+        Bodega: camera.warehouseName || "Sin bodega",
+        Zona: camera.location?.zone || "Sin ubicación",
+        "API Key": camera.api_key ? "••••••••••••••••••••••••" : "--",
+      })),
+    [groupedAndFilteredCameras]
+  );
+
   const columns = [
     columnHelper.accessor("code", {
-      header: "Code",
+      header: "Código",
     }),
     columnHelper.accessor("warehouseName", {
-      header: "Warehouse",
+      header: "Bodega",
       cell: ({ getValue }) => getValue() || "Sin bodega",
     }),
     columnHelper.accessor("location", {
-      header: "Location",
+      header: "Zona",
       cell: ({ getValue }) => {
         const value = getValue();
         return value ? `${value?.zone}` : "Sin ubicación";
@@ -127,7 +141,7 @@ const CamerasTable = ({ cameras = [], loading, onEdit, onRefresh, canManage = tr
     columns.push(
       columnHelper.display({
         id: "actions",
-        header: "Actions",
+        header: "Acciones",
         enableColumnFilter: false,
         cell: ({ row }) => {
           const camera = row.original;
@@ -145,7 +159,7 @@ const CamerasTable = ({ cameras = [], loading, onEdit, onRefresh, canManage = tr
                 onClick={() => handleDelete(camera.id)}
                 className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
               >
-                <Delete fontSize="small" />
+                <Delete fontSize="small" className="text-red-700" />
               </button>
             </div>
           );
@@ -165,14 +179,25 @@ const CamerasTable = ({ cameras = [], loading, onEdit, onRefresh, canManage = tr
       emptyDescription="No hay datos aún."
       searchPlaceholder="Buscar cámara..."
       toolbarRight={
-        <div className="w-full md:w-[320px]">
-          <WarehouseSelect
-            labelText=""
-            placeholderLabel="Filtrar por bodega"
-            options={warehouseOptions}
-            value={warehouseFilter}
-            onChange={(event) => setWarehouseFilter(event.target.value)}
-            name="warehouse_filter"
+        <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-end">
+          <div className="w-full md:w-[250px]">
+            <WarehouseSelect
+              labelText=""
+              placeholderLabel="Filtrar por bodega"
+              options={warehouseOptions}
+              value={warehouseFilter}
+              onChange={(event) => setWarehouseFilter(event.target.value)}
+              name="warehouse_filter"
+            />
+          </div>
+
+          <TableExportButtons
+            onExcel={() =>
+              exportRowsToExcel({ rows: exportRows, fileName: "camaras", sheetName: "Camaras" })
+            }
+            onCsv={() => exportRowsToCsv({ rows: exportRows, fileName: "camaras" })}
+            disabled={loading || !exportRows.length}
+            className="md:self-end"
           />
         </div>
       }

@@ -3,10 +3,27 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Edit, Delete, Inventory2Outlined } from "@mui/icons-material";
 import { deleteSupplier } from "../../services/supplier.service";
 import CustomTable from "../../components/generic/CustomTable";
+import TableExportButtons from "../../components/generic/TableExportButtons";
+import { exportRowsToCsv, exportRowsToExcel } from "../../utils/exportTable";
 
 const columnHelper = createColumnHelper();
 
 const SuppliersTable = ({ suppliers = [], loading, onEdit, onRefresh, canManage = true }) => {
+  const exportRows = suppliers.map((supplier) => {
+    const products = supplier.products || supplier.Products || [];
+
+    return {
+      ID: supplier.id || "--",
+      Nombre: supplier.name || "--",
+      Código: supplier.code || "--",
+      Contacto: supplier.contactName || "--",
+      Teléfono: supplier.phone || "--",
+      Email: supplier.email || "--",
+      Ubicación: supplier.location || "--",
+      "Total productos": products.length,
+    };
+  });
+
   const handleDelete = async (id) => {
     if (!confirm("¿Estás seguro de que deseas eliminar este proveedor?")) return;
 
@@ -76,7 +93,7 @@ const SuppliersTable = ({ suppliers = [], loading, onEdit, onRefresh, canManage 
     columns.push(
       columnHelper.display({
         id: "actions",
-        header: "Actions",
+        header: "Acciones",
         enableColumnFilter: false,
         cell: ({ row }) => {
           const supplier = row.original;
@@ -94,7 +111,7 @@ const SuppliersTable = ({ suppliers = [], loading, onEdit, onRefresh, canManage 
                 onClick={() => handleDelete(supplier.id)}
                 className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
               >
-                <Delete fontSize="small" />
+                <Delete fontSize="small" className="text-red-700" />
               </button>
             </div>
           );
@@ -113,6 +130,15 @@ const SuppliersTable = ({ suppliers = [], loading, onEdit, onRefresh, canManage 
       emptyTitle="Sin proveedores"
       emptyDescription="No hay datos aún."
       searchPlaceholder="Buscar proveedor..."
+      toolbarRight={
+        <TableExportButtons
+          onExcel={() =>
+            exportRowsToExcel({ rows: exportRows, fileName: "proveedores", sheetName: "Proveedores" })
+          }
+          onCsv={() => exportRowsToCsv({ rows: exportRows, fileName: "proveedores" })}
+          disabled={loading || !exportRows.length}
+        />
+      }
       showColumnFilters={false}
       showPagination={true}
       mobileBreakpoint="90rem"

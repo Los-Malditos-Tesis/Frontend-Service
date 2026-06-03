@@ -53,8 +53,8 @@ const ScansPage = () => {
       showAddIcon={false}
     >
       <div className="space-y-6">
-        <div className="grid gap-4 lg:grid-cols-2">
-          <CustomSelect
+        <div className="grid gap-4 ml-auto md:w-[250px]">
+          {/* <CustomSelect
             name="scanStatusFilter"
             labelText="Filtrar por estado"
             placeholderLabel="Todos los escaneos"
@@ -65,23 +65,28 @@ const ScansPage = () => {
               { value: "OK", label: "Buenos" },
               { value: "ERR", label: "Malos" },
             ]}
-          />
+          /> */}
 
           <CustomSelect
             name="scanLayoutMode"
-            labelText="Vista"
             placeholderLabel="Selecciona un modo de vista"
             value={layoutMode}
             onChange={(event) => setLayoutMode(event.target.value)}
             icon={<ViewAgendaOutlinedIcon />}
             options={[
-              { value: "vertical", label: "Vertical" },
-              { value: "horizontal", label: "Horizontal" },
+              { value: "vertical", label: "Vista Vertical" },
+              { value: "horizontal", label: "Vista Horizontal" },
             ]}
           />
         </div>
 
-        <ScanCards items={items} loading={loading} layoutMode={layoutMode} />
+        <ScanCards
+          items={items}
+          loading={loading} 
+          layoutMode={layoutMode} 
+          statusFilter={statusFilter} 
+          setStatusFilter={setStatusFilter} 
+        />
       </div>
     </AdminIntroLayout>
   );

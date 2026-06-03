@@ -132,6 +132,64 @@ const WarehouseMapViewer = ({
 
   return (
     <div className="space-y-5">
+      {/* Popup de selección */}
+      {selectedLocation && (
+        <div className="absolute bottom-5 left-5 z-40 w-75 rounded-2xl border border-gray-200 bg-white p-4 shadow-2xl">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex gap-3">
+              {/* <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-100">
+                <StorageIcon className="text-secondary_color" />
+              </div> */}
+
+              <div>
+                <p className="font-black text-gray-800">{selectedLocation.zone}</p>
+                <p className="text-xs font-semibold text-gray-400">Zona seleccionada</p>
+              </div>
+            </div>
+
+            {/* <span
+              className={`rounded-full px-2.5 py-1 text-xs font-black ${
+                (selectedLocation.Cameras?.length || 0) > 0
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-gray-100 text-gray-400"
+              } `}
+            >
+              {(selectedLocation.Cameras?.length || 0) > 0 ? "Online" : "Sin cámaras"}
+            </span> */}
+              {canManage ? (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onEditLocation(selectedLocation)}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-bold text-gray-700 transition hover:bg-gray-50"
+                  >
+                    <EditIcon sx={{ fontSize: 16 }} />
+                    {/* Editar */}
+                  </button>
+
+                  <button
+                    onClick={() => onDeleteLocation(selectedLocation)}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-100 px-3 py-2 text-sm font-bold text-red-500 transition hover:bg-red-50"
+                  >
+                    <DeleteIcon sx={{ fontSize: 16 }} className="text-red-700" />
+                    {/* Eliminar */}
+                  </button>
+                </div>
+              ) : null}
+          </div>
+
+          {/* <div className="mb-4 rounded-xl border border-purple-200 bg-purple-50 p-3">
+            <p className="text-xs font-black uppercase tracking-wide text-purple-500">
+              AI Insight
+            </p>
+            <p className="mt-1 text-sm font-semibold text-gray-700">
+              Esta zona tiene {selectedLocation.Cameras?.length || 0} cámaras
+              conectadas para monitoreo.
+            </p>
+          </div> */}
+
+        
+        </div>
+      )}
       <div>
         {" "}
         {/* className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_320px]" */}
@@ -200,6 +258,7 @@ const WarehouseMapViewer = ({
               );
             })}
           </div>
+          
 
           {/* Cámaras como puntos flotantes */}
           {/* {locations.map((location, index) => {
@@ -222,63 +281,7 @@ const WarehouseMapViewer = ({
             );
           })} */}
 
-          {/* Popup de selección */}
-          {selectedLocation && (
-            <div className="absolute bottom-5 left-5 z-40 w-85 rounded-2xl border border-gray-200 bg-white p-4 shadow-2xl">
-              <div className="mb-3 flex items-start justify-between gap-3">
-                <div className="flex gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-100">
-                    <StorageIcon className="text-secondary_color" />
-                  </div>
-
-                  <div>
-                    <p className="font-black text-gray-800">{selectedLocation.zone}</p>
-                    <p className="text-xs font-semibold text-gray-400">Zona seleccionada</p>
-                  </div>
-                </div>
-
-                <span
-                  className={`rounded-full px-2.5 py-1 text-xs font-black ${
-                    (selectedLocation.Cameras?.length || 0) > 0
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-gray-100 text-gray-400"
-                  } `}
-                >
-                  {(selectedLocation.Cameras?.length || 0) > 0 ? "Online" : "Sin cámaras"}
-                </span>
-              </div>
-
-              {/* <div className="mb-4 rounded-xl border border-purple-200 bg-purple-50 p-3">
-                <p className="text-xs font-black uppercase tracking-wide text-purple-500">
-                  AI Insight
-                </p>
-                <p className="mt-1 text-sm font-semibold text-gray-700">
-                  Esta zona tiene {selectedLocation.Cameras?.length || 0} cámaras
-                  conectadas para monitoreo.
-                </p>
-              </div> */}
-
-              {canManage ? (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => onEditLocation(selectedLocation)}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-bold text-gray-700 transition hover:bg-gray-50"
-                  >
-                    <EditIcon sx={{ fontSize: 16 }} />
-                    Editar
-                  </button>
-
-                  <button
-                    onClick={() => onDeleteLocation(selectedLocation)}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-100 px-3 py-2 text-sm font-bold text-red-500 transition hover:bg-red-50"
-                  >
-                    <DeleteIcon sx={{ fontSize: 16 }} />
-                    Eliminar
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          )}
+          
 
           {/* Controles tipo mapa */}
           {/* <div className="absolute bottom-5 right-5 z-40 flex overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">

@@ -11,11 +11,15 @@ import QrCodeScannerOutlinedIcon from "@mui/icons-material/QrCodeScannerOutlined
 
 export const CATEGORIES = [
   { value: "Electrónica", label: "Electrónica" },
+  { value: "Audio y Video", label: "Audio y Video" },
+  { value: "Gaming", label: "Gaming" },
+  { value: "Equipo de computo", label: "Equipo de computo" },
   { value: "Periféricos", label: "Periféricos" },
-  { value: "Monitores", label: "Monitores" },
-  { value: "Accesorios", label: "Accesorios" },
-  { value: "Software", label: "Software" },
+  { value: "Muelle de Entrada y Salida", label: "Muelle de Entrada y Salida" },
 ];
+
+export const ENTRY_EXIT_CATEGORY = "Muelle de Entrada y Salida";
+
 export const ROLES = {
   SUPERADMIN: "SUPERADMIN",
   ADMIN: "ADMIN",
@@ -42,7 +46,7 @@ export const ORDER_STATUS = {
   CANCELLED: "CANCELLED",
 };
 
-export const MENU = [
+export const ROUTES = [
   { name: "Dashboard", path: "/dashboard", icon: <DashboardOutlinedIcon /> },
   { name: "Proveedores", path: "/suppliers", icon: <BusinessIcon /> },
   { name: "Tiendas", path: "/stores", icon: <StorefrontOutlinedIcon /> },
@@ -53,6 +57,5 @@ export const MENU = [
   { name: "Órdenes", path: "/orders", icon: <ReceiptLongOutlinedIcon /> },
   { name: "Escaneos", path: "/scans", icon: <QrCodeScannerOutlinedIcon /> },
   { name: "Usuarios", path: "/users", icon: <PeopleAltOutlinedIcon /> },
-
   // { name: "API Test", path: "/api-test", icon: <ScienceOutlinedIcon /> },
 ];

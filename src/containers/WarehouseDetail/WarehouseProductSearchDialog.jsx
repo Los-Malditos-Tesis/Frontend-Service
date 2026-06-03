@@ -14,6 +14,7 @@ import SelectedProductCard from "./components/SelectedProductCard";
 import CamerasPanel from "./components/CamerasPanel";
 import AnalysisPanel from "./components/AnalysisPanel";
 import LoadingOverlay from "./components/LoadingOverlay";
+import { ENTRY_EXIT_CATEGORY } from "../../utils/conts";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -36,6 +37,9 @@ const getLocationCategory = (location) =>
 const getLocationName = (location) => location?.zone || location?.name || "Sin zona";
 
 const getCameraCode = (camera) => camera?.code || camera?.cameraCode || camera?.name || "";
+
+const isEntryExitLocation = (location) =>
+  normalizeText(getLocationCategory(location)) === normalizeText(ENTRY_EXIT_CATEGORY);
 
 const getLocationCameras = (location) => (Array.isArray(location?.Cameras) ? location.Cameras : []);
 
@@ -94,6 +98,11 @@ const WarehouseProductSearchDialog = ({
   const [analysis, setAnalysis] = useState(null);
   const [loadingStage, setLoadingStage] = useState("");
   const [loadingMessage, setLoadingMessage] = useState("");
+
+  const searchableLocations = useMemo(
+    () => locations.filter((location) => !isEntryExitLocation(location)),
+    [locations]
+  );
 
   const filteredProducts = useMemo(() => {
     const normalizedQuery = normalizeText(query);
@@ -194,7 +203,7 @@ const WarehouseProductSearchDialog = ({
 
       // Paso 2: obtener las locations de la misma categoría del producto.
       const productCategory = normalizeText(selectedProduct.category);
-      const sameCategoryLocations = locations.filter(
+      const sameCategoryLocations = searchableLocations.filter(
         (location) => normalizeText(getLocationCategory(location)) === productCategory
       );
 
@@ -233,7 +242,7 @@ const WarehouseProductSearchDialog = ({
       console.log("No match in same category, checking other zones...");
 
       // Paso 7 y Paso 8: tomar las zonas que no tienen la misma categoría y sus cámaras.
-      const otherLocations = locations.filter(
+      const otherLocations = searchableLocations.filter(
         (location) => normalizeText(getLocationCategory(location)) !== productCategory
       );
 

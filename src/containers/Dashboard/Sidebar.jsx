@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { MENU, ROLES } from "../../utils/conts.jsx";
+import { ROUTES, ROLES } from "../../utils/conts.jsx";
 import LogoutIcon from "@mui/icons-material/Logout";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -12,17 +12,17 @@ export default function Sidebar({ isBlack = false }) {
     localStorage.removeItem("token");
     window.location.href = "/login";
   };
-  const [filteredMenu, setFilteredMenu] = useState(MENU);
+  const [filteredMenu, setFilteredMenu] = useState(ROUTES);
 
   const { user } = useAuth();
   const canManage = hasAnyRole(user, [ROLES.SUPERADMIN]);
 
   useEffect(() => {
     if (canManage) {
-      setFilteredMenu(MENU);
+      setFilteredMenu(ROUTES);
     } else {
       const notAllowedRutesForNonSuperAdmin = ["/users"];
-      setFilteredMenu(MENU.filter((item) => !notAllowedRutesForNonSuperAdmin.includes(item.path)));
+      setFilteredMenu(ROUTES.filter((item) => !notAllowedRutesForNonSuperAdmin.includes(item.path)));
     }
   }, [canManage]);
 

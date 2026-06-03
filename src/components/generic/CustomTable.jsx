@@ -288,7 +288,8 @@ const CustomTable = ({
                               <span className="text-sm font-semibold tracking-wider text-gray-900 uppercase">
                                 {groupLabel}
                               </span>
-                              <span className="rounded-full bg-black px-3 py-1 text-xs font-semibold text-white">
+                              {/* <span className="rounded-full bg-black px-3 py-1 text-xs font-semibold text-white"> */}
+                              <span className="text-xs font-semibold text-gray-900">
                                 {groupCount} elementos
                               </span>
                             </div>
@@ -299,7 +300,7 @@ const CustomTable = ({
                         className={`border-t border-gray-100 transition hover:bg-gray-50 ${rowClassName}`}
                       >
                         {row.getVisibleCells().map((cell) => (
-                          <td key={cell.id} className="px-6 py-4 text-gray-700">
+                          <td key={cell.id} className="px-5 py-3 wrap-anywhere text-gray-700">
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </td>
                         ))}
@@ -334,7 +335,8 @@ const CustomTable = ({
                         <span className="text-sm font-semibold tracking-wider text-gray-900 uppercase">
                           {groupLabel}
                         </span>
-                        <span className="rounded-full bg-black px-3 py-1 text-xs font-semibold text-white">
+                        {/* <span className="rounded-full bg-black px-3 py-1 text-xs font-semibold text-white"> */}
+                        <span className="text-xs font-semibold text-gray-900">
                           {groupCount} elementos
                         </span>
                       </div>

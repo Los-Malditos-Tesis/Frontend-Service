@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { createColumnHelper } from "@tanstack/react-table";
 import EmptyState from "../../components/generic/EmptyState";
 import CustomTable from "../../components/generic/CustomTable";
+import TableExportButtons from "../../components/generic/TableExportButtons";
+import { exportRowsToCsv, exportRowsToExcel } from "../../utils/exportTable";
 import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
@@ -11,9 +13,11 @@ import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import ArrowDownwardOutlinedIcon from "@mui/icons-material/ArrowDownwardOutlined";
 import ArrowUpwardOutlinedIcon from "@mui/icons-material/ArrowUpwardOutlined";
+import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 
 import boxIcon from "../../assets/images/box_icon.png";
 import palletIcon from "../../assets/images/pallet_icon.png";
+import CustomSelect from "../../components/generic/CustomSelect";
 
 const columnHelper = createColumnHelper();
 
@@ -48,12 +52,12 @@ const UNIT_META = {
 const TYPE_META = {
   ENT: {
     label: "Entrada",
-    className: "border-sky-200 bg-sky-50 text-sky-700",
+    className: "border-green-200 bg-green-50 text-green-700",
     icon: ArrowDownwardOutlinedIcon,
   },
   SLD: {
     label: "Salida",
-    className: "border-rose-200 bg-rose-50 text-rose-700",
+    className: "border-sky-200 bg-sky-50 text-sky-700",
     icon: ArrowUpwardOutlinedIcon,
   },
 };
@@ -157,6 +161,39 @@ const formatDate = (value) => formatDateTime(value);
 
 const formatShortId = (value) => (value ? String(value).slice(0, 8) : "--");
 
+const buildScanExportRows = (items = []) =>
+  items.map((scan) => {
+    const parsedQr = parseGs1Qr(scan.qrCode);
+    const statusMeta = getStatusMeta(scan.status);
+    const typeMeta = getTypeMeta(scan.type);
+
+    return {
+      Escaneo: formatShortId(scan.id),
+      "ID completo": scan.id || "--",
+      Movimiento: typeMeta.label,
+      Estado: statusMeta.label,
+      Tipo: scan.detectedType || "--",
+      "Unidad GS1":
+        parsedQr.unitType === "PAL" ? "Pallet" : parsedQr.unitType === "BOX" ? "Caja" : "--",
+      Cámara: scan.Camera?.code || "--",
+      Producto: scan.Product?.name || "--",
+      Bodega: scan.Warehouse?.name || "--",
+      Orden: scan.Order?.type || "--",
+      Fecha: formatDateTime(scan.createdAt),
+      Actualizado: formatDateTime(scan.updatedAt),
+      QR: scan.qrCode || "--",
+      "Código pallet": parsedQr.palletCode || "--",
+      "Código caja": parsedQr.boxCode || "--",
+      "Pallet padre": parsedQr.parentPalletCode || "--",
+      "Total productos": parsedQr.totalItems ?? "--",
+      "Cajas en pallet": parsedQr.boxesInPallet || "--",
+      "Productos por caja": parsedQr.itemsPerBox || "--",
+      Detalle: scan.errorMessage || "--",
+    };
+  });
+
+
+
 const getStatusMeta = (status) => {
   if (String(status).toUpperCase() === "OK") {
     return STATUS_META.OK;
@@ -254,7 +291,7 @@ const buildTableColumns = () => [
   }),
 ];
 
-const ScanTable = ({ items, loading }) => (
+const ScanTable = ({ items, loading, statusFilter, setStatusFilter }) => (
   <CustomTable
     title=""
     data={items}
@@ -264,6 +301,30 @@ const ScanTable = ({ items, loading }) => (
     emptyTitle="Sin eventos de escaneo"
     emptyDescription="No se han detectado eventos recientemente."
     searchPlaceholder="Buscar escaneo..."
+    toolbarRight={
+      <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-end">
+        <div className="w-full md:w-[250px]">
+          <CustomSelect
+            name="scanStatusFilter"
+            placeholderLabel="Todos los escaneos"
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+            icon={<FilterAltOutlinedIcon />}
+            options={[
+              { value: "OK", label: "Buenos" },
+              { value: "ERR", label: "Malos" },
+            ]}
+          />
+        </div>
+        <TableExportButtons
+          onExcel={() =>
+            exportRowsToExcel({ rows: buildScanExportRows(items), fileName: "escaneos", sheetName: "Escaneos" })
+          }
+          onCsv={() => exportRowsToCsv({ rows: buildScanExportRows(items), fileName: "escaneos" })}
+          disabled={loading || !items.length}
+        />
+      </div>
+    }
     showColumnFilters={false}
     showPagination={true}
     mobileBreakpoint="xl"
@@ -442,9 +503,9 @@ const ScanCard = ({ scan }) => {
   );
 };
 
-const ScanCards = ({ items = [], loading, layoutMode = "vertical" }) => {
+const ScanCards = ({ items = [], loading, layoutMode = "vertical", statusFilter, setStatusFilter }) => {
   if (layoutMode === "horizontal") {
-    return <ScanTable items={items} loading={loading} />;
+    return <ScanTable items={items} loading={loading} statusFilter={statusFilter} setStatusFilter={setStatusFilter} />;
   }
 
   if (!loading && (!items || items.length === 0)) {

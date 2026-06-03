@@ -80,7 +80,7 @@ const WarehouseMapShelf = ({
           className="p-1.5 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-md transition"
           title="Eliminar zona"
         >
-          <DeleteIcon fontSize="small" />
+          <DeleteIcon fontSize="small" className="text-red-700" />
         </button>
       </div>
     </div>

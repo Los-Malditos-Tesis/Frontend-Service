@@ -4,7 +4,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { Chip } from "@mui/material";
 import { CustomContainer } from "../../components/generic/CustomContainer";
 import { useAuth } from "../../context/AuthContext";
-import { MENU } from "../../utils/conts.jsx";
+import { ROUTES } from "../../utils/conts.jsx";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
@@ -13,13 +13,15 @@ import IconButton from "@mui/material/IconButton";
 import Divider from "@mui/material/Divider";
 import { NavLink } from "react-router-dom";
 
-const pages = [
-  { name: "dashboard", path: "/" },
-  { name: "usuarios", path: "/usuarios" },
-  { name: "productos", path: "/productos" },
-  { name: "tiendas", path: "/stores" },
-  { name: "api test", path: "/api-test" },
-];
+const pages = ROUTES;
+//  [
+//   { name: "dashboard", path: "/" },
+//   { name: "proveedores", path: "/proveedores" },
+//   { name: "usuarios", path: "/usuarios" },
+//   { name: "productos", path: "/productos" },
+//   { name: "tiendas", path: "/stores" },
+//   { name: "api test", path: "/api-test" },
+// ];
 
 export default function Topbar() {
   const [query, setQuery] = useState("");
@@ -40,6 +42,7 @@ export default function Topbar() {
   };
 
   const userRoles = getUserRoles();
+  
 
   const filtered = pages.filter((p) =>
     p.name.toLowerCase().includes(query.toLowerCase())
@@ -89,9 +92,10 @@ export default function Topbar() {
                       navigate(item.path);
                       setQuery("");
                     }}
-                    className="px-4 py-2 hover:bg-black hover:text-white cursor-pointer"
+                    className="px-4 py-2 hover:bg-black hover:text-white cursor-pointer flex items-center justify-between"
                   >
-                    {item.name}
+                    <span>{item.name}</span>
+                    <span className="shrink-0 ml-2">{item.icon}</span>
                   </div>
                 ))
               ) : (
@@ -171,21 +175,21 @@ export default function Topbar() {
             </p>
 
             <nav className="flex flex-col gap-2">
-              {MENU.map((item) => (
+              {ROUTES.map((item) => (
                 <NavLink
                   key={item.path}
                   to={item.path}
                   onClick={closeMobileMenu}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-colors duration-200 ${
+                    `flex items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold transition-colors duration-200 ${
                       isActive
                         ? "bg-accent_color text-white"
                         : "bg-white text-gray-700 hover:bg-gray-100"
                     }`
                   }
                 >
-                  <span className="shrink-0">{item.icon}</span>
                   <span>{item.name}</span>
+                  <span className="shrink-0 ml-2">{item.icon}</span>
                 </NavLink>
               ))}
             </nav>

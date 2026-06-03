@@ -4,11 +4,19 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Edit, Delete, Visibility } from "@mui/icons-material";
 import { deleteWarehouse } from "../../services/warehouse.service";
 import CustomTable from "../../components/generic/CustomTable";
+import TableExportButtons from "../../components/generic/TableExportButtons";
+import { exportRowsToCsv, exportRowsToExcel } from "../../utils/exportTable";
 
 const columnHelper = createColumnHelper();
 
 const WarehousesTable = ({ warehouses = [], loading, onEdit, onRefresh, canManage = true }) => {
   const navigate = useNavigate();
+
+  const exportRows = warehouses.map((warehouse) => ({
+    ID: warehouse.id || "--",
+    Nombre: warehouse.name || "--",
+    Dirección: warehouse.address || "--",
+  }));
 
   const handleDelete = async (id) => {
     if (!confirm("¿Estás seguro de que deseas eliminar esta bodega?")) return;
@@ -69,7 +77,7 @@ const WarehousesTable = ({ warehouses = [], loading, onEdit, onRefresh, canManag
                 className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
                 title="Eliminar"
               >
-                <Delete fontSize="small" className="text-red-500" />
+                <Delete fontSize="small" className="text-red-700" />
               </button>
             </div>
           );
@@ -111,6 +119,15 @@ const WarehousesTable = ({ warehouses = [], loading, onEdit, onRefresh, canManag
       emptyTitle="Sin bodegas"
       emptyDescription="No hay datos aún."
       searchPlaceholder="Buscar bodega..."
+      toolbarRight={
+        <TableExportButtons
+          onExcel={() =>
+            exportRowsToExcel({ rows: exportRows, fileName: "bodegas", sheetName: "Bodegas" })
+          }
+          onCsv={() => exportRowsToCsv({ rows: exportRows, fileName: "bodegas" })}
+          disabled={loading || !exportRows.length}
+        />
+      }
       showColumnFilters={false}
       showPagination={true}
     />

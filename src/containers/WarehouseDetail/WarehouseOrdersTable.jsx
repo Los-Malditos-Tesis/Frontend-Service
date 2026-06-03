@@ -7,6 +7,8 @@ import PendingActionsOutlinedIcon from "@mui/icons-material/PendingActionsOutlin
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import CustomTable from "../../components/generic/CustomTable";
+import TableExportButtons from "../../components/generic/TableExportButtons";
+import { exportRowsToCsv, exportRowsToExcel } from "../../utils/exportTable";
 
 const columnHelper = createColumnHelper();
 
@@ -132,6 +134,22 @@ const buildColumns = (direction) => {
   ];
 };
 
+const buildExportRows = (orders, direction) => {
+  const isOutgoing = direction === "outgoing";
+
+  return orders.map((order) => ({
+    ID: order.id ? order.id.slice(0, 8) : "--",
+    "ID completo": order.id || "--",
+    Tipo: ORDER_TYPE_LABELS[order.type] || order.type || "--",
+    Producto: order.product_name || order.Product?.name || order.product_id || "--",
+    [isOutgoing ? "Destino" : "Origen"]: isOutgoing ? getDestinationLabel(order) : getOriginLabel(order),
+    Cantidad: formatNumber(order.total_quantity),
+    Entregadas: formatNumber(order.total_delivered),
+    Estado: getStatusMeta(order.status).label,
+    Fecha: formatDate(order.createdAt),
+  }));
+};
+
 const EmptyDirectionState = ({ title, description }) => (
   <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-600">
     <p className="font-bold text-slate-800">{title}</p>
@@ -159,6 +177,9 @@ const WarehouseOrdersTable = ({ warehouseId, warehouseName = "", orders = [], lo
   const incomingOrders = orders.filter(
     (order) => String(order.destination_warehouse_id) === String(warehouseId)
   );
+
+  const outgoingExportRows = buildExportRows(outgoingOrders, "outgoing");
+  const incomingExportRows = buildExportRows(incomingOrders, "incoming");
 
   return (
     <div className="space-y-6">
@@ -192,6 +213,21 @@ const WarehouseOrdersTable = ({ warehouseId, warehouseName = "", orders = [], lo
             emptyTitle="Sin salidas registradas"
             emptyDescription="Todavía no existen órdenes de salida para esta bodega."
             searchPlaceholder="Buscar órdenes de salida..."
+            toolbarRight={
+              <TableExportButtons
+                onExcel={() =>
+                  exportRowsToExcel({
+                    rows: outgoingExportRows,
+                    fileName: "ordenes-salida",
+                    sheetName: "Salidas",
+                  })
+                }
+                onCsv={() =>
+                  exportRowsToCsv({ rows: outgoingExportRows, fileName: "ordenes-salida" })
+                }
+                disabled={loading || !outgoingExportRows.length}
+              />
+            }
             showColumnFilters={false}
             showPagination={true}
             mobileBreakpoint="xl"
@@ -223,6 +259,21 @@ const WarehouseOrdersTable = ({ warehouseId, warehouseName = "", orders = [], lo
             emptyTitle="Sin entradas registradas"
             emptyDescription="Todavía no existen órdenes de entrada para esta bodega."
             searchPlaceholder="Buscar órdenes de entrada..."
+            toolbarRight={
+              <TableExportButtons
+                onExcel={() =>
+                  exportRowsToExcel({
+                    rows: incomingExportRows,
+                    fileName: "ordenes-entrada",
+                    sheetName: "Entradas",
+                  })
+                }
+                onCsv={() =>
+                  exportRowsToCsv({ rows: incomingExportRows, fileName: "ordenes-entrada" })
+                }
+                disabled={loading || !incomingExportRows.length}
+              />
+            }
             showColumnFilters={false}
             showPagination={true}
             mobileBreakpoint="xl"
