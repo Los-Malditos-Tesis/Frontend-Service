@@ -11,15 +11,7 @@ import VideocamIcon from "@mui/icons-material/Videocam";
 import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
 import AdminIntroLayout from "../components/generic/AdminIntroLayout";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
-import {
-  getUsers,
-} from "../services/api";
-import { searchCameras } from "../services/camera.service";
-import { searchProducts } from "../services/product.service";
-import { searchWarehouses } from "../services/warehouse.service";
-import { searchStores } from "../services/store.service";
-import { searchSuppliers } from "../services/supplier.service";
-import { searchLocations } from "../services/location.service";
+import { getDashboardStats } from "../services/dashboard.service";
 
 const metricCards = [
   {
@@ -87,126 +79,95 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [dashboardData, setDashboardData] = useState({
-    users: [],
-    products: [],
-    suppliers: [],
-    warehouses: [],
-    stores: [],
-    locations: [],
-    cameras: [],
+    stats: {
+      products: 0,
+      users: 0,
+      suppliers: 0,
+      warehouses: 0,
+      stores: 0,
+      locations: 0,
+      cameras: 0,
+    },
+    productsByCategory: [],
+    usersByRole: [],
+    topWarehouses: [],
   });
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoading(true);
 
-      const requests = await Promise.allSettled([
-        getUsers(),
-        searchProducts(),
-        searchSuppliers(),
-        searchWarehouses(),
-        searchStores(),
-        searchLocations(),
-        searchCameras(),
-      ]);
+      try {
+        const result = await getDashboardStats();
 
-      const [
-        usersResult,
-        productsResult,
-        suppliersResult,
-        warehousesResult,
-        storesResult,
-        locationsResult,
-        camerasResult,
-      ] = requests;
+        if (!result.success) {
+          throw new Error(result.error || "No se pudieron cargar los indicadores del dashboard");
+        }
 
-      const nextState = {
-        users: usersResult.status === "fulfilled" ? usersResult.value.data || [] : [],
-        products:
-          productsResult.status === "fulfilled" && productsResult.value.success
-            ? productsResult.value.data || []
-            : [],
-        suppliers:
-          suppliersResult.status === "fulfilled" ? suppliersResult.value.data || [] : [],
-        warehouses:
-          warehousesResult.status === "fulfilled" && warehousesResult.value.data
-            ? warehousesResult.value.data || []
-            : [],
-        stores: storesResult.status === "fulfilled" ? storesResult.value.data || [] : [],
-        locations:
-          locationsResult.status === "fulfilled" ? locationsResult.value.data || [] : [],
-        cameras:
-          camerasResult.status === "fulfilled" && camerasResult.value.success
-            ? camerasResult.value.data || []
-            : [],
-      };
+        const payload = result.data || {};
+        const rawStats = payload.stats || payload.stast || {};
 
-      const failedRequests = requests.filter((result) => result.status === "rejected").length;
-      if (failedRequests > 0) {
-        toast.error("No se pudieron cargar todos los indicadores del dashboard");
+        setDashboardData({
+          stats: {
+            products: Number(rawStats.products || 0),
+            users: Number(rawStats.users || 0),
+            suppliers: Number(rawStats.suppliers || 0),
+            warehouses: Number(rawStats.warehouses || 0),
+            stores: Number(rawStats.stores || 0),
+            locations: Number(rawStats.locations || 0),
+            cameras: Number(rawStats.cameras || 0),
+          },
+          productsByCategory: Array.isArray(payload.productsByCategory)
+            ? payload.productsByCategory
+            : [],
+          usersByRole: Array.isArray(payload.usersByRole) ? payload.usersByRole : [],
+          topWarehouses: Array.isArray(payload.topWarehouses) ? payload.topWarehouses : [],
+        });
+        setLastUpdated(new Date());
+      } catch (error) {
+        toast.error(error?.message || "No se pudieron cargar los indicadores del dashboard");
+      } finally {
+        setLoading(false);
       }
-
-      setDashboardData(nextState);
-      setLastUpdated(new Date());
-      setLoading(false);
     };
 
     fetchDashboardData();
   }, []);
 
   const stats = useMemo(() => {
-    const totalPallets = dashboardData.locations.reduce(
-      (acc, location) => acc + Number(location.pallets_count || 0),
-      0
-    );
-
-    const assignedLocationIds = new Set(
-      dashboardData.cameras.map((camera) => Number(camera.location_id))
-    );
-
-    const cameraCoverage = dashboardData.locations.length
-      ? (assignedLocationIds.size / dashboardData.locations.length) * 100
+    const totals = dashboardData.stats;
+    const cameraCoverage = totals.locations
+      ? (Number(totals.cameras || 0) / Number(totals.locations || 0)) * 100
       : 0;
 
-    const capacityEstimate = dashboardData.locations.length * 12;
-    const occupancy = capacityEstimate ? (totalPallets / capacityEstimate) * 100 : 0;
+    const utilization = totals.warehouses
+      ? (Number(totals.locations || 0) / (Number(totals.warehouses || 0) * 10)) * 100
+      : 0;
 
-    const productsByCategory = dashboardData.products.reduce((acc, product) => {
-      const category = product.category || "Sin categoría";
-      acc[category] = (acc[category] || 0) + 1;
-      return acc;
-    }, {});
-
-    const usersByRole = dashboardData.users.reduce((acc, user) => {
-      const role = user.role || "Sin rol";
-      acc[role] = (acc[role] || 0) + 1;
-      return acc;
-    }, {});
-
-    const topCategories = Object.entries(productsByCategory)
+    const topCategories = [...dashboardData.productsByCategory]
+      .map((item) => [item.category || "Sin categoría", Number(item.count || 0)])
       .sort((a, b) => b[1] - a[1])
       .slice(0, 4);
 
-    const topWarehouses = [...dashboardData.warehouses]
+    const topWarehouses = [...dashboardData.topWarehouses]
+      .map((item) => ({
+        ...item,
+        locations_count: Number(item.locations || 0),
+      }))
       .sort((a, b) => Number(b.locations_count || 0) - Number(a.locations_count || 0))
       .slice(0, 4);
 
+    const usersByRole = [...dashboardData.usersByRole]
+      .map((item) => [item.name || item.id || "Sin rol", Number(item.count || 0)])
+      .sort((a, b) => b[1] - a[1]);
+
     return {
-      totals: {
-        products: dashboardData.products.length,
-        users: dashboardData.users.length,
-        suppliers: dashboardData.suppliers.length,
-        warehouses: dashboardData.warehouses.length,
-        stores: dashboardData.stores.length,
-        locations: dashboardData.locations.length,
-        cameras: dashboardData.cameras.length,
-      },
-      totalPallets,
+      totals,
       cameraCoverage,
-      occupancy,
+      utilization,
       topCategories,
       topWarehouses,
-      usersByRole: Object.entries(usersByRole).sort((a, b) => b[1] - a[1]),
+      usersByRole,
     };
   }, [dashboardData]);
 
@@ -233,12 +194,12 @@ export default function Dashboard() {
             <Link
               to={card.path}
               key={card.key}
-              className="bg-white border-2 border-bordercolor rounded-md p-5 transition hover:shadow-md hover:-translate-y-0.5"
+              className="border-bordercolor rounded-md border-2 bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-sm text-gray-500">{card.label}</p>
-                  <p className="mt-2 text-3xl font-extrabold text-secondary_color">
+                  <p className="text-secondary_color mt-2 text-3xl font-extrabold">
                     {loading ? "--" : stats.totals[card.key].toLocaleString("es-CO")}
                   </p>
                 </div>
@@ -252,9 +213,9 @@ export default function Dashboard() {
       </section>
 
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <article className="bg-white border-2 border-bordercolor rounded-md p-6 xl:col-span-2">
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="text-xl font-bold text-secondary_color">Salud Operativa</h3>
+        <article className="border-bordercolor rounded-md border-2 bg-white p-6 xl:col-span-2">
+          <div className="mb-5 flex items-center justify-between">
+            <h3 className="text-secondary_color text-xl font-bold">Salud Operativa</h3>
             <div className="flex items-center gap-1 text-sm font-semibold text-emerald-600">
               <TrendingUpOutlinedIcon fontSize="small" />
               Estable
@@ -263,56 +224,72 @@ export default function Dashboard() {
 
           <div className="space-y-5">
             <div>
-              <div className="flex items-center justify-between text-sm mb-2">
+              <div className="mb-2 flex items-center justify-between text-sm">
                 <p className="font-semibold text-gray-700">Cobertura de cámaras por ubicación</p>
-                <span className="font-bold text-secondary_color">
+                <span className="text-secondary_color font-bold">
                   {loading ? "--" : formatPercent(stats.cameraCoverage)}
                 </span>
               </div>
-              <div className="h-2.5 rounded-full bg-gray-100 overflow-hidden">
+              <div className="h-2.5 overflow-hidden rounded-full bg-gray-100">
                 <div
-                  className="h-full bg-[#202124] transition-all duration-500"
+                  className="bg-secondary_color h-full transition-all duration-500"
                   style={{ width: loading ? "0%" : formatPercent(stats.cameraCoverage) }}
                 />
               </div>
             </div>
 
             <div>
-              <div className="flex items-center justify-between text-sm mb-2">
-                <p className="font-semibold text-gray-700">Ocupación estimada de pallets</p>
-                <span className="font-bold text-secondary_color">
-                  {loading ? "--" : formatPercent(stats.occupancy)}
+              <div className="mb-2 flex items-center justify-between text-sm">
+                <p className="font-semibold text-gray-700">Utilización de ubicaciones por bodega</p>
+                <span className="text-secondary_color font-bold">
+                  {loading ? "--" : formatPercent(stats.utilization)}
                 </span>
               </div>
-              <div className="h-2.5 rounded-full bg-gray-100 overflow-hidden">
+              <div className="h-2.5 overflow-hidden rounded-full bg-gray-100">
                 <div
-                  className="h-full bg-accent_color transition-all duration-500"
-                  style={{ width: loading ? "0%" : formatPercent(stats.occupancy) }}
+                  className="bg-accent_color h-full transition-all duration-500"
+                  style={{ width: loading ? "0%" : formatPercent(stats.utilization) }}
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-              <div className="rounded-xl bg-gray-50 p-4 border border-gray-100">
-                <p className="text-xs uppercase tracking-wide text-gray-500">Pallets registrados</p>
-                <p className="mt-2 text-2xl font-extrabold text-secondary_color">
-                  {loading ? "--" : stats.totalPallets}
+            <div className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-3">
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                <p className="text-xs tracking-wide text-gray-500 uppercase">
+                  Entidades registradas
+                </p>
+                <p className="text-secondary_color mt-2 text-2xl font-extrabold">
+                  {loading
+                    ? "--"
+                    : (
+                        stats.totals.products +
+                        stats.totals.users +
+                        stats.totals.suppliers +
+                        stats.totals.warehouses +
+                        stats.totals.stores +
+                        stats.totals.locations +
+                        stats.totals.cameras
+                      ).toLocaleString("es-CO")}
                 </p>
               </div>
-              <div className="rounded-xl bg-gray-50 p-4 border border-gray-100">
-                <p className="text-xs uppercase tracking-wide text-gray-500">Ubicaciones monitoreadas</p>
-                <p className="mt-2 text-2xl font-extrabold text-secondary_color">
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                <p className="text-xs tracking-wide text-gray-500 uppercase">
+                  Ubicaciones monitoreadas
+                </p>
+                <p className="text-secondary_color mt-2 text-2xl font-extrabold">
                   {loading ? "--" : stats.totals.locations}
                 </p>
               </div>
-              <div className="rounded-xl bg-gray-50 p-4 border border-gray-100">
-                <p className="text-xs uppercase tracking-wide text-gray-500">Última actualización</p>
-                <p className="mt-2 text-sm font-bold text-secondary_color">
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                <p className="text-xs tracking-wide text-gray-500 uppercase">
+                  Última actualización
+                </p>
+                <p className="text-secondary_color mt-2 text-sm font-bold">
                   {lastUpdated
                     ? lastUpdated.toLocaleTimeString("es-CO", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
                     : "--:--"}
                 </p>
               </div>
@@ -320,8 +297,8 @@ export default function Dashboard() {
           </div>
         </article>
 
-        <article className="bg-white border-2 border-bordercolor rounded-md p-6">
-          <h3 className="text-xl font-bold text-secondary_color mb-5">Accesos rápidos</h3>
+        <article className="border-bordercolor rounded-md border-2 bg-white p-6">
+          <h3 className="text-secondary_color mb-5 text-xl font-bold">Accesos rápidos</h3>
           <div className="space-y-3">
             {quickLinks.map((link) => (
               <Link
@@ -340,8 +317,8 @@ export default function Dashboard() {
       </section>
 
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <article className="bg-white border-2 border-bordercolor rounded-md p-6">
-          <h3 className="text-xl font-bold text-secondary_color mb-5">Productos por categoría</h3>
+        <article className="border-bordercolor rounded-md border-2 bg-white p-6">
+          <h3 className="text-secondary_color mb-5 text-xl font-bold">Productos por categoría</h3>
 
           {loading ? (
             <p className="text-gray-500">Cargando indicadores...</p>
@@ -350,17 +327,18 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-4">
               {stats.topCategories.map(([category, total]) => {
-                const width = (total / Math.max(...stats.topCategories.map((item) => item[1]))) * 100;
+                const width =
+                  (total / Math.max(...stats.topCategories.map((item) => item[1]))) * 100;
 
                 return (
                   <div key={category}>
-                    <div className="flex justify-between text-sm mb-1">
+                    <div className="mb-1 flex justify-between text-sm">
                       <span className="font-semibold text-gray-700">{category}</span>
                       <span className="text-gray-500">{total}</span>
                     </div>
-                    <div className="h-2.5 rounded-full bg-gray-100 overflow-hidden">
+                    <div className="h-2.5 overflow-hidden rounded-full bg-gray-100">
                       <div
-                        className="h-full bg-[#202124]"
+                        className="bg-secondary_color h-full"
                         style={{ width: `${width.toFixed(0)}%` }}
                       />
                     </div>
@@ -371,8 +349,10 @@ export default function Dashboard() {
           )}
         </article>
 
-        <article className="bg-white border-2 border-bordercolor rounded-md p-6">
-          <h3 className="text-xl font-bold text-secondary_color mb-5">Bodegas con más ubicaciones</h3>
+        <article className="border-bordercolor rounded-md border-2 bg-white p-6">
+          <h3 className="text-secondary_color mb-5 text-xl font-bold">
+            Bodegas con más ubicaciones
+          </h3>
 
           {loading ? (
             <p className="text-gray-500">Cargando indicadores...</p>
@@ -383,13 +363,13 @@ export default function Dashboard() {
               {stats.topWarehouses.map((warehouse) => (
                 <div
                   key={warehouse.id}
-                  className="rounded-lg border border-gray-200 p-4 flex items-center justify-between"
+                  className="flex items-center justify-between rounded-lg border border-gray-200 p-4"
                 >
                   <div>
                     <p className="font-semibold text-gray-800">{warehouse.name}</p>
-                    <p className="text-sm text-gray-500">{warehouse.address}</p>
+                    <p className="text-sm text-gray-500">ID: {warehouse.id}</p>
                   </div>
-                  <span className="text-sm font-bold bg-gray-100 px-3 py-1 rounded-full text-gray-700">
+                  <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-bold text-gray-700">
                     {warehouse.locations_count || 0} ubic.
                   </span>
                 </div>
@@ -399,19 +379,21 @@ export default function Dashboard() {
         </article>
       </section>
 
-      <section className="bg-white border-2 border-bordercolor rounded-md p-6">
-        <h3 className="text-xl font-bold text-secondary_color mb-5">Distribución de usuarios por rol</h3>
+      <section className="border-bordercolor rounded-md border-2 bg-white p-6">
+        <h3 className="text-secondary_color mb-5 text-xl font-bold">
+          Distribución de usuarios por rol
+        </h3>
 
         {loading ? (
           <p className="text-gray-500">Cargando indicadores...</p>
         ) : stats.usersByRole.length === 0 ? (
           <p className="text-gray-500">Sin usuarios registrados.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             {stats.usersByRole.map(([role, total]) => (
-              <div key={role} className="rounded-xl bg-gray-50 border border-gray-100 p-4">
+              <div key={role} className="rounded-xl border border-gray-100 bg-gray-50 p-4">
                 <p className="text-sm text-gray-500">{role}</p>
-                <p className="text-3xl font-extrabold text-secondary_color mt-2">{total}</p>
+                <p className="text-secondary_color mt-2 text-3xl font-extrabold">{total}</p>
               </div>
             ))}
           </div>
