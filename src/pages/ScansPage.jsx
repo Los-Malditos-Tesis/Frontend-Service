@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import ViewAgendaOutlinedIcon from "@mui/icons-material/ViewAgendaOutlined";
-import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import AdminIntroLayout from "../components/generic/AdminIntroLayout";
 import CustomSelect from "../components/generic/CustomSelect";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
 import ScanCards from "../containers/Scans/ScanCards";
 import { searchScans } from "../services/scan.service";
+
+const POLLING_INTERVAL = 10000;
+
+// Ajusta esta propiedad al identificador real de tu registro.
+const getScanId = (scan) => scan.id ?? scan._id ?? scan.scan_id;
 
 const ScansPage = () => {
   const [items, setItems] = useState([]);
@@ -14,34 +18,63 @@ const ScansPage = () => {
   const [statusFilter, setStatusFilter] = useState("");
   const [layoutMode, setLayoutMode] = useState("horizontal");
 
-  const fetchScans = useCallback(
-    async (status = statusFilter) => {
-      try {
+  const fetchScans = useCallback(async (status = "", showLoading = false) => {
+    try {
+      if (showLoading) {
         setLoading(true);
-        const result = await searchScans({
-          ...(status ? { status } : {}),
-        });
+      }
 
-        if (result.success) {
-          setItems(result.data || []);
-        } else {
-          console.error("Error fetching scans:", result);
-          throw new Error(result.error);
+      const result = await searchScans({
+        ...(status ? { status } : {}),
+      });
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      const newItems = result.data || [];
+
+      setItems((currentItems) => {
+        // Primera carga
+        if (currentItems.length === 0) {
+          return newItems;
         }
-      } catch (error) {
-        console.error("Error fetching scans:", error);
+
+        const currentIds = new Set(currentItems.map(getScanId));
+
+        const hasNewRecords = newItems.some(
+          (scan) => !currentIds.has(getScanId(scan))
+        );
+
+        // Solo actualiza la tabla cuando existan registros nuevos
+        return hasNewRecords ? newItems : currentItems;
+      });
+    } catch (error) {
+      console.error("Error fetching scans:", error);
+
+      // Evita mostrar toast cada 10 segundos si falla el polling.
+      if (showLoading) {
         toast.error(error?.message || "Error al obtener eventos de escaneo");
         setItems([]);
-      } finally {
+      }
+    } finally {
+      if (showLoading) {
         setLoading(false);
       }
-    },
-    [statusFilter]
-  );
+    }
+  }, []);
 
   useEffect(() => {
-    fetchScans();
-  }, [fetchScans]);
+    // Consulta inicial y al cambiar el filtro
+    fetchScans(statusFilter, true);
+
+    // Consulta automática cada 10 segundos
+    const intervalId = setInterval(() => {
+      fetchScans(statusFilter, false);
+    }, POLLING_INTERVAL);
+
+    return () => clearInterval(intervalId);
+  }, [fetchScans, statusFilter]);
 
   return (
     <AdminIntroLayout
@@ -49,24 +82,11 @@ const ScansPage = () => {
       subtitle="Visualiza los eventos de lectura de QR detectados por las cámaras IoT"
       eyebrow={<Breadcrumbs />}
       buttonLabel="Refrescar"
-      onCreate={() => fetchScans(statusFilter)}
+      onCreate={() => fetchScans(statusFilter, true)}
       showAddIcon={false}
     >
       <div className="space-y-6">
         <div className="grid gap-4 ml-auto md:w-[250px]">
-          {/* <CustomSelect
-            name="scanStatusFilter"
-            labelText="Filtrar por estado"
-            placeholderLabel="Todos los escaneos"
-            value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value)}
-            icon={<FilterAltOutlinedIcon />}
-            options={[
-              { value: "OK", label: "Buenos" },
-              { value: "ERR", label: "Malos" },
-            ]}
-          /> */}
-
           <CustomSelect
             name="scanLayoutMode"
             placeholderLabel="Selecciona un modo de vista"
@@ -82,10 +102,10 @@ const ScansPage = () => {
 
         <ScanCards
           items={items}
-          loading={loading} 
-          layoutMode={layoutMode} 
-          statusFilter={statusFilter} 
-          setStatusFilter={setStatusFilter} 
+          loading={loading}
+          layoutMode={layoutMode}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
         />
       </div>
     </AdminIntroLayout>

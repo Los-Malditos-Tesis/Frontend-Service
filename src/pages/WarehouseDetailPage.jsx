@@ -63,7 +63,7 @@ const WarehouseDetailPage = () => {
 
       if (result.success) {
         setWarehouse(result.data);
-        setLocations(result.data?.Locations || []);
+        setLocations(result.data?.locations || []);
       } else {
         throw new Error(result.error);
       }

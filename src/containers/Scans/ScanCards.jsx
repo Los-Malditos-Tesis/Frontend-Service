@@ -261,6 +261,10 @@ const buildTableColumns = () => [
     header: "Tipo",
     cell: ({ getValue }) => getValue() || "--",
   }),
+  columnHelper.accessor("qrCode", {
+    header: "QR",
+    cell: ({ getValue }) => getValue() || "--",
+  }),
   columnHelper.accessor((row) => row.Camera?.code, {
     id: "camera",
     header: "Cámara",
