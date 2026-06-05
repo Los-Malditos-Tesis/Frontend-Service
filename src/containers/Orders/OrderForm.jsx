@@ -15,6 +15,8 @@ import CustomSelect from "../../components/generic/CustomSelect";
 import { createOrder } from "../../services/order.service";
 import { ORDER_TYPES, ORDER_UNIT_TYPES } from "../../utils/conts.jsx";
 import { orderSchema } from "../../validations/OrderSchema.jsx";
+import { Controller } from "react-hook-form";
+import CustomAutocomplete from "../../components/generic/CustomAutocomplete";
 
 const orderTypeOptions = [
   { value: ORDER_TYPES.SALE, label: "Venta a tienda" },
@@ -33,6 +35,7 @@ const OrderForm = ({ warehouses = [], stores = [], products = [], onSuccess }) =
     setValue,
     watch,
     reset,
+    control,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(orderSchema),
@@ -66,7 +69,11 @@ const OrderForm = ({ warehouses = [], stores = [], products = [], onSuccess }) =
   }, [orderType, setValue]);
 
   useEffect(() => {
-    if (orderType === ORDER_TYPES.TRANSFER && destinationWarehouseId && destinationWarehouseId === originWarehouseId) {
+    if (
+      orderType === ORDER_TYPES.TRANSFER &&
+      destinationWarehouseId &&
+      destinationWarehouseId === originWarehouseId
+    ) {
       setValue("destination_warehouse_id", "");
     }
   }, [destinationWarehouseId, orderType, originWarehouseId, setValue]);
@@ -91,7 +98,7 @@ const OrderForm = ({ warehouses = [], stores = [], products = [], onSuccess }) =
     () =>
       products.map((product) => ({
         value: product.id?.toString() || "",
-        label: `${product.name}${product.sku ? ` · ${product.sku}` : ""}`,
+        label: `${product.name}${product.code ? ` · ${product.code}` : ""}`,
       })),
     [products]
   );
@@ -179,7 +186,7 @@ const OrderForm = ({ warehouses = [], stores = [], products = [], onSuccess }) =
         errors={errors.origin_warehouse_id}
       />
 
-      <CustomSelect
+      {/* <CustomSelect
         name="product_id"
         labelText="Producto"
         placeholderLabel="Selecciona el producto"
@@ -189,6 +196,22 @@ const OrderForm = ({ warehouses = [], stores = [], products = [], onSuccess }) =
         {...register("product_id")}
         errors={errors.product_id}
         readOnly={!products.length}
+      /> */}
+      <Controller
+        name="product_id"
+        control={control}
+        render={({ field }) => (
+          <CustomAutocomplete
+            {...field}
+            name="product_id"
+            labelText="Producto"
+            placeholderLabel="Busca o selecciona el producto"
+            options={productOptions}
+            icon={<CategoryOutlinedIcon />}
+            errors={errors.product_id}
+            readOnly={!products.length}
+          />
+        )}
       />
 
       <CustomInput

@@ -12,6 +12,7 @@ import {
 import { Search } from "@mui/icons-material";
 import EmptyState from "./EmptyState";
 import TableSkeleton from "./TableSkeleton";
+import { Pagination } from "@mui/material";
 
 const BREAKPOINT_MAP = {
   sm: "640px",
@@ -400,22 +401,36 @@ const CustomTable = ({
               Anterior
             </button>
 
-            {/* NÚMEROS */}
-            {Array.from({ length: table.getPageCount() }).map((_, i) => {
-              const isActive = i === table.getState().pagination.pageIndex;
+            {/* PAGINACIÓN */}
+            {showPagination && table.getPageCount() > 0 && (
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                {/* <span className="text-sm text-gray-400">
+                  Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
+                </span> */}
 
-              return (
-                <button
-                  key={i}
-                  onClick={() => table.setPageIndex(i)}
-                  className={`h-8 w-8 rounded-md text-sm ${
-                    isActive ? "bg-black text-white" : "border hover:bg-gray-100"
-                  } `}
-                >
-                  {i + 1}
-                </button>
-              );
-            })}
+                <Pagination
+                  count={table.getPageCount()}
+                  page={table.getState().pagination.pageIndex + 1}
+                  onChange={(_, page) => table.setPageIndex(page - 1)}
+                  siblingCount={1}
+                  boundaryCount={1}
+                  shape="rounded"
+                  size={isMobileView ? "small" : "medium"}
+                  showFirstButton={!isMobileView}
+                  showLastButton={!isMobileView}
+                  sx={{
+                    "& .MuiPaginationItem-root": {
+                      borderRadius: "6px",
+                      fontSize: "0.875rem",
+                    },
+                    "& .Mui-selected": {
+                      backgroundColor: "#000 !important",
+                      color: "#fff",
+                    },
+                  }}
+                />
+              </div>
+            )}
 
             <button
               onClick={() => table.nextPage()}

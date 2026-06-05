@@ -82,21 +82,27 @@ const parseGs1Qr = (qrCode = "") => {
   if (!qrValue) {
     return {
       unitType: null,
+      productCode: null,
       fields: [],
       totalItems: null,
       boxesInPallet: null,
       itemsPerBox: null,
       rawType: null,
+      palletCode: null,
+      boxCode: null,
+      parentPalletCode: null,
     };
   }
 
   const palletMatch = qrValue.match(GS1_PATTERNS.PALLET);
+
   if (palletMatch) {
     const [, palletCode, productCode, boxesInPallet, itemsPerBox] = palletMatch;
 
     return {
       unitType: "PAL",
       rawType: "PALLET",
+      productCode,
       fields: [
         { label: "Código producto", value: productCode },
         { label: "Cajas en pallet", value: boxesInPallet },
@@ -112,29 +118,32 @@ const parseGs1Qr = (qrCode = "") => {
   }
 
   const boxMatch = qrValue.match(GS1_PATTERNS.BOX);
+
   if (boxMatch) {
-    const [, boxCode, palletCode, items] = boxMatch;
+    const [, productCode, boxCode, items] = boxMatch;
 
     return {
       unitType: "BOX",
       rawType: "BOX",
+      productCode,
       fields: [
+        { label: "Código producto", value: productCode },
         { label: "Código caja", value: boxCode },
-        { label: "Pallet padre", value: palletCode },
         { label: "Artículos", value: items },
       ],
       totalItems: Number(items || 0),
       boxesInPallet: null,
       itemsPerBox: null,
-      palletCode,
+      palletCode: null,
       boxCode,
-      parentPalletCode: palletCode,
+      parentPalletCode: null,
     };
   }
 
   return {
     unitType: null,
     rawType: null,
+    productCode: null,
     fields: [],
     totalItems: null,
     boxesInPallet: null,
@@ -192,8 +201,6 @@ const buildScanExportRows = (items = []) =>
     };
   });
 
-
-
 const getStatusMeta = (status) => {
   if (String(status).toUpperCase() === "OK") {
     return STATUS_META.OK;
@@ -221,10 +228,10 @@ const getTypeMeta = (type) => {
 };
 
 const buildTableColumns = () => [
-  columnHelper.accessor("id", {
-    header: "Escaneo",
-    cell: ({ getValue }) => formatShortId(getValue()),
-  }),
+  // columnHelper.accessor("id", {
+  //   header: "Escaneo",
+  //   cell: ({ getValue }) => formatShortId(getValue()),
+  // }),
   columnHelper.accessor("type", {
     header: "Movimiento",
     cell: ({ getValue }) => {
@@ -257,34 +264,59 @@ const buildTableColumns = () => [
       );
     },
   }),
+  columnHelper.accessor("qrCode", {
+    id: "product",
+    header: "Producto",
+    cell: ({ getValue, row }) => {
+      const parsedQr = parseGs1Qr(getValue());
+
+      const productName = row.original?.Product?.name;
+      const productCode = parsedQr.productCode;
+
+      if (productName && productCode) {
+        return `${productName} (${productCode})`;
+      }
+
+      return productName || productCode || "--";
+    },
+  }),
   columnHelper.accessor("detectedType", {
     header: "Tipo",
     cell: ({ getValue }) => getValue() || "--",
   }),
   columnHelper.accessor("qrCode", {
-    header: "QR",
-    cell: ({ getValue }) => getValue() || "--",
+    id: "quantity",
+    header: "Cantidad",
+    cell: ({ getValue }) => {
+      const parsedQr = parseGs1Qr(getValue());
+
+      if (parsedQr.totalItems === null) {
+        return "--";
+      }
+
+      return <span className="font-bold text-slate-900">{parsedQr.totalItems} artículos</span>;
+    },
   }),
   columnHelper.accessor((row) => row.Camera?.code, {
     id: "camera",
     header: "Cámara",
     cell: ({ getValue }) => getValue() || "--",
   }),
-//   columnHelper.accessor((row) => row.Product?.name, {
-//     id: "product",
-//     header: "Producto",
-//     cell: ({ getValue }) => getValue() || "--",
-//   }),
-//   columnHelper.accessor((row) => row.Warehouse?.name, {
-//     id: "warehouse",
-//     header: "Bodega",
-//     cell: ({ getValue }) => getValue() || "--",
-//   }),
-//   columnHelper.accessor((row) => row.Order?.type, {
-//     id: "order",
-//     header: "Orden",
-//     cell: ({ getValue }) => getValue() || "--",
-//   }),
+  //   columnHelper.accessor((row) => row.Product?.name, {
+  //     id: "product",
+  //     header: "Producto",
+  //     cell: ({ getValue }) => getValue() || "--",
+  //   }),
+  //   columnHelper.accessor((row) => row.Warehouse?.name, {
+  //     id: "warehouse",
+  //     header: "Bodega",
+  //     cell: ({ getValue }) => getValue() || "--",
+  //   }),
+  //   columnHelper.accessor((row) => row.Order?.type, {
+  //     id: "order",
+  //     header: "Orden",
+  //     cell: ({ getValue }) => getValue() || "--",
+  //   }),
   columnHelper.accessor("createdAt", {
     header: "Fecha",
     cell: ({ getValue }) => formatDateTime(getValue()),
@@ -322,7 +354,11 @@ const ScanTable = ({ items, loading, statusFilter, setStatusFilter }) => (
         </div>
         <TableExportButtons
           onExcel={() =>
-            exportRowsToExcel({ rows: buildScanExportRows(items), fileName: "escaneos", sheetName: "Escaneos" })
+            exportRowsToExcel({
+              rows: buildScanExportRows(items),
+              fileName: "escaneos",
+              sheetName: "Escaneos",
+            })
           }
           onCsv={() => exportRowsToCsv({ rows: buildScanExportRows(items), fileName: "escaneos" })}
           disabled={loading || !items.length}
@@ -507,9 +543,22 @@ const ScanCard = ({ scan }) => {
   );
 };
 
-const ScanCards = ({ items = [], loading, layoutMode = "vertical", statusFilter, setStatusFilter }) => {
+const ScanCards = ({
+  items = [],
+  loading,
+  layoutMode = "vertical",
+  statusFilter,
+  setStatusFilter,
+}) => {
   if (layoutMode === "horizontal") {
-    return <ScanTable items={items} loading={loading} statusFilter={statusFilter} setStatusFilter={setStatusFilter} />;
+    return (
+      <ScanTable
+        items={items}
+        loading={loading}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+      />
+    );
   }
 
   if (!loading && (!items || items.length === 0)) {

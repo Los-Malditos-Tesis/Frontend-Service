@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 import {
   ResponsiveContainer,
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -21,11 +21,31 @@ import { exportRowsToCsv, exportRowsToExcel } from "../../utils/exportTable";
 
 const columnHelper = createColumnHelper();
 
+const GS1_PATTERNS = {
+  PALLET: /^\(00\)([^()]+)\(01\)([^()]+)\(37\)([^()]+)\(30\)([^()]+)$/,
+  BOX: /^\(01\)([^()]+)\(21\)([^()]+)\(30\)([^()]+)$/,
+};
+
+const CHART_COLORS = [
+  "#202124",
+  "#4880FF",
+  "#10B981",
+  "#F59E0B",
+  "#EF4444",
+  "#8B5CF6",
+  "#06B6D4",
+  "#EC4899",
+  "#F97316",
+  "#14B8A6",
+];
+
 const DAY_FORMATTER = new Intl.DateTimeFormat("es-SV", {
   weekday: "short",
   day: "2-digit",
   month: "short",
 });
+
+const NUMBER_FORMATTER = new Intl.NumberFormat("es-SV");
 
 const normalizeScanType = (value) => {
   const type = String(value || "").toUpperCase();
@@ -36,15 +56,99 @@ const normalizeScanType = (value) => {
   return "OTHER";
 };
 
+const parseGs1Qr = (qrCode = "") => {
+  const qrValue = String(qrCode).trim();
+
+  if (!qrValue) {
+    return {
+      unitType: null,
+      productCode: null,
+      totalItems: null,
+      palletCode: null,
+      boxCode: null,
+      boxesInPallet: null,
+      itemsPerBox: null,
+    };
+  }
+
+  const palletMatch = qrValue.match(GS1_PATTERNS.PALLET);
+
+  if (palletMatch) {
+    const [, palletCode, productCode, boxesInPallet, itemsPerBox] = palletMatch;
+
+    return {
+      unitType: "PALLET",
+      productCode,
+      totalItems: Number(boxesInPallet || 0) * Number(itemsPerBox || 0),
+      palletCode,
+      boxCode: null,
+      boxesInPallet: Number(boxesInPallet || 0),
+      itemsPerBox: Number(itemsPerBox || 0),
+    };
+  }
+
+  const boxMatch = qrValue.match(GS1_PATTERNS.BOX);
+
+  if (boxMatch) {
+    /*
+     * GS1:
+     * (01) = código del producto
+     * (21) = serial / identificador de la caja
+     * (30) = cantidad de artículos
+     */
+    const [, productCode, boxCode, items] = boxMatch;
+
+    return {
+      unitType: "BOX",
+      productCode,
+      totalItems: Number(items || 0),
+      palletCode: null,
+      boxCode,
+      boxesInPallet: null,
+      itemsPerBox: null,
+    };
+  }
+
+  return {
+    unitType: null,
+    productCode: null,
+    totalItems: null,
+    palletCode: null,
+    boxCode: null,
+    boxesInPallet: null,
+    itemsPerBox: null,
+  };
+};
+
+const startOfDay = (dateValue) => {
+  const date = new Date(dateValue);
+  date.setHours(0, 0, 0, 0);
+  return date;
+};
+
+const endOfDay = (dateValue) => {
+  const date = new Date(dateValue);
+  date.setHours(23, 59, 59, 999);
+  return date;
+};
+
+const getLocalDateKey = (dateValue) => {
+  const date = new Date(dateValue);
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
 const buildLast7Days = () => {
-  const today = new Date();
+  const today = startOfDay(new Date());
   const days = [];
 
   for (let offset = 6; offset >= 0; offset -= 1) {
     const date = new Date(today);
     date.setDate(today.getDate() - offset);
-    date.setHours(0, 0, 0, 0);
-
     days.push(date);
   }
 
@@ -67,6 +171,8 @@ const formatDateTime = (value) => {
 };
 
 const formatShortId = (value) => (value ? String(value).slice(0, 8) : "--");
+
+const formatQuantity = (value) => NUMBER_FORMATTER.format(Number(value || 0));
 
 const getStatusMeta = (status) => {
   if (String(status).toUpperCase() === "OK") {
@@ -120,6 +226,7 @@ const buildColumns = () => [
     header: "Escaneo",
     cell: ({ getValue }) => formatShortId(getValue()),
   }),
+
   columnHelper.accessor("type", {
     header: "Movimiento",
     cell: ({ getValue }) => {
@@ -136,6 +243,7 @@ const buildColumns = () => [
       );
     },
   }),
+
   columnHelper.accessor("status", {
     header: "Estado",
     cell: ({ getValue }) => {
@@ -152,22 +260,54 @@ const buildColumns = () => [
       );
     },
   }),
+
+  columnHelper.accessor("qrCode", {
+    header: "Producto",
+    cell: ({ getValue }) => {
+      const qrInfo = parseGs1Qr(getValue());
+
+      return qrInfo.productCode || "--";
+    },
+  }),
+
   columnHelper.accessor("detectedType", {
-    header: "Tipo detectado",
+    header: "Unidad",
     cell: ({ getValue }) => getValue() || "--",
   }),
+
+  columnHelper.accessor("qrCode", {
+    id: "quantity",
+    header: "Cantidad",
+    cell: ({ getValue }) => {
+      const qrInfo = parseGs1Qr(getValue());
+
+      if (qrInfo.totalItems === null) {
+        return "--";
+      }
+
+      return (
+        <span className="font-bold text-slate-900">
+          {formatQuantity(qrInfo.totalItems)} artículos
+        </span>
+      );
+    },
+  }),
+
   columnHelper.accessor("itemCode", {
-    header: "Código",
+    header: "Caja",
     cell: ({ getValue }) => getValue() || "--",
   }),
+
   columnHelper.accessor("Camera", {
     header: "Cámara",
     cell: ({ getValue }) => getValue()?.code || "--",
   }),
+
   columnHelper.accessor("createdAt", {
     header: "Fecha",
     cell: ({ getValue }) => formatDateTime(getValue()),
   }),
+
   columnHelper.accessor("errorMessage", {
     header: "Detalle",
     cell: ({ getValue }) => getValue() || "--",
@@ -175,97 +315,307 @@ const buildColumns = () => [
 ];
 
 const StatCard = ({ label, value, description, className }) => (
-  <div className={`rounded-2xl border bg-white p-4 shadow-sm ${className || "border-slate-200"}`}>
-    <p className="text-xs font-bold tracking-[0.18em] text-slate-400 uppercase">{label}</p>
+  <div
+    className={`rounded-2xl border bg-white p-4 shadow-sm ${
+      className || "border-slate-200"
+    }`}
+  >
+    <p className="text-xs font-bold tracking-[0.18em] text-slate-400 uppercase">
+      {label}
+    </p>
+
     <p className="mt-2 text-3xl font-black text-slate-950">{value}</p>
+
     <p className="mt-1 text-sm text-slate-500">{description}</p>
   </div>
 );
 
+const ProductInventoryTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) {
+    return null;
+  }
+
+  const values = [...payload].sort(
+    (left, right) => Number(right.value || 0) - Number(left.value || 0)
+  );
+
+  return (
+    <div style={chartTooltipStyle} className="min-w-[245px] p-4">
+      <p className="text-sm font-bold text-slate-950">{label}</p>
+
+      <p className="mt-1 text-xs text-slate-500">
+        Inventario acumulado por producto
+      </p>
+
+      <div className="mt-3 max-h-60 space-y-2 overflow-y-auto">
+        {values.map((entry) => (
+          <div
+            key={entry.dataKey}
+            className="flex items-center justify-between gap-5 text-sm"
+          >
+            <div className="flex items-center gap-2">
+              <span
+                className="h-3 w-3 rounded-full"
+                style={{ backgroundColor: entry.color }}
+              />
+
+              <span className="text-slate-600">{entry.name}</span>
+            </div>
+
+            <span className="font-bold text-slate-950">
+              {formatQuantity(entry.value)}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const WarehouseScansOverview = ({ scans = [], loading }) => {
+  const safeScans = useMemo(() => {
+    if (Array.isArray(scans)) {
+      return scans;
+    }
+
+    if (Array.isArray(scans?.items)) {
+      return scans.items;
+    }
+
+    return [];
+  }, [scans]);
+
+  const enrichedScans = useMemo(
+    () =>
+      safeScans.map((scan) => ({
+        ...scan,
+        qrInfo: parseGs1Qr(scan.qrCode),
+      })),
+    [safeScans]
+  );
+
   const exportRows = useMemo(
     () =>
-      scans.map((scan) => ({
+      enrichedScans.map((scan) => ({
         ID: formatShortId(scan.id),
         "ID completo": scan.id || "--",
         Movimiento: getTypeMeta(normalizeScanType(scan.type)).label,
         Estado: getStatusMeta(scan.status).label,
-        "Tipo detectado": scan.detectedType || "--",
-        Código: scan.itemCode || "--",
+        Producto: scan.qrInfo.productCode || "--",
+        Unidad: scan.qrInfo.unitType || scan.detectedType || "--",
+        QR: scan.qrCode || "--",
+        "Cantidad artículos":
+          scan.qrInfo.totalItems === null ? "--" : scan.qrInfo.totalItems,
+        Caja: scan.qrInfo.boxCode || scan.itemCode || "--",
         Cámara: scan.Camera?.code || "--",
         Fecha: formatDateTime(scan.createdAt),
         Detalle: scan.errorMessage || "--",
       })),
-    [scans]
+    [enrichedScans]
   );
 
-  const { chartData, summary } = useMemo(() => {
+  const { chartData, productSeries, summary } = useMemo(() => {
     const last7Days = buildLast7Days();
-    const countsByDay = new Map(
-      last7Days.map((date) => [
-        date.toISOString().slice(0, 10),
-        { ent: 0, ext: 0, label: formatDateLabel(date) },
-      ])
-    );
+    const firstVisibleDay = startOfDay(last7Days[0]);
+    const lastVisibleDay = endOfDay(last7Days[last7Days.length - 1]);
 
-    const sortedScans = [...scans].sort(
-      (left, right) => new Date(right.createdAt || 0) - new Date(left.createdAt || 0)
-    );
+    const validScans = enrichedScans
+      .filter((scan) => {
+        const type = normalizeScanType(scan.type);
+        const validStatus = String(scan.status || "").toUpperCase() === "OK";
+        const validProduct = Boolean(scan.qrInfo.productCode);
+        const validQuantity =
+          Number.isFinite(scan.qrInfo.totalItems) && scan.qrInfo.totalItems > 0;
 
-    let entries = 0;
-    let exits = 0;
+        return (
+          validStatus &&
+          validProduct &&
+          validQuantity &&
+          (type === "ENT" || type === "SLD")
+        );
+      })
+      .sort(
+        (left, right) =>
+          new Date(left.createdAt || 0).getTime() -
+          new Date(right.createdAt || 0).getTime()
+      );
 
-    sortedScans.forEach((scan) => {
+    const productMap = new Map();
+
+    const ensureProduct = (productCode) => {
+      if (!productMap.has(productCode)) {
+        productMap.set(productCode, {
+          productCode,
+          dataKey: `product_${productMap.size}`,
+          openingInventory: 0,
+          totalEntries: 0,
+          totalExits: 0,
+          movementByDate: new Map(),
+        });
+      }
+
+      return productMap.get(productCode);
+    };
+
+    validScans.forEach((scan) => {
+      const productCode = scan.qrInfo.productCode;
+      const quantity = scan.qrInfo.totalItems;
       const type = normalizeScanType(scan.type);
+      const signedQuantity = type === "ENT" ? quantity : -quantity;
+      const scanDate = new Date(scan.createdAt);
 
-      if (type === "ENT") entries += 1;
-      if (type === "SLD") exits += 1;
+      const product = ensureProduct(productCode);
 
-      const dateKey = new Date(scan.createdAt || 0).toISOString().slice(0, 10);
-      if (!countsByDay.has(dateKey)) return;
+      /*
+       * Historial anterior al rango visible:
+       * sirve como inventario inicial de ese producto.
+       */
+      if (scanDate < firstVisibleDay) {
+        product.openingInventory += signedQuantity;
+        return;
+      }
 
-      const bucket = countsByDay.get(dateKey);
-      if (type === "ENT") bucket.ent += 1;
-      if (type === "SLD") bucket.ext += 1;
+      if (scanDate > lastVisibleDay) {
+        return;
+      }
+
+      const dateKey = getLocalDateKey(scanDate);
+
+      product.movementByDate.set(
+        dateKey,
+        (product.movementByDate.get(dateKey) || 0) + signedQuantity
+      );
+
+      if (type === "ENT") {
+        product.totalEntries += quantity;
+      }
+
+      if (type === "SLD") {
+        product.totalExits += quantity;
+      }
     });
 
+    const products = [...productMap.values()].sort((left, right) =>
+      left.productCode.localeCompare(right.productCode, "es", {
+        numeric: true,
+      })
+    );
+
+    const runningInventory = {};
+
+    products.forEach((product) => {
+      runningInventory[product.dataKey] = product.openingInventory;
+    });
+
+    const timeline = last7Days.map((date) => {
+      const dateKey = getLocalDateKey(date);
+
+      const row = {
+        label: formatDateLabel(date),
+        dateKey,
+      };
+
+      products.forEach((product) => {
+        const dailyMovement = product.movementByDate.get(dateKey) || 0;
+
+        runningInventory[product.dataKey] += dailyMovement;
+        row[product.dataKey] = runningInventory[product.dataKey];
+      });
+
+      return row;
+    });
+
+    const series = products.map((product, index) => ({
+      ...product,
+      color: CHART_COLORS[index % CHART_COLORS.length],
+      currentInventory:
+        timeline[timeline.length - 1]?.[product.dataKey] ||
+        product.openingInventory,
+    }));
+
+    const totalInventory = series.reduce(
+      (sum, product) => sum + product.currentInventory,
+      0
+    );
+
+    const totalEntries = series.reduce(
+      (sum, product) => sum + product.totalEntries,
+      0
+    );
+
+    const totalExits = series.reduce(
+      (sum, product) => sum + product.totalExits,
+      0
+    );
+
+    const invalidQrCount = enrichedScans.filter((scan) => {
+      const type = normalizeScanType(scan.type);
+      const validStatus = String(scan.status || "").toUpperCase() === "OK";
+
+      return (
+        validStatus &&
+        (type === "ENT" || type === "SLD") &&
+        (!scan.qrInfo.productCode || scan.qrInfo.totalItems === null)
+      );
+    }).length;
+
     return {
-      chartData: [...countsByDay.values()],
+      chartData: timeline,
+      productSeries: series,
       summary: {
-        total: sortedScans.length,
-        entries,
-        exits,
+        totalInventory,
+        totalEntries,
+        totalExits,
+        trackedProducts: series.length,
+        invalidQrCount,
       },
     };
-  }, [scans]);
+  }, [enrichedScans]);
 
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs font-bold tracking-[0.2em] text-slate-400 uppercase">Escaneos</p>
-        <h3 className="mt-1 text-2xl font-black text-slate-900">Entradas y salidas de la bodega</h3>
+        <p className="text-xs font-bold tracking-[0.2em] text-slate-400 uppercase">
+          Inventario
+        </p>
+
+        <h3 className="mt-1 text-2xl font-black text-slate-900">
+          Inventario por producto en la bodega
+        </h3>
+
         <p className="mt-1 text-sm text-slate-600">
-          Resumen de los últimos 7 días para los escaneos asociados a esta bodega.
+          Cada línea representa un producto identificado por el valor GS1
+          <strong> (01)</strong>. Las entradas aumentan la línea y las salidas
+          la disminuyen según la cantidad indicada en <strong>(30)</strong>.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <StatCard
-          label="Escaneos totales"
-          value={summary.total}
-          description="Eventos encontrados en el rango mostrado"
-          className="border-slate-200"
+          label="Inventario total"
+          value={formatQuantity(summary.totalInventory)}
+          description="Artículos acumulados entre todos los productos"
+          className="border-slate-900"
         />
+
         <StatCard
-          label="Entradas"
-          value={summary.entries}
-          description="Escaneos con tipo entrada"
+          label="Productos"
+          value={formatQuantity(summary.trackedProducts)}
+          description="Productos representados en la gráfica"
           className="border-sky-200"
         />
+
+        <StatCard
+          label="Entradas"
+          value={`+${formatQuantity(summary.totalEntries)}`}
+          description="Artículos ingresados en los últimos 7 días"
+          className="border-emerald-200"
+        />
+
         <StatCard
           label="Salidas"
-          value={summary.exits}
-          description="Escaneos con tipo salida"
+          value={`-${formatQuantity(summary.totalExits)}`}
+          description="Artículos retirados en los últimos 7 días"
           className="border-amber-200"
         />
       </div>
@@ -276,43 +626,99 @@ const WarehouseScansOverview = ({ scans = [], loading }) => {
             <p className="text-xs font-bold tracking-[0.18em] text-slate-400 uppercase">
               Tendencia
             </p>
-            <h4 className="mt-1 text-lg font-black text-slate-900">Escaneos por día</h4>
+
+            <h4 className="mt-1 text-lg font-black text-slate-900">
+              Inventario acumulado por producto
+            </h4>
           </div>
+
           <p className="text-sm text-slate-500">
-            Comparación de entradas y salidas de los últimos 7 días
+            Últimos 7 días · una línea por producto
           </p>
         </div>
 
-        <div className="mt-5 h-80 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-              <XAxis
-                dataKey="label"
-                tickLine={false}
-                axisLine={false}
-                stroke="#64748b"
-                fontSize={12}
-              />
-              <YAxis
-                allowDecimals={false}
-                tickLine={false}
-                axisLine={false}
-                stroke="#64748b"
-                fontSize={12}
-              />
-              <Tooltip contentStyle={chartTooltipStyle} />
-              <Legend />
-              <Bar dataKey="ent" name="Entradas" fill="#202124" radius={[8, 8, 0, 0]} />
-              <Bar dataKey="ext" name="Salidas" fill="#4880FF" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        {summary.invalidQrCount > 0 && (
+          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            {summary.invalidQrCount} movimiento(s) no fueron incluidos porque el
+            QR no contiene producto o cantidad válida.
+          </div>
+        )}
+
+        {productSeries.length === 0 ? (
+          <div className="mt-5 flex h-[360px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50">
+            <p className="text-sm text-slate-500">
+              No hay movimientos válidos para graficar.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-5 h-[400px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={chartData}
+                margin={{ top: 12, right: 22, left: 2, bottom: 0 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#e2e8f0"
+                  vertical={false}
+                />
+
+                <XAxis
+                  dataKey="label"
+                  tickLine={false}
+                  axisLine={false}
+                  stroke="#64748b"
+                  fontSize={12}
+                />
+
+                <YAxis
+                  allowDecimals={false}
+                  tickLine={false}
+                  axisLine={false}
+                  stroke="#64748b"
+                  fontSize={12}
+                  tickFormatter={(value) => formatQuantity(value)}
+                />
+
+                <Tooltip content={<ProductInventoryTooltip />} />
+
+                <Legend
+                  formatter={(value) => (
+                    <span className="text-sm text-slate-700">{value}</span>
+                  )}
+                />
+
+                {productSeries.map((product) => (
+                  <Line
+                    key={product.dataKey}
+                    type="linear"
+                    dataKey={product.dataKey}
+                    name={`Producto ${product.productCode}`}
+                    stroke={product.color}
+                    strokeWidth={3}
+                    dot={{
+                      r: 4,
+                      fill: product.color,
+                      stroke: "#ffffff",
+                      strokeWidth: 2,
+                    }}
+                    activeDot={{
+                      r: 6,
+                      fill: product.color,
+                      stroke: "#ffffff",
+                      strokeWidth: 2,
+                    }}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </section>
 
       <CustomTable
         title=""
-        data={scans}
+        data={enrichedScans}
         columns={buildColumns()}
         loading={loading}
         loadingText="Cargando escaneos..."
@@ -328,7 +734,12 @@ const WarehouseScansOverview = ({ scans = [], loading }) => {
                 sheetName: "Escaneos",
               })
             }
-            onCsv={() => exportRowsToCsv({ rows: exportRows, fileName: "escaneos-bodega" })}
+            onCsv={() =>
+              exportRowsToCsv({
+                rows: exportRows,
+                fileName: "escaneos-bodega",
+              })
+            }
             disabled={loading || !exportRows.length}
           />
         }
