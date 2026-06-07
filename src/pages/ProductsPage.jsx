@@ -8,12 +8,18 @@ import CustomDrawer from "../components/generic/CustomDrawer";
 import Breadcrumbs from "../containers/Dashboard/Breadcrumbs";
 import AdminIntroLayout from "../components/generic/AdminIntroLayout";
 import { canManageGeneral } from "../utils/accessControl";
+import ProductStatsModal from "../components/products/ProductStatsModal";
 
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const [statsProduct, setStatsProduct] = useState(null);
+  const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
+
   const { user } = useAuth();
   const canManage = canManageGeneral(user);
 
@@ -30,6 +36,16 @@ const ProductsPage = () => {
   const handleEditProduct = (product) => {
     setSelectedProduct(product);
     setIsDrawerOpen(true);
+  };
+
+  const handleOpenStats = (product) => {
+    setStatsProduct(product);
+    setIsStatsModalOpen(true);
+  };
+
+  const handleCloseStats = () => {
+    setStatsProduct(null);
+    setIsStatsModalOpen(false);
   };
 
   const fetchProducts = async () => {
@@ -80,11 +96,18 @@ const ProductsPage = () => {
         />
       </CustomDrawer>
 
+      <ProductStatsModal
+        open={isStatsModalOpen}
+        product={statsProduct}
+        onClose={handleCloseStats}
+      />
+
       <ProductsTable
         products={products}
         loading={loading}
         onEdit={handleEditProduct}
         onRefresh={fetchProducts}
+        onStats={handleOpenStats}
         canManage={canManage}
       />
     </AdminIntroLayout>

@@ -12,7 +12,6 @@ export const searchScans = async (filters = {}) => {
       ...filters,
       limit: 99999,
     };
-    console.log("Searching scans with filters:", filters);
 
     if (Object.keys(filters).length > 0) {
       const response = await api.post(`${SCAN_BASE_URL}/search`, payload);

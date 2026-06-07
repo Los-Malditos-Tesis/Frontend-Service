@@ -119,7 +119,7 @@ const WarehouseDetailPage = () => {
   const fetchWarehouseScans = useCallback(async () => {
     try {
       setScansLoading(true);
-      const result = await searchScans({ warehouse_id: id , status: "OK" });
+      const result = await searchScans({ warehouseId: id , status: "OK" });
 
       if (result.success) {
         setScans(result.data || []);

@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Edit, Delete } from "@mui/icons-material";
+import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 
 import { deleteProduct } from "../../services/product.service";
 import CustomTable from "../../components/generic/CustomTable";
@@ -9,7 +10,14 @@ import { exportRowsToCsv, exportRowsToExcel } from "../../utils/exportTable";
 
 const columnHelper = createColumnHelper();
 
-const ProductsTable = ({ products = [], loading, onEdit, onRefresh, canManage = true }) => {
+const ProductsTable = ({
+  products = [],
+  loading,
+  onEdit,
+  onStats,
+  onRefresh,
+  canManage = true,
+}) => {
   const exportRows = products.map((product) => ({
     ID: product.id || "--",
     Nombre: product.name || "--",
@@ -69,7 +77,7 @@ const ProductsTable = ({ products = [], loading, onEdit, onRefresh, canManage = 
     }),
   ];
 
-  if (canManage) {
+  if (canManage || onStats) {
     columns.push(
       columnHelper.display({
         id: "actions",
@@ -80,19 +88,34 @@ const ProductsTable = ({ products = [], loading, onEdit, onRefresh, canManage = 
 
           return (
             <div className="flex items-center justify-center gap-2">
-              <button
-                onClick={() => onEdit(product)}
-                className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
-              >
-                <Edit fontSize="small" />
-              </button>
+              {onStats && (
+                <button
+                  type="button"
+                  onClick={() => onStats(product)}
+                  title="Ver estadísticas"
+                  className="rounded-lg p-2 transition hover:bg-sky-50 active:scale-95"
+                >
+                  <BarChartOutlinedIcon fontSize="small" className="text-sky-700" />
+                </button>
+              )}
 
-              <button
-                onClick={() => handleDelete(product.id)}
-                className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
-              >
-                <Delete fontSize="small" className="text-red-700" />
-              </button>
+              {canManage && (
+                <>
+                  <button
+                    onClick={() => onEdit(product)}
+                    className="rounded-lg p-2 transition hover:bg-gray-100 active:scale-95"
+                  >
+                    <Edit fontSize="small" />
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(product.id)}
+                    className="rounded-lg p-2 transition hover:bg-red-50 active:scale-95"
+                  >
+                    <Delete fontSize="small" className="text-red-700" />
+                  </button>
+                </>
+              )}
             </div>
           );
         },
