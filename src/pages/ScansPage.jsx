@@ -35,24 +35,22 @@ const ScansPage = () => {
       const newItems = result.data || [];
 
       setItems((currentItems) => {
-        // Primera carga
-        if (currentItems.length === 0) {
+        // Si es carga inicial, refresh manual o cambio de filtro,
+        // siempre reemplaza los datos.
+        if (showLoading) {
           return newItems;
         }
 
+        // Polling: solo actualiza si hay registros nuevos.
         const currentIds = new Set(currentItems.map(getScanId));
 
-        const hasNewRecords = newItems.some(
-          (scan) => !currentIds.has(getScanId(scan))
-        );
+        const hasNewRecords = newItems.some((scan) => !currentIds.has(getScanId(scan)));
 
-        // Solo actualiza la tabla cuando existan registros nuevos
         return hasNewRecords ? newItems : currentItems;
       });
     } catch (error) {
       console.error("Error fetching scans:", error);
 
-      // Evita mostrar toast cada 10 segundos si falla el polling.
       if (showLoading) {
         toast.error(error?.message || "Error al obtener eventos de escaneo");
         setItems([]);
@@ -86,7 +84,7 @@ const ScansPage = () => {
       showAddIcon={false}
     >
       <div className="space-y-6">
-        <div className="grid gap-4 ml-auto md:w-[250px]">
+        <div className="ml-auto grid gap-4 md:w-[250px]">
           <CustomSelect
             name="scanLayoutMode"
             placeholderLabel="Selecciona un modo de vista"

@@ -500,7 +500,7 @@ const ProductStatsModal = ({ open, product, onClose }) => {
                 )}
               </section>
 
-              <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              {/* <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <h4 className="text-lg font-black text-slate-900">Últimos escaneos recibidos</h4>
 
                 <div className="mt-4 overflow-x-auto">
@@ -565,7 +565,7 @@ const ProductStatsModal = ({ open, product, onClose }) => {
                     </tbody>
                   </table>
                 </div>
-              </section>
+              </section> */}
             </div>
           )}
         </div>
