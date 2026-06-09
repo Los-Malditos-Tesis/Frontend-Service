@@ -1,6 +1,14 @@
 import React, { useMemo, useState } from "react";
-import { Box, Chip, Dialog, DialogContent, DialogTitle, IconButton, Slide, Typography } from "@mui/material";
-// UI subcomponents moved to smaller files
+import {
+  Box,
+  Chip,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Slide,
+  Typography,
+} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
@@ -146,25 +154,20 @@ const WarehouseProductSearchDialog = ({
     setAnalysis(null);
   };
 
-  const createAnalysisPayload = async (candidateLocations, label) => {
+  const createAnalysisPayload = async (candidateLocations, label, searchLevel) => {
     const cameraIndex = buildCameraIndex(candidateLocations);
-    const cameraCodes = uniqueCameraCodes(candidateLocations);
-
-    if (cameraCodes.length === 0) {
-      return { success: false, noCameras: true, message: label };
-    }
 
     setLoadingStage(label);
     setLoadingMessage(
-      label === "same"
-        ? "Consultando cámaras de la misma categoría..."
-        : "Buscando en otras zonas..."
+      searchLevel === "PRIMARY_ZONE"
+        ? "Consultando zonas de la misma categoría..."
+        : "Buscando en todas las zonas..."
     );
 
-    // Paso 4 y Paso 9: consultar el endpoint con el productId y los códigos de cámaras disponibles.
     const response = await runAutomation({
       productId: selectedProduct.id,
-      cameraCodes,
+      category: selectedProduct.category,
+      searchLevel,
     });
 
     const responseData = response?.data || {};
@@ -185,7 +188,6 @@ const WarehouseProductSearchDialog = ({
     return {
       success: true,
       responseData,
-      cameraCodes,
       cameraIndex,
       resolvedMatched,
       resolvedResponded,
@@ -201,115 +203,121 @@ const WarehouseProductSearchDialog = ({
     try {
       setAnalysis(null);
 
-      // Paso 2: obtener las locations de la misma categoría del producto.
       const productCategory = normalizeText(selectedProduct.category);
+
+      // Paso 2: analizar si existen zonas de la misma categoría del producto.
       const sameCategoryLocations = searchableLocations.filter(
         (location) => normalizeText(getLocationCategory(location)) === productCategory
       );
 
-      // Paso 3: extraer las cámaras de esas locations.
-      const sameCategoryResult = await createAnalysisPayload(sameCategoryLocations, "same");
-      console.log("Same category result:", sameCategoryResult);
+      let sameCategoryResult = null;
 
-      if (sameCategoryResult.noCameras) {
-        // Si no hay cámaras en la misma categoría, saltamos al siguiente grupo de zonas.
-      } else if (sameCategoryResult.success && sameCategoryResult.resolvedMatched.length > 0) {
-        const firstMatch = sameCategoryResult.resolvedMatched[0];
-
-        console.log("Producto encontrado en la misma categoría:", firstMatch);
-
-        setAnalysis({
-          status: "ordered",
-          title: "Producto ordenado",
-          tone: "success",
-          message: `El producto fue encontrado en la cámara ${firstMatch.code} dentro de la location ${firstMatch.locationName}.`,
-          productCategory,
-          primaryMatch: firstMatch,
+      if (sameCategoryLocations.length > 0) {
+        // Paso 3: consultar primero la búsqueda primaria por categoría, sin enviar cámaras.
+        sameCategoryResult = await createAnalysisPayload(
           sameCategoryLocations,
-          recommendedLocations: sameCategoryLocations,
-          matchedCameras: sameCategoryResult.resolvedMatched,
-          respondedCameras: sameCategoryResult.resolvedResponded,
-          notRespondedCameras: sameCategoryResult.resolvedNotResponded,
-          scannedAt: sameCategoryResult.responseData?.scannedAt,
-          correlationId: sameCategoryResult.responseData?.correlationId,
-        });
+          "same",
+          "PRIMARY_ZONE"
+        );
 
-        setLoadingStage("");
-        setLoadingMessage("");
-        return;
+        console.log("Primary zone result:", sameCategoryResult);
+
+        if (sameCategoryResult.success && sameCategoryResult.resolvedMatched.length > 0) {
+          const firstMatch = sameCategoryResult.resolvedMatched[0];
+
+          console.log("Producto encontrado en la zona primaria:", firstMatch);
+
+          setAnalysis({
+            status: "ordered",
+            title: "Producto ordenado",
+            tone: "success",
+            message: `El producto fue encontrado en la cámara ${firstMatch.code} dentro de la location ${firstMatch.locationName}.`,
+            productCategory,
+            primaryMatch: firstMatch,
+            sameCategoryLocations,
+            recommendedLocations: sameCategoryLocations,
+            matchedCameras: sameCategoryResult.resolvedMatched,
+            respondedCameras: sameCategoryResult.resolvedResponded,
+            notRespondedCameras: sameCategoryResult.resolvedNotResponded,
+            scannedAt: sameCategoryResult.responseData?.scannedAt,
+            correlationId: sameCategoryResult.responseData?.correlationId,
+          });
+
+          setLoadingStage("");
+          setLoadingMessage("");
+          return;
+        }
       }
 
-      console.log("No match in same category, checking other zones...");
+      console.log("No match in primary zone, checking all zones...");
 
-      // Paso 7 y Paso 8: tomar las zonas que no tienen la misma categoría y sus cámaras.
+      // Paso 7 y Paso 8: si no existen zonas de la misma categoría o no se encontró,
+      // consultar todas las zonas. La lista de zonas se sigue usando para resolver ubicación/cámara.
       const otherLocations = searchableLocations.filter(
         (location) => normalizeText(getLocationCategory(location)) !== productCategory
       );
 
       console.log("Other locations to check:", otherLocations.length);
 
-      // Paso 10: mostrar el loader mientras se busca en otras zonas.
-      const otherZoneResult = await createAnalysisPayload(otherLocations, "other");
+      // Paso 10: mostrar el loader mientras se busca en todas las zonas.
+      const allZonesResult = await createAnalysisPayload(searchableLocations, "other", "ALL_ZONES");
 
-      console.log("Other zone result:", otherZoneResult);
+      console.log("All zones result:", allZonesResult);
 
-      if (otherZoneResult.noCameras) {
-        setAnalysis({
-          status: "not-found",
-          title: "Producto no encontrado",
-          tone: "warning",
-          message:
-            "No hay cámaras disponibles en las zonas alternativas para completar la búsqueda.",
-          productCategory,
-          primaryMatch: null,
-          sameCategoryLocations,
-          recommendedLocations: sameCategoryLocations,
-          matchedCameras: [],
-          respondedCameras: [],
-          notRespondedCameras: [],
-        });
+      if (allZonesResult.success && allZonesResult.resolvedMatched.length > 0) {
+        const firstMatch = allZonesResult.resolvedMatched[0];
+        const matchCategory = normalizeText(getLocationCategory(firstMatch.location));
+        const isSameCategoryMatch = matchCategory === productCategory;
 
-        setLoadingStage("");
-        setLoadingMessage("");
-        return;
-      }
-
-      console.log("Other zone result:", otherZoneResult);
-
-      if (otherZoneResult.success && otherZoneResult.resolvedMatched.length > 0) {
-        const firstMatch = otherZoneResult.resolvedMatched[0];
-
-        // Paso 11: si la detecta fuera de su categoría, se marca como desordenado y se recomiendan las zones correctas.
-        setAnalysis({
-          status: "disordered",
-          title: "Producto desordenado",
-          tone: "danger",
-          message: `El producto fue detectado en la cámara ${firstMatch.code} dentro de la location ${firstMatch.locationName}, pero esa location no pertenece a su categoría.`,
-          productCategory,
-          primaryMatch: firstMatch,
-          sameCategoryLocations,
-          recommendedLocations: sameCategoryLocations,
-          matchedCameras: otherZoneResult.resolvedMatched,
-          respondedCameras: otherZoneResult.resolvedResponded,
-          notRespondedCameras: otherZoneResult.resolvedNotResponded,
-          scannedAt: otherZoneResult.responseData?.scannedAt,
-          correlationId: otherZoneResult.responseData?.correlationId,
-        });
+        if (isSameCategoryMatch) {
+          setAnalysis({
+            status: "ordered",
+            title: "Producto ordenado",
+            tone: "success",
+            message: `El producto fue encontrado en la cámara ${firstMatch.code} dentro de la location ${firstMatch.locationName}.`,
+            productCategory,
+            primaryMatch: firstMatch,
+            sameCategoryLocations,
+            recommendedLocations: sameCategoryLocations,
+            matchedCameras: allZonesResult.resolvedMatched,
+            respondedCameras: allZonesResult.resolvedResponded,
+            notRespondedCameras: allZonesResult.resolvedNotResponded,
+            scannedAt: allZonesResult.responseData?.scannedAt,
+            correlationId: allZonesResult.responseData?.correlationId,
+          });
+        } else {
+          // Paso 11: si la detecta fuera de su categoría, se marca como desordenado y se recomiendan las zones correctas.
+          setAnalysis({
+            status: "disordered",
+            title: "Producto desordenado",
+            tone: "danger",
+            message: `El producto fue detectado en la cámara ${firstMatch.code} dentro de la location ${firstMatch.locationName}, pero esa location no pertenece a su categoría.`,
+            productCategory,
+            primaryMatch: firstMatch,
+            sameCategoryLocations,
+            recommendedLocations: sameCategoryLocations,
+            matchedCameras: allZonesResult.resolvedMatched,
+            respondedCameras: allZonesResult.resolvedResponded,
+            notRespondedCameras: allZonesResult.resolvedNotResponded,
+            scannedAt: allZonesResult.responseData?.scannedAt,
+            correlationId: allZonesResult.responseData?.correlationId,
+          });
+        }
       } else {
         setAnalysis({
           status: "not-found",
           title: "Producto no encontrado",
           tone: "warning",
-          message: "No se encontró coincidencia en ninguna de las cámaras consultadas.",
+          message: "No se encontró coincidencia en ninguna de las zonas consultadas.",
           productCategory,
           primaryMatch: null,
           sameCategoryLocations,
           recommendedLocations: sameCategoryLocations,
           matchedCameras: [],
-          respondedCameras: otherZoneResult.resolvedResponded,
-          notRespondedCameras: otherZoneResult.resolvedNotResponded,
-          scannedAt: otherZoneResult.responseData?.scannedAt,
-          correlationId: otherZoneResult.responseData?.correlationId,
+          respondedCameras: allZonesResult.resolvedResponded,
+          notRespondedCameras: allZonesResult.resolvedNotResponded,
+          scannedAt: allZonesResult.responseData?.scannedAt,
+          correlationId: allZonesResult.responseData?.correlationId,
         });
       }
     } catch (error) {
@@ -617,7 +625,13 @@ const WarehouseProductSearchDialog = ({
 
       <DialogContent sx={{ p: 0, position: "relative", overflow: "auto" }}>
         <Box sx={{ p: { xs: 2, md: 3.5 } }}>
-          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1.05fr 0.95fr" }, gap: 3 }}>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", lg: "1.05fr 0.95fr" },
+              gap: 3,
+            }}
+          >
             <ProductSearchPanel
               query={query}
               setQuery={setQuery}
@@ -628,7 +642,10 @@ const WarehouseProductSearchDialog = ({
             />
 
             <Box sx={{ display: "grid", gap: 3, alignContent: "start" }}>
-              <SelectedProductCard selectedProduct={selectedProduct} handleAnalyze={handleAnalyze} />
+              <SelectedProductCard
+                selectedProduct={selectedProduct}
+                handleAnalyze={handleAnalyze}
+              />
 
               {/* <CamerasPanel previewCameras={previewCameras} renderCameraCard={renderCameraCard} selectedProduct={selectedProduct} /> */}
 
@@ -642,7 +659,9 @@ const WarehouseProductSearchDialog = ({
             </Box>
           </Box>
 
-          {loadingStage && <LoadingOverlay loadingStage={loadingStage} loadingMessage={loadingMessage} />}
+          {loadingStage && (
+            <LoadingOverlay loadingStage={loadingStage} loadingMessage={loadingMessage} />
+          )}
         </Box>
       </DialogContent>
     </Dialog>
