@@ -142,11 +142,14 @@ const getLocalDateKey = (dateValue) => {
   return `${year}-${month}-${day}`;
 };
 
+const DAYS_TO_SHOW = 15;
+
 const buildLast7Days = () => {
   const today = startOfDay(new Date());
   const days = [];
 
-  for (let offset = 6; offset >= 0; offset -= 1) {
+  for (let offset = DAYS_TO_SHOW - 1; offset >= 0; offset -= 1) {
+  // for (let offset = 6; offset >= 0; offset -= 1) {
     const date = new Date(today);
     date.setDate(today.getDate() - offset);
     days.push(date);
@@ -608,14 +611,14 @@ const WarehouseScansOverview = ({ scans = [], loading }) => {
         <StatCard
           label="Entradas"
           value={`+${formatQuantity(summary.totalEntries)}`}
-          description="Artículos ingresados en los últimos 7 días"
+          description={`Artículos ingresados en los últimos ${DAYS_TO_SHOW} días`}
           className="border-emerald-200"
         />
 
         <StatCard
           label="Salidas"
           value={`-${formatQuantity(summary.totalExits)}`}
-          description="Artículos retirados en los últimos 7 días"
+          description={`Artículos retirados en los últimos ${DAYS_TO_SHOW} días`}
           className="border-amber-200"
         />
       </div>
@@ -633,7 +636,7 @@ const WarehouseScansOverview = ({ scans = [], loading }) => {
           </div>
 
           <p className="text-sm text-slate-500">
-            Últimos 7 días · una línea por producto
+            Últimos {DAYS_TO_SHOW} días · una línea por producto
           </p>
         </div>
 

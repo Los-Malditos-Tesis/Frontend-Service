@@ -60,6 +60,51 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+
+
+let unauthorizedHandler = null;
+let isHandlingUnauthorized = false;
+
+export const setUnauthorizedHandler = (handler) => {
+  unauthorizedHandler = handler;
+};
+
+const isPublicAuthEndpoint = (url = "") => {
+  return url.includes("/auth/login") || url.includes("/auth/register");
+};
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status;
+    const url = error?.config?.url || "";
+    const hasToken = !!localStorage.getItem("token");
+
+    const shouldLogout =
+      hasToken &&
+      status === 401 &&
+      !isPublicAuthEndpoint(url);
+
+    if (shouldLogout && !isHandlingUnauthorized) {
+      isHandlingUnauthorized = true;
+
+      localStorage.removeItem("token");
+
+      if (unauthorizedHandler) {
+        unauthorizedHandler();
+      } else {
+        window.location.replace("/");
+      }
+
+      setTimeout(() => {
+        isHandlingUnauthorized = false;
+      }, 1000);
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 // CRUD mockeado para desarrollo sin backend.
 export const getUsers = () => getUsersMock();
 export const searchUsers = (filters) => searchUsersMock(filters);

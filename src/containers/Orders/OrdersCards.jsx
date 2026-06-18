@@ -263,6 +263,16 @@ const OrdersCards = ({ orders = [], loading, onUpdateStatus, onDelete, canManage
         const destinationLabel = getDestinationLabel(order);
         const unitLabel = UNIT_META[order.unit_type] || order.unit_type || "--";
         const progress = getProgressPercent(order);
+        const product = order.Product || {};
+        const productDescription =
+          product.description ||
+          product.name ||
+          order.product_description ||
+          order.product_name ||
+          "Producto no especificado";
+
+        const productMeta = [ product.code].filter(Boolean).join(" · ");
+        // const productMeta = [product.sku, product.code].filter(Boolean).join(" · ");
 
         return (
           <motion.article
@@ -344,11 +354,26 @@ const OrdersCards = ({ orders = [], loading, onUpdateStatus, onDelete, canManage
                   </p>
                 </div>
               </div>
+              <div className="flex flex-col gap-3 rounded-2xl bg-slate-50/80 p-4 sm:flex-row sm:items-center">
+                <div className="border-t border-slate-200 pt-3">
+                  <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-slate-400 uppercase">
+                    <Inventory2OutlinedIcon sx={{ fontSize: 16 }} />
+                    Producto
+                  </div>
+
+                  <p className="mt-1 text-sm font-bold text-slate-800">{productDescription}</p>
+
+                  {productMeta ? (
+                    <p className="mt-0.5 text-xs font-semibold text-slate-500">{productMeta}</p>
+                  ) : null}
+                </div>
+              </div>
 
               <div className="mt-5">
                 <div className="mb-2 flex justify-between text-xs font-bold text-slate-500">
                   <span>
-                    Despachadas {formatNumber(order.total_dispatched)} de {formatNumber(order.total_quantity)}
+                    Despachadas {formatNumber(order.total_dispatched)} de{" "}
+                    {formatNumber(order.total_quantity)}
                     {/* Entregadas {formatNumber(order.total_delivered)} de{" "} */}
                     {/* {formatNumber(order.total_quantity)} */}
                   </span>
